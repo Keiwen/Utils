@@ -1,0 +1,14 @@
+{
+    "name": "keiwen/utils",
+    "type": "library",
+    "description": "Common utils fonctions",
+	"version": "1.0",
+    "autoload": {
+        "psr-4": {
+            "Keiwen\\Utils\\": ""
+        }
+    },
+	"require": {
+        "php": ">=7.0"
+    }
+}
