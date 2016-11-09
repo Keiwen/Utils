@@ -45,11 +45,11 @@ trait CacheHandlerTrait
 
     /**
      * @param string $key
-     * @param string $data
+     * @param miwed  $data
      * @param int    $cacheLifetime
      * @return bool
      */
-    protected function storeInCache(string $key, string $data, int $cacheLifetime = 0)
+    protected function storeInCache(string $key, $data, int $cacheLifetime = 0)
     {
         if(empty($cacheLifetime)) $cacheLifetime = $this->defaultCacheLifetime;
         static::$staticCache[$key] = $data;
@@ -72,7 +72,7 @@ trait CacheHandlerTrait
 
     /**
      * @param string $url
-     * @return string|null null means not found in cache
+     * @return mixed|null null means not found in cache
      */
     protected function readInCache(string $key)
     {
