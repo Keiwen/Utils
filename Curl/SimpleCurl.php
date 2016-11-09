@@ -170,8 +170,16 @@ class SimpleCurl
      */
     public function hasError()
     {
-        if($this->errno > 0) return true;
+        if($this->hasCurlError()) return true;
         return $this->httpCode >= 400;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCurlError()
+    {
+        return ($this->errno > 0);
     }
 
     /**
