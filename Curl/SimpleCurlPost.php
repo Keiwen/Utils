@@ -1,6 +1,6 @@
 <?php
 
-namespace Curl;
+namespace Keiwen\Utils\Curl;
 
 
 class SimpleCurlPost extends SimpleCurl
