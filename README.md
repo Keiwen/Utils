@@ -1,13 +1,13 @@
 # Utils
 A bench of utils functions
 
-##ArrayAnalyser
+##ArrayAnalyser and ArrayMutator
 * Check if array is sequential (numerical keys ordered)
 * Check if array has homogeneous elements in it (with inheritance support)
 * Flatten array (nested field brought up to first level, concatenating keys)
 * Sort by field
 
-## JsonObject
+##JsonObject
 * Generate objects from json, with each json field converted to attribute
 * JsonObject could include another one (or a list).
 * JsonObject could be generated from a parent with additional Json data.
