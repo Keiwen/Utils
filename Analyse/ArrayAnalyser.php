@@ -212,7 +212,7 @@ class ArrayAnalyser
      * @param string $keySep
      * @return array
      */
-    protected static function flattenArray(array $data, string $prefixKey = '', string $keySep = '_')
+    public static function flattenArray(array $data, string $prefixKey = '', string $keySep = '_')
     {
         foreach($data as $key => $value) {
             //generate new key and remove old one
@@ -232,5 +232,22 @@ class ArrayAnalyser
         }
         return $data;
     }
+    
+    /**
+     * add prefix and/or suffix to array keys
+     * @param array  $data
+     * @param string $prefix
+     * @param string $suffix
+     * @return array
+     */
+    public static function amendKeys(array $data, string $prefix = '', string $suffix = '')
+    {
+        $newData = array();
+        foreach($data as $key => $value) {
+            $newData[$prefix.$key.$suffix] = $value;
+        }
+        return $newData;
+    }
+
 
 }
