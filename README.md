@@ -13,6 +13,9 @@ A bench of utils functions
 * JsonObject could be generated from a parent with additional Json data.
 * Functions to sort or search in a list of objects.
 
+##SimpleCurl
+* Generate simple curl request, with configurable headers, cookies, curl options
+
 ##HtmlParsing
 * Isolate target HTML non-empty element by id or class
 (if only this class for this element)
