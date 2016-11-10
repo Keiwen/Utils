@@ -3,7 +3,7 @@
 namespace Keiwen\Utils\Mutator;
 
 
-class ArrayAnalyser
+class ArrayMutator
 {
 
     /** array values considered as unique (if not, some data could be lost) */
