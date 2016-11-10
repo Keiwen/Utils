@@ -3,7 +3,9 @@
 namespace Keiwen\Utils\Object;
 
 
-use Keiwen\Utils\Analyse\ArrayAnalyser;
+use Keiwen\Utils\Analyser\ArrayAnalyser;
+use Keiwen\Utils\Mutator\ArrayMutator;
+
 
 /**
  * Class JsonObject
@@ -314,7 +316,7 @@ class JsonObject
      * @param string $attribute can contains a dot char (only one) to check for nested attribute ("mainAttribute.subAttribute", main can be a JsonObject)
      * @param string $sortType
      */
-    public static function sortByAttribute(array &$objectList, string $attribute, string $sortType = ArrayAnalyser::NON_UNIQUE_SORT_VALUE)
+    public static function sortByAttribute(array &$objectList, string $attribute, string $sortType = ArrayMutator::NON_UNIQUE_SORT_VALUE)
     {
         //"copy" object list to array list with same keys
         $arrayList = array();
@@ -326,7 +328,7 @@ class JsonObject
         //do not process if empty array or some object not valid
         if(empty($arrayList) || count($arrayList) != count($objectList)) return;
 
-        ArrayAnalyser::sortByField($arrayList, $attribute, $sortType);
+        ArrayMutator::sortByField($arrayList, $attribute, $sortType);
         //arrayList is sorted, now get object from list one by one using the keys to rebuild object list
         $sorted = array();
         foreach($arrayList as $key => $element) {
