@@ -249,5 +249,44 @@ class ArrayAnalyser
         return $newData;
     }
 
+    
+    /**
+     * Search correspondence between given data element field and reference element field.
+     * Extract key from corresponding reference found (own key or given field)
+     * Set data element key as extracted key
+     *
+     * If no correspondence, data element is lost
+     * Fields value must NOT be empty
+     * If correspondence find twice, first element will be erased
+     * @param array  $data array of element to convert
+     * @param string $dataField field to compare to reference
+     * @param array  $ref array of referencing element
+     * @param string $refField field to compare to data
+     * @param string $refKeyField fill it to use a reference field as key instead of element key
+     * @return array converted data
+     */
+    public static function convertKeysWithRefMap(array $data, string $dataField, array $ref, string $refField, string $refKeyField = '')
+    {
+        $newData = array();
+        foreach($data as $dataKey => $dataRow) {
+            //check that map field is found
+            if(empty($dataRow[$dataField])) continue;
+            //search in ref for corresponding value
+            foreach($ref as $refKey => $refRow) {
+                //check that map field is found
+                if(empty($refRow[$refField])) continue;
+                //check correspondence
+                if($refRow[$refField] == $dataRow[$dataField]) {
+                    //newkey is either fieldKey provided if filled or ref element key
+                    $newKey = (empty($refKeyField) || empty($refRow[$refKeyField])) ? $refKey : $refRow[$refKeyField];
+                    $newData[$newKey] = $dataRow;
+                    break;
+                }
+            }
+            //not found, skip
+        }
+        return $newData;
+    }
+
 
 }
