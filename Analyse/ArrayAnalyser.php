@@ -251,7 +251,7 @@ class ArrayAnalyser
 
     
     /**
-     * Search correspondence between given data element field and reference element field.
+     * Search correspondence between given data element field and reference element.
      * Extract key from corresponding reference found (own key or given field)
      * Set data element key as extracted key
      *
@@ -261,11 +261,11 @@ class ArrayAnalyser
      * @param array  $data array of element to convert
      * @param string $dataField field to compare to reference
      * @param array  $ref array of referencing element
-     * @param string $refField field to compare to data
+     * @param string $refField fill it to use a field to compare to data instead of full element
      * @param string $refKeyField fill it to use a reference field as key instead of element key
      * @return array converted data
      */
-    public static function convertKeysWithRefMap(array $data, string $dataField, array $ref, string $refField, string $refKeyField = '')
+    public static function convertKeysWithRefMap(array $data, string $dataField, array $ref, string $refField = '', string $refKeyField = '')
     {
         $newData = array();
         foreach($data as $dataKey => $dataRow) {
@@ -274,9 +274,10 @@ class ArrayAnalyser
             //search in ref for corresponding value
             foreach($ref as $refKey => $refRow) {
                 //check that map field is found
-                if(empty($refRow[$refField])) continue;
+                if(!empty($refField) && empty($refRow[$refField])) continue;
+                $compareTo = $refField ? $refRow[$refField] : $refRow;
                 //check correspondence
-                if($refRow[$refField] == $dataRow[$dataField]) {
+                if($compareTo == $dataRow[$dataField]) {
                     //newkey is either fieldKey provided if filled or ref element key
                     $newKey = (empty($refKeyField) || empty($refRow[$refKeyField])) ? $refKey : $refRow[$refKeyField];
                     $newData[$newKey] = $dataRow;
@@ -287,6 +288,5 @@ class ArrayAnalyser
         }
         return $newData;
     }
-
 
 }
