@@ -9,6 +9,7 @@ trait CacheHandlerTrait
     protected $cache = null;
     protected $defaultCacheLifetime = 0;
     protected $cacheKeyPrefix = '';
+    protected $cacheDisabled = false;
 
     protected static $staticCache = array();
     protected static $cacheGetters = array('get', 'fetch');
@@ -26,9 +27,21 @@ trait CacheHandlerTrait
 
 
     /**
+     * @param $cache
+     */
+    protected function loadCache($cache)
+    {
+        if(!$this->cacheDisabled) {
+            $this->cache = $cache;
+        }
+    }
+
+
+    /**
      */
     public function disableCache()
     {
+        $this->cacheDisabled = true;
         $this->cache = null;
     }
 
@@ -51,9 +64,10 @@ trait CacheHandlerTrait
      */
     protected function storeInCache(string $key, $data, int $cacheLifetime = 0)
     {
+        if(!$this->prepareCache()) return true;
+        if(!$this->hasCacheEnabled()) return true;
         if(empty($cacheLifetime)) $cacheLifetime = $this->defaultCacheLifetime;
         static::$staticCache[$key] = $data;
-        if(!$this->hasCacheEnabled()) return true;
         $cacheKey = $this->getCacheFullKey($key);
         $setterFound = false;
         foreach(static::$cacheSetters as $setter) {
@@ -76,9 +90,10 @@ trait CacheHandlerTrait
      */
     protected function readInCache(string $key)
     {
+        if(!$this->prepareCache()) return null;
+        if(!$this->hasCacheEnabled()) return null;
         $static = isset(static::$staticCache[$key]) ? static::$staticCache[$key] : null;
         if($static !== null) return $static;
-        if(!$this->hasCacheEnabled()) return null;
         $cacheKey = $this->getCacheFullKey($key);
         foreach(static::$cacheGetters as $getter) {
             if(method_exists($this->cache, $getter)) {
@@ -93,5 +108,13 @@ trait CacheHandlerTrait
         return null;
     }
 
+
+    /**
+     * @return bool
+     */
+    protected function prepareCache()
+    {
+        return true;
+    }
 
 }
