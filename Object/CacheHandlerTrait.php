@@ -19,7 +19,7 @@ trait CacheHandlerTrait
     /**
      * @return bool
      */
-    public function hasCacheEnabled()
+    protected function hasCacheEnabled()
     {
         return !empty($this->cache);
     }
@@ -45,7 +45,7 @@ trait CacheHandlerTrait
 
     /**
      * @param string $key
-     * @param miwed  $data
+     * @param mixed  $data
      * @param int    $cacheLifetime
      * @return bool
      */
