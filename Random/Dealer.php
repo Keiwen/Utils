@@ -8,7 +8,7 @@ class Dealer
 
     protected $library;
     protected $deck;
-    protected $discard;
+    protected $discardPile;
 
 
     /**
@@ -24,11 +24,11 @@ class Dealer
 
 
     /**
-     * empty discard and fill deck
+     * empty discard pile and fill deck
      */
     public function initialize()
     {
-        $this->discard = array();
+        $this->discardPile = array();
         $this->deck = $this->library;
         $this->shuffleDeck();
     }
@@ -74,15 +74,15 @@ class Dealer
 
     /**
      * @param mixed $record
-     * @param bool  $inDeck put record back in deck instead of discard
+     * @param bool  $inDeck put record back in deck instead of discard pile
      * @param bool  $topOfDeck put record back on top of deck
      */
     public function discard($record, bool $inDeck = false, bool $topOfDeck = false)
     {
         switch(true) {
             case !$inDeck:
-                //put in discard
-                array_push($this->discard, $record);
+                //put in discard pile
+                array_push($this->discardPile, $record);
                 break;
             case $topOfDeck:
                 //top of deck
@@ -97,16 +97,16 @@ class Dealer
 
     /**
      * @param bool $shuffleDeck shuffle resulting deck
-     * @param bool $shuffleDiscardFirst shuffle discard prior to mixed with deck
+     * @param bool $shuffleDiscardPileFirst shuffle discard pile prior to mixed with deck
      */
-    public function mergeDiscardInDeck(bool $shuffleDeck = false, bool $shuffleDiscardFirst = false)
+    public function mergeDiscardPileInDeck(bool $shuffleDeck = false, bool $shuffleDiscardPileFirst = false)
     {
-        if($shuffleDiscardFirst) {
-            shuffle($this->discard);
+        if($shuffleDiscardPileFirst) {
+            shuffle($this->discardPile);
         } elseif(!$shuffleDeck) {
-            array_reverse($this->discard);
+            array_reverse($this->discardPile);
         }
-        $this->deck = array_merge($this->discard, $this->deck);
+        $this->deck = array_merge($this->discardPile, $this->deck);
         if($shuffleDeck) $this->shuffleDeck();
     }
 
