@@ -54,7 +54,7 @@ class WeightedRand
 
 
     /**
-     * @return string corresponding key
+     * @return mixed corresponding reference or key
      */
     public function random()
     {
