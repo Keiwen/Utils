@@ -10,6 +10,7 @@ trait CacheHandlerTrait
     protected $defaultCacheLifetime = 0;
     protected $cacheKeyPrefix = '';
     protected $cacheDisabled = false;
+    protected $cacheReadBypass = false;
 
     protected static $staticCache = array();
     protected static $cacheGetters = array('get', 'fetch');
@@ -43,6 +44,22 @@ trait CacheHandlerTrait
     {
         $this->cacheDisabled = true;
         $this->cache = null;
+    }
+
+    /**
+     *
+     */
+    public function bypassCacheRead()
+    {
+        $this->cacheReadBypass = true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCacheReadBypass()
+    {
+        return $this->cacheReadBypass;
     }
 
 
@@ -84,6 +101,7 @@ trait CacheHandlerTrait
         return $setterFound;
     }
 
+
     /**
      * @param string $url
      * @return mixed|null null means not found in cache
@@ -92,6 +110,7 @@ trait CacheHandlerTrait
     {
         if(!$this->prepareCache()) return null;
         if(!$this->hasCacheEnabled()) return null;
+        if($this->hasCacheReadBypass()) return null;
         $static = isset(static::$staticCache[$key]) ? static::$staticCache[$key] : null;
         if($static !== null) return $static;
         $cacheKey = $this->getCacheFullKey($key);
