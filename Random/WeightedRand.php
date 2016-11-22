@@ -9,8 +9,10 @@ class WeightedRand
     protected $weightMap;
     protected $cumulativeMap;
     protected $totalWeight;
+    protected $referenceMap;
 
     protected $lastRandomWeight = 0;
+    protected $lastRandomKey = '';
     protected $normalizedPower = 0;
 
     public static $maxNormalizerPower = 2;
@@ -21,11 +23,13 @@ class WeightedRand
      *
      * Use normalizeWeightMap() if non-integer weights given
      * @param array $weightMap associative array [key => weight]. Weights should be integers
+     * @param array $referenceMap optionnal associative array [$key => element]
      * @throws \RuntimeException when too large numbers reached
      */
-    public function __construct(array $weightMap)
+    public function __construct(array $weightMap, array $referenceMap = array())
     {
         $this->normalizedPower = static::normalizeWeightMap($weightMap);
+        $this->referenceMap = $referenceMap;
         $this->weightMap = $weightMap;
         $cumulativeWeight = 0;
         foreach($weightMap as $key => $weight) {
@@ -56,8 +60,12 @@ class WeightedRand
     {
         $this->lastRandomWeight = mt_rand(1, $this->totalWeight);
         foreach($this->cumulativeMap as $key => $cumulWeight) {
-            if($this->lastRandomWeight <= $cumulWeight) return $key;
+            if($this->lastRandomWeight <= $cumulWeight) {
+                $this->lastRandomKey = $key;
+                break;
+            }
         }
+        return isset($this->referenceMap[$this->lastRandomKey]) ? $this->referenceMap[$this->lastRandomKey] : $this->lastRandomKey;
     }
 
 
@@ -67,6 +75,14 @@ class WeightedRand
     public function getLastRandomWeight()
     {
         return $this->lastRandomWeight;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastRandomKey()
+    {
+        return $this->lastRandomKey;
     }
 
 
@@ -110,6 +126,30 @@ class WeightedRand
             }
         }
         return $power;
+    }
+
+
+    /**
+     * Generate from array with
+     * @param array  $data original array of data
+     * @param string $weightField field where weight is defined
+     * @param string $referenceField field where reference to return is defined (empty to use data array keys)
+     * @return static
+     */
+    public static function generateFromArrayFields(array $data, string $weightField, string $referenceField = '')
+    {
+        $weightMap = array();
+        $referenceMap = array();
+        foreach($data as $key => $row) {
+            if(isset($row[$weightField])) {
+                $weightMap[] = $row[$weightField];
+                if(!empty($referenceField)) {
+                    $referenceMap[] = isset($row[$referenceField]) ? $row[$referenceField] : $key;
+                }
+            }
+        }
+
+        return new static($weightMap, $referenceMap);
     }
 
 }
