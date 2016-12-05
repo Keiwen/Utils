@@ -217,10 +217,12 @@ class StringFormat
     {
         //lower, replace 8 by space, upper case on all words
         $return = ucwords(str_replace('_', ' ', strtolower($subject)));
-        if(!$lcfirst) {
+        if($lcfirst) {
             //remove first uppercase if needed
             $return = lcfirst($return);
         }
+        //remove space
+        $return = str_replace(' ', '', $return);
         return $return;
     }
 
