@@ -3,6 +3,8 @@
 namespace Keiwen\Utils\Mutator;
 
 
+use Keiwen\Utils\Analyser\ArrayAnalyser;
+
 class ArrayMutator
 {
 
@@ -19,9 +21,11 @@ class ArrayMutator
      * @param array  $array array keys are preserved
      * @param string $field can contains a dot char (only one) to check for nested field ("mainField.subField")
      * @param string $sortType
+     * @param bool   $forceKeyPreserve
      */
-    public static function sortByField(array &$array, string $field, string $sortType = self::NON_UNIQUE_SORT_VALUE)
+    public static function sortByField(array &$array, string $field, string $sortType = self::NON_UNIQUE_SORT_VALUE, bool $forceKeyPreserve = false)
     {
+        $sequential = ArrayAnalyser::isSequential($array);
         $arraySort = array();
         //use same process on keys to preserve it
         $arrayKeysSort = array();
@@ -81,7 +85,7 @@ class ArrayMutator
         }
 
         //combine back keys with element
-        $array = array_combine($arrayKeysSort, $arraySort);
+        $array = ($sequential && !$forceKeyPreserve) ? $arraySort : array_combine($arrayKeysSort, $arraySort);
     }
 
 
