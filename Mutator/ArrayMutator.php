@@ -20,10 +20,11 @@ class ArrayMutator
     /**
      * @param array  $array array keys are preserved
      * @param string $field can contains a dot char (only one) to check for nested field ("mainField.subField")
+     * @param bool   $reverse
      * @param string $sortType
      * @param bool   $forceKeyPreserve
      */
-    public static function sortByField(array &$array, string $field, string $sortType = self::NON_UNIQUE_SORT_VALUE, bool $forceKeyPreserve = false)
+    public static function sortByField(array &$array, string $field, bool $reverse = false, string $sortType = self::NON_UNIQUE_SORT_VALUE, bool $forceKeyPreserve = false)
     {
         $sequential = ArrayAnalyser::isSequential($array);
         $arraySort = array();
@@ -66,6 +67,10 @@ class ArrayMutator
         //sort by key
         ksort($arraySort);
         ksort($arrayKeysSort);
+        if($reverse) {
+            $arraySort = array_reverse($arraySort);
+            $arrayKeysSort = array_reverse($arrayKeysSort);
+        }
         if($sortType != self::UNIQUE_SORT) {
             //if non-unique, $arraySort is compacted, un-pile it
             $temp = array();
