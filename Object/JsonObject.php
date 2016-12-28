@@ -314,9 +314,10 @@ class JsonObject
     /**
      * @param array  $objectList
      * @param string $attribute can contains a dot char (only one) to check for nested attribute ("mainAttribute.subAttribute", main can be a JsonObject)
+     * @param bool   $reverse
      * @param string $sortType
      */
-    public static function sortByAttribute(array &$objectList, string $attribute, string $sortType = ArrayMutator::NON_UNIQUE_SORT_VALUE)
+    public static function sortByAttribute(array &$objectList, string $attribute, bool $reverse = false, string $sortType = ArrayMutator::NON_UNIQUE_SORT_VALUE)
     {
         //"copy" object list to array list with same keys
         $arrayList = array();
@@ -328,7 +329,7 @@ class JsonObject
         //do not process if empty array or some object not valid
         if(empty($arrayList) || count($arrayList) != count($objectList)) return;
 
-        ArrayMutator::sortByField($arrayList, $attribute, $sortType);
+        ArrayMutator::sortByField($arrayList, $attribute, $reverse, $sortType);
         //arrayList is sorted, now get object from list one by one using the keys to rebuild object list
         $sorted = array();
         foreach($arrayList as $key => $element) {
