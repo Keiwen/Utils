@@ -202,8 +202,8 @@ class HtmlParsing {
         $start = $attr . '="';
         $end = '"';
         $posStart = strpos($content, $start) + strlen($start);
+        if($posStart == strlen($start)) return '';
         $posEnd = strpos($content, $end, $posStart);
-        if($posStart === false) return '';
         $value = substr($content, $posStart, $posEnd - $posStart);
         return $value;
     }
