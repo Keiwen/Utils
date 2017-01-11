@@ -1,7 +1,7 @@
 <?php
 
 
-require_once 'HtmlParsing.php';
+require_once 'Parsing/HtmlParsing.php';
 
 use Keiwen\Utils\Parsing\HtmlParsing;
 
