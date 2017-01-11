@@ -13,9 +13,9 @@ use Keiwen\Utils\Mutator\ArrayMutator;
  * Advised to extends this class and implements specific attributes getter and setter
  * Child class:
  * - should implements specific getter and setter (could use generic get and set defined here)
- * - could redifined nested object (static method includedJsonObjects())
- * - could redifined nested map object (static method includedJsonObjectMapList())
- * - could redifined field to attribute map (static method retrieveFieldToAttributeMap())
+ * - could redefined nested object (static method includedJsonObjects())
+ * - could redefined nested map object (static method includedJsonObjectMapList())
+ * - could redefined field to attribute map (static method retrieveFieldToAttributeMap())
  * - could overwrite getDefaultDataAll()
  * Child object could be created from a parent object using the generateFromParent() static method
  */
