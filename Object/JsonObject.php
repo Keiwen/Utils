@@ -146,9 +146,9 @@ class JsonObject
             $toNest = array_flip($toNest);
         }
         $toNestInList = array_flip(static::includedJsonObjectMapList());
+        $fieldToAttributeMap = static::retrieveFieldToAttributeMap();
 
         foreach($jsonData as $field => $data) {
-            $fieldToAttributeMap = static::retrieveFieldToAttributeMap();
             $attribute = empty($fieldToAttributeMap[$field]) ? $field : $fieldToAttributeMap[$field];
             //check if we gonna overwrite existing object attribute
             if(!$overwriteObjectData && isset($objectData[$attribute])) continue;
