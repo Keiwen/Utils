@@ -67,6 +67,10 @@ class ArrayMutator
         //sort by key
         ksort($arraySort);
         ksort($arrayKeysSort);
+        if($reverse) {
+            $arraySort = array_reverse($arraySort);
+            $arrayKeysSort = array_reverse($arrayKeysSort);
+        }
         if($sortType != self::UNIQUE_SORT) {
             //if non-unique, $arraySort is compacted, un-pile it
             $temp = array();
@@ -87,10 +91,6 @@ class ArrayMutator
 
         //combine back keys with element
         $array = ($sequential && !$forceKeyPreserve) ? $arraySort : array_combine($arrayKeysSort, $arraySort);
-        //reverse if asked
-        if($reverse) {
-            $array = array_reverse($array);
-        }
     }
 
 
