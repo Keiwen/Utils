@@ -225,8 +225,20 @@ class JsonObject
             //flip it to keep field name as keys
             $nestedObjects = array_flip($nestedObjects);
         }
+        $nestedObjectsList = static::includedJsonObjectMapList();
         foreach($nestedObjects as $attribute => $class) {
-            $default[$attribute] = null;
+            //create empty array if nested list
+            if(in_array($attribute, $nestedObjectsList)) {
+                $default[$attribute] = array();
+            } else {
+                //if class provided and valid, create new object
+                if(is_subclass_of($class, self::class)) {
+                    $default[$attribute] = new $class();
+                } else {
+                    //create json object
+                    $default[$attribute] = new self();
+                }
+            }
         }
         return $default;
     }
