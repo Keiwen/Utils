@@ -3,6 +3,8 @@
 namespace Keiwen\Utils\Object;
 
 
+use Psr\Cache\CacheItemPoolInterface;
+
 trait CacheHandlerTrait
 {
 
@@ -86,15 +88,21 @@ trait CacheHandlerTrait
         if(empty($cacheLifetime)) $cacheLifetime = $this->defaultCacheLifetime;
         static::$staticCache[$key] = $data;
         $cacheKey = $this->getCacheFullKey($key);
-        $setterFound = false;
-        foreach(static::$cacheSetters as $setter) {
-            if(method_exists($this->cache, $setter)) {
-                try {
-                    $this->cache->$setter($cacheKey, $data, $cacheLifetime);
-                    $setterFound = true;
-                    break;
-                } catch (\Exception $e) {
+        if($this->cache instanceof CacheItemPoolInterface) {
+            $item = $this->cache->getItem($cacheKey);
+            $item->set($data)->expiresAfter($cacheLifetime);
+            return $this->cache->save($item);
+        } else {
+            $setterFound = false;
+            foreach(static::$cacheSetters as $setter) {
+                if(method_exists($this->cache, $setter)) {
+                    try {
+                        $this->cache->$setter($cacheKey, $data, $cacheLifetime);
+                        $setterFound = true;
+                        break;
+                    } catch (\Exception $e) {
 
+                    }
                 }
             }
         }
@@ -114,13 +122,19 @@ trait CacheHandlerTrait
         $static = isset(static::$staticCache[$key]) ? static::$staticCache[$key] : null;
         if($static !== null) return $static;
         $cacheKey = $this->getCacheFullKey($key);
-        foreach(static::$cacheGetters as $getter) {
-            if(method_exists($this->cache, $getter)) {
-                try {
-                    $data = $this->cache->$getter($cacheKey);
-                    return $data;
-                } catch (\Exception $e) {
+        if($this->cache instanceof CacheItemPoolInterface) {
+            $item = $this->cache->getItem($cacheKey);
+            return $item->get();
+        } else {
+            foreach(static::$cacheGetters as $getter) {
+                if(method_exists($this->cache, $getter)) {
+                    try {
+                        $data = $this->cache->$getter($cacheKey);
 
+                        return $data;
+                    } catch(\Exception $e) {
+
+                    }
                 }
             }
         }
