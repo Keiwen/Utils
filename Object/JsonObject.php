@@ -23,9 +23,6 @@ class JsonObject
 {
 
 
-
-    /** @var array */
-    protected $rawData = array();
     /** @var array */
     protected $data = array();
 
@@ -38,7 +35,6 @@ class JsonObject
     public function __construct($jsonData = '')
     {
         static::sanitizeJsonData($jsonData);
-        $this->rawData = $jsonData;
         $data = static::extractData($jsonData, static::getDefaultDataAll(), true);
         foreach($data as $attr => $value) {
             //use setter
@@ -205,10 +201,10 @@ class JsonObject
     public static function generateFromParent(JsonObject $parent, $additionalJson = '', bool $overwriteParentValue = true)
     {
         static::sanitizeJsonData($additionalJson);
-        $parentRaw = $parent->exportRawData();
-        //merge parent and child raw data
-        $childRaw = $overwriteParentValue ? array_merge($parentRaw, $additionalJson) : array_merge($additionalJson, $parentRaw);
-        $child = new static($childRaw);
+        $parentData = $parent->exportData();
+        //merge parent and child data
+        $childData = $overwriteParentValue ? array_merge($parentData, $additionalJson) : array_merge($additionalJson, $parentData);
+        $child = new static($childData);
         return $child;
     }
 
@@ -349,20 +345,6 @@ class JsonObject
         }
         $objectList = $sorted;
     }
-
-
-
-
-    /**
-     * Get initial data provided to object
-     * @param bool $jsonEncoded
-     * @return array|string
-     */
-    public function exportRawData(bool $jsonEncoded = false)
-    {
-        return $jsonEncoded ? json_encode($this->rawData) : $this->rawData;
-    }
-
 
     /**
      * Get array data from object
