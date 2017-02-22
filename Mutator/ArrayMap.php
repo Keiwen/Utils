@@ -74,4 +74,35 @@ class ArrayMap
 
 
 
+    /**
+     * Convert list of source data to destination data
+     * @param array  $sourceDataList
+     * @return array destination data list (keys preserved)
+     */
+    protected static function mapListForward(array $sourceDataList)
+    {
+        $list = array();
+        foreach($sourceDataList as $key => $sourceData) {
+            $list[$key] = static::convert($sourceData);
+        }
+        return $list;
+    }
+
+    /**
+     * Convert list of destination data to source data
+     * @param array  $destinationDataList
+     * @return array source data list (keys preserved)
+     */
+    protected static function mapListBackward(array $destinationDataList)
+    {
+        $list = array();
+        foreach($destinationDataList as $key => $destinationData) {
+            $list[$key] = static::convert($destinationData, true);
+        }
+        return $list;
+    }
+
+
+
+
 }
