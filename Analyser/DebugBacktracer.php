@@ -24,8 +24,9 @@ class DebugBacktracer
      */
     public static function getCallerTrace()
     {
-        $trace = static::getCallersTrace(1);
-        return reset($trace);
+        //get 2 traces because this function will be included
+        $trace = static::getCallersTrace(2);
+        return end($trace);
     }
 
 
@@ -37,10 +38,11 @@ class DebugBacktracer
      */
     public static function getCallersTrace($limit = 0)
     {
-        //first trace is here, second is where we call this, third is target caller
+        //first trace is debug method, second is here, third is where we call this, fourth is target caller
         $limit = $limit < 1 ? 0 : 2 + $limit;
         $trace = static::debugBacktrace($limit);
-        //removed first 2
+        //removed first 3
+        array_shift($trace);
         array_shift($trace);
         array_shift($trace);
         return $trace;
