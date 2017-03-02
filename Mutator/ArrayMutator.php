@@ -184,4 +184,18 @@ class ArrayMutator
     }
 
 
+    /**
+     * Remove value from array
+     * @param array $data
+     * @param mixed $value
+     * @return bool removed or not found
+     */
+    public static function removeByValue(array &$data, $value)
+    {
+        $key = array_search($value, $data);
+        if($key === false) return false;
+        unset($data[$key]);
+        return true;
+    }
+
 }
