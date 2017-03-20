@@ -13,6 +13,7 @@ trait CacheHandlerTrait
     protected $cacheKeyPrefix = '';
     protected $cacheDisabled = false;
     protected $cacheReadBypass = false;
+    protected $cacheLoaded = false;
 
     protected static $staticCache = array();
     protected static $cacheGetters = array('get', 'fetch');
@@ -28,6 +29,14 @@ trait CacheHandlerTrait
         return !empty($this->cache);
     }
 
+    /**
+     * @return bool
+     */
+    protected function hasCacheLoaded()
+    {
+        return $this->cacheLoaded;
+    }
+
 
     /**
      * @param $cache
@@ -36,6 +45,7 @@ trait CacheHandlerTrait
     {
         if(!$this->cacheDisabled) {
             $this->cache = $cache;
+            $this->cacheLoaded = true;
         }
     }
 
