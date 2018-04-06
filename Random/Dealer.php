@@ -65,7 +65,7 @@ class Dealer
      * @param bool $fromBottom
      * @return mixed
      */
-    public function drawFromDeck($fromBottom = false)
+    public function drawFromDeck(bool $fromBottom = false)
     {
         if($fromBottom) return array_shift($this->deck);
         return array_pop($this->deck);
@@ -82,11 +82,11 @@ class Dealer
         switch(true) {
             case !$inDeck:
                 //put in discard pile
-                array_push($this->discardPile, $record);
+                $this->discardPile[] = $record;
                 break;
             case $topOfDeck:
                 //top of deck
-                array_push($this->deck, $record);
+                $this->deck[] = $record;
                 break;
             default:
                 //bottom of deck

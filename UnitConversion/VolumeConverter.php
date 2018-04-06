@@ -76,28 +76,28 @@ class VolumeConverter extends UnitConverter
     public static function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
-            case static::CUBIC_DECIMETRE: return $value * pow(10, -3);
-            case static::CUBIC_CENTIMETRE: return $value * pow(10, -6);
-            case static::CUBIC_MILLIMETRE: return $value * pow(10, -9);
-            case static::CUBIC_MICROMETRE: return $value * pow(10, -12);
-            case static::CUBIC_MILE: return $value / pow(1609.344, 3);
-            case static::CUBIC_INCH: return $value * pow(0.0254, 3);
-            case static::CUBIC_FOOT: return $value * pow(0.3048, 3);
-            case static::CUBIC_YARD: return $value * pow(0.9144, 3);
-            case static::LITRE: return $value * pow(10, -3);
-            case static::DECILITRE: return $value * pow(10, -4);
-            case static::CENTILITRE: return $value * pow(10, -5);
-            case static::MILLILITRE: return $value * pow(10, -6);
-            case static::GALLON_IMP: return $value * 4.54609 * pow(10, -3);
-            case static::GALLON_US: return $value * 3.785411784 * pow(10, -3);
-            case static::OUNCE_IMP: return $value * 28.4130625 * pow(10, -6);
-            case static::OUNCE_US_CUSTOMARY: return $value * 29.5735295625 * pow(10, -6);
-            case static::OUNCE_US_LEGAL: return $value * 30 * pow(10, -6);
-            case static::CUP_IMP: return $value * 284.130625 * pow(10, -6);
-            case static::CUP_US_CUSTOMARY: return $value * 236.5882365 * pow(10, -6);
-            case static::CUP_US_LEGAL: return $value * 240 * pow(10, -6);
-            case static::CUP_CA: return $value * 227.3045 * pow(10, -6);
-            case static::CUP_METRIC: return $value * 250 * pow(10, -6);
+            case static::CUBIC_DECIMETRE: return $value * (10 ** -3);
+            case static::CUBIC_CENTIMETRE: return $value * (10 ** -6);
+            case static::CUBIC_MILLIMETRE: return $value * (10 ** -9);
+            case static::CUBIC_MICROMETRE: return $value * (10 ** -12);
+            case static::CUBIC_MILE: return $value / (1609.344 ** 3);
+            case static::CUBIC_INCH: return $value * (0.0254 ** 3);
+            case static::CUBIC_FOOT: return $value * (0.3048 ** 3);
+            case static::CUBIC_YARD: return $value * (0.9144 ** 3);
+            case static::LITRE: return $value * (10 ** -3);
+            case static::DECILITRE: return $value * (10 ** -4);
+            case static::CENTILITRE: return $value * (10 ** -5);
+            case static::MILLILITRE: return $value * (10 ** -6);
+            case static::GALLON_IMP: return $value * 4.54609 * (10 ** -3);
+            case static::GALLON_US: return $value * 3.785411784 * (10 ** -3);
+            case static::OUNCE_IMP: return $value * 28.4130625 * (10 ** -6);
+            case static::OUNCE_US_CUSTOMARY: return $value * 29.5735295625 * (10 ** -6);
+            case static::OUNCE_US_LEGAL: return $value * 30 * (10 ** -6);
+            case static::CUP_IMP: return $value * 284.130625 * (10 ** -6);
+            case static::CUP_US_CUSTOMARY: return $value * 236.5882365 * (10 ** -6);
+            case static::CUP_US_LEGAL: return $value * 240 * (10 ** -6);
+            case static::CUP_CA: return $value * 227.3045 * (10 ** -6);
+            case static::CUP_METRIC: return $value * 250 * (10 ** -6);
         }
         return $value;
     }
@@ -109,28 +109,28 @@ class VolumeConverter extends UnitConverter
     public static function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
-            case static::CUBIC_DECIMETRE: return $value * pow(10, 3);
-            case static::CUBIC_CENTIMETRE: return $value * pow(10, 6);
-            case static::CUBIC_MILLIMETRE: return $value * pow(10, 9);
-            case static::CUBIC_MICROMETRE: return $value * pow(10, 12);
-            case static::CUBIC_MILE: return $value * pow(1609.344, 3);
-            case static::CUBIC_INCH: return $value / pow(0.0254, 3);
-            case static::CUBIC_FOOT: return $value / pow(0.3048, 3);
-            case static::CUBIC_YARD: return $value / pow(0.9144, 3);
-            case static::LITRE: return $value * pow(10, 3);
-            case static::DECILITRE: return $value * pow(10, 4);
-            case static::CENTILITRE: return $value * pow(10, 5);
-            case static::MILLILITRE: return $value * pow(10, 6);
-            case static::GALLON_IMP: return $value / 4.54609 * pow(10, 3);
-            case static::GALLON_US: return $value / 3.785411784 * pow(10, 3);
-            case static::OUNCE_IMP: return $value / 28.4130625 * pow(10, 6);
-            case static::OUNCE_US_CUSTOMARY: return $value / 29.5735295625 * pow(10, 6);
-            case static::OUNCE_US_LEGAL: return $value / 30 * pow(10, 6);
-            case static::CUP_IMP: return $value / 284.130625 * pow(10, 6);
-            case static::CUP_US_CUSTOMARY: return $value / 236.5882365 * pow(10, 6);
-            case static::CUP_US_LEGAL: return $value / 240 * pow(10, 6);
-            case static::CUP_CA: return $value / 227.3045 * pow(10, 6);
-            case static::CUP_METRIC: return $value / 250 * pow(10, 6);
+            case static::CUBIC_DECIMETRE: return $value * (10 ** 3);
+            case static::CUBIC_CENTIMETRE: return $value * (10 ** 6);
+            case static::CUBIC_MILLIMETRE: return $value * (10 ** 9);
+            case static::CUBIC_MICROMETRE: return $value * (10 ** 12);
+            case static::CUBIC_MILE: return $value * (1609.344 ** 3);
+            case static::CUBIC_INCH: return $value / (0.0254 ** 3);
+            case static::CUBIC_FOOT: return $value / (0.3048 ** 3);
+            case static::CUBIC_YARD: return $value / (0.9144 ** 3);
+            case static::LITRE: return $value * (10 ** 3);
+            case static::DECILITRE: return $value * (10 ** 4);
+            case static::CENTILITRE: return $value * (10 ** 5);
+            case static::MILLILITRE: return $value * (10 ** 6);
+            case static::GALLON_IMP: return $value / 4.54609 * (10 ** 3);
+            case static::GALLON_US: return $value / 3.785411784 * (10 ** 3);
+            case static::OUNCE_IMP: return $value / 28.4130625 * (10 ** 6);
+            case static::OUNCE_US_CUSTOMARY: return $value / 29.5735295625 * (10 ** 6);
+            case static::OUNCE_US_LEGAL: return $value / 30 * (10 ** 6);
+            case static::CUP_IMP: return $value / 284.130625 * (10 ** 6);
+            case static::CUP_US_CUSTOMARY: return $value / 236.5882365 * (10 ** 6);
+            case static::CUP_US_LEGAL: return $value / 240 * (10 ** 6);
+            case static::CUP_CA: return $value / 227.3045 * (10 ** 6);
+            case static::CUP_METRIC: return $value / 250 * (10 ** 6);
         }
         return $value;
     }

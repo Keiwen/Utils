@@ -65,17 +65,17 @@ class LengthConverter extends UnitConverter
             case static::DECIMETRE: return $value / 10;
             case static::CENTIMETRE: return $value / 100;
             case static::MILLIMETRE: return $value / 1000;
-            case static::MICROMETRE: return $value * pow(10, -6);
-            case static::NANOMETRE: return $value * pow(10, -9);
-            case static::PICOMETRE: return $value * pow(10, -12);
-            case static::FEMTOMETRE: return $value * pow(10, -15);
+            case static::MICROMETRE: return $value * (10 ** -6);
+            case static::NANOMETRE: return $value * (10 ** -9);
+            case static::PICOMETRE: return $value * (10 ** -12);
+            case static::FEMTOMETRE: return $value * (10 ** -15);
             case static::LIGHTYEAR: return $value * 9460730472580800;
             case static::MILE: return $value * 1609.344;
             case static::NAUTICAL_MILE: return $value * 1852;
             case static::INCH: return $value / 0.0254;
             case static::FOOT: return $value / 0.3048;
             case static::YARD: return $value / 0.9144;
-            case static::ANGSTROM: return $value * pow(10, -10);
+            case static::ANGSTROM: return $value * (10 ** -10);
         }
         return $value;
     }
@@ -91,17 +91,17 @@ class LengthConverter extends UnitConverter
             case static::DECIMETRE: return $value * 10;
             case static::CENTIMETRE: return $value * 100;
             case static::MILLIMETRE: return $value * 1000;
-            case static::MICROMETRE: return $value * pow(10, 6);
-            case static::NANOMETRE: return $value * pow(10, 9);
-            case static::PICOMETRE: return $value * pow(10, 12);
-            case static::FEMTOMETRE: return $value * pow(10, 15);
+            case static::MICROMETRE: return $value * (10 ** 6);
+            case static::NANOMETRE: return $value * (10 ** 9);
+            case static::PICOMETRE: return $value * (10 ** 12);
+            case static::FEMTOMETRE: return $value * (10 ** 15);
             case static::LIGHTYEAR: return $value / 9460730472580800;
             case static::MILE: return $value / 1609.344;
             case static::NAUTICAL_MILE: return $value / 1852;
             case static::INCH: return $value * 0.0254;
             case static::FOOT: return $value * 0.3048;
             case static::YARD: return $value * 0.9144;
-            case static::ANGSTROM: return $value * pow(10, 10);
+            case static::ANGSTROM: return $value * (10 ** 10);
         }
         return $value;
     }

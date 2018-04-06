@@ -8,6 +8,7 @@ class ArrayAnalyser
 
 
     /**
+     * Check if array keys are strings
      * @param array $array
      * @param bool  $ifEmpty
      * @return bool
@@ -20,6 +21,7 @@ class ArrayAnalyser
 
 
     /**
+     * Check if array keys are sequential (0,1,2,... to x, x=size-1)
      * @param array $array
      * @param bool  $ifEmpty
      * @return bool
@@ -33,6 +35,7 @@ class ArrayAnalyser
 
 
     /**
+     * Check if array elements share same type
      * @param array  $array
      * @param bool   $ifEmpty
      * @param bool   $classFamily false to detect same class strictly, true to allow subclasses
@@ -48,7 +51,7 @@ class ArrayAnalyser
             case is_object($first): $type = get_class($first); break;
             case is_array($first): $type = 'array'; break;
             case is_float($first): $type = 'float'; break;
-            case is_null($first): $type = 'null'; break;
+            case $first === null: $type = 'null'; break;
             case is_string($first): $type = 'string'; break;
             case is_bool($first): $type = 'boolean'; break;
             //if cannot determine type, return false
@@ -60,7 +63,7 @@ class ArrayAnalyser
             switch($type) {
                 case 'array': if(!is_array($element)) return false; break;
                 case 'float': if(!is_float($element)) return false; break;
-                case 'null': if(!is_null($element)) return false; break;
+                case 'null': if(!($element === null)) return false; break;
                 case 'string': if(!is_string($element)) return false; break;
                 case 'boolean': if(!is_bool($element)) return false; break;
                 default:
@@ -93,7 +96,7 @@ class ArrayAnalyser
                     }
                 }
                 //put handled at the end, check if subclass of remaining classes
-                array_push($classesFound, $handleClass);
+                $classesFound[] = $handleClass;
                 $loop++;
             }
             //if more than on class left, then no subclass link found, return false
@@ -107,6 +110,7 @@ class ArrayAnalyser
 
 
     /**
+     * Check if array elements belongs to specified class
      * If object found from a parent class, will return false.
      * @param array  $array
      * @param string $className

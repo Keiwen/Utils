@@ -30,7 +30,7 @@ class ArrayMap
      * @param bool  $reverse
      * @return array
      */
-    protected static function convert(array $fromData, $reverse = false)
+    protected static function convert(array $fromData, bool $reverse = false)
     {
         $toData = array();
         if(static::$whiteAllFields) {

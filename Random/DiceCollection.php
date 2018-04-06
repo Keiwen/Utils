@@ -17,7 +17,7 @@ class DiceCollection
      * @param int $number default 0
      * @param int $defaultFaces (at least 2, default 6)
      */
-    function __construct(int $number = 0, int $defaultFaces = 6)
+    public function __construct(int $number = 0, int $defaultFaces = 6)
     {
         if($defaultFaces < 2) throw new \RuntimeException("Cannot use dice with less than 2 faces");
         $this->defaultFace = $defaultFaces;
@@ -93,7 +93,7 @@ class DiceCollection
     /**
      * Roll current dice collection
      * @param array $throws reference to retrieve throw values
-     * @param bool  $throwsByFace order throw values by face (array($faces => values[]) insteand of sequential)
+     * @param bool  $throwsByFace order throw values by face (array($faces => values[]) instead of sequential)
      * @return int sum of throws (for numerical values only)
      */
     public function roll(array &$throws = array(), bool $throwsByFace = false)

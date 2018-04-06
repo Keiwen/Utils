@@ -43,8 +43,7 @@ abstract class UnitConverter
     {
         if($fromUnit == $toUnit) return $value;
         $siValue = static::convertToBaseUnit($value, $fromUnit);
-        $convertedValue = static::convertFromBaseUnit($siValue, $toUnit);
-        return $convertedValue;
+        return static::convertFromBaseUnit($siValue, $toUnit);
     }
 
 

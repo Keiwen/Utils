@@ -16,7 +16,7 @@ class Dice
      * @param int            $faces
      * @param int[]|string[] $values array of values
      */
-    function __construct(int $faces = 6, array $values = array())
+    public function __construct(int $faces = 6, array $values = array())
     {
         if($faces < 2) throw new \RuntimeException("Cannot use dice with less than 2 faces");
         $valueRange = range(1, $faces);
@@ -92,7 +92,7 @@ class Dice
      */
     public function getFacesValues()
     {
-        return $this->getFacesValues();
+        return $this->faceValues;
     }
 
 }

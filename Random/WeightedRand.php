@@ -117,7 +117,7 @@ class WeightedRand
         //now we have the max power needed, normalize
         if($power > 0) {
             foreach($weightMap as $key => &$weight) {
-                $weight = $weight * pow(10, $power);
+                $weight = $weight * (10 ** $power);
                 if($weight > PHP_INT_MAX) {
                     throw new \RuntimeException(
                         sprintf('Normalized weight bigger than largest possible integer (%s)', PHP_INT_MAX)

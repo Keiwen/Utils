@@ -16,11 +16,12 @@ class EloSystem
     protected static $defaultKFactor = 20;
 
     /**
-     * @param mixed $result
+     * @param string|int $result can use string constants [W/T/L] or 0 for loss or 1 for win
      * @return float
      */
     public static function getResultFactor($result)
     {
+        if($result === 0 || $result === 1) return $result;
         if($result == self::WIN) return 1;
         if($result == self::LOSS) return 0;
         return 0.5;

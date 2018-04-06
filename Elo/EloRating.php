@@ -55,14 +55,11 @@ class EloRating
      * - 40 for first games to quickly place competitor around his "true" value
      * - 20 for lower elo floors
      * - 10 for highest elo floors
-     * @return mixed
+     * @return int
      */
     public function getKFactor()
     {
         return $this->kFactor;
     }
-
-
-
 
 }

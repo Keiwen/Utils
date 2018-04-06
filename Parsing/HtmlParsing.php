@@ -37,7 +37,7 @@ class HtmlParsing {
         $htmlChar = '';
         $indexTag = $indexId - 1;
         //look for previous open tag
-        while($htmlChar != '<' && $indexTag >= 0) {
+        while($htmlChar !== '<' && $indexTag >= 0) {
             $indexTag--;
             $htmlChar = substr($contentBefore, $indexTag, 1);
         }
@@ -204,8 +204,7 @@ class HtmlParsing {
         $posStart = strpos($content, $start) + strlen($start);
         if($posStart == strlen($start)) return '';
         $posEnd = strpos($content, $end, $posStart);
-        $value = substr($content, $posStart, $posEnd - $posStart);
-        return $value;
+        return substr($content, $posStart, $posEnd - $posStart);
     }
 
 }

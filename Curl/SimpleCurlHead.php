@@ -20,16 +20,4 @@ class SimpleCurlHead extends SimpleCurl
         $this->addOption(CURLOPT_NOBODY, true);
     }
 
-
-    /**
-     * @param bool $baseOnly
-     * @return string
-     */
-    public function getUrl($baseOnly = false)
-    {
-        if($baseOnly) return $this->url;
-        return $this->url . '?' . $this->buildParameterString();
-    }
-
-
 }

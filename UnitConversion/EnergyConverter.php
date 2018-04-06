@@ -53,14 +53,14 @@ class EnergyConverter extends UnitConverter
         switch($fromUnit) {
             case static::KILOJOULE: return $value * 1000;
             case static::CALORIE: return $value * 4.1868;
-            case static::KILOCALORIE: return $value * 4.1868 * pow(10, 3);
-            case static::WATT_HOUR: return $value * 3.6 * pow(10, 3);
-            case static::KILOWATT_HOUR: return $value * 3.6 * pow(10, 6);
-            case static::BRITISH_THERMAL: return $value * 1.0545 * pow(10, 3);
+            case static::KILOCALORIE: return $value * 4.1868 * (10 ** 3);
+            case static::WATT_HOUR: return $value * 3.6 * (10 ** 3);
+            case static::KILOWATT_HOUR: return $value * 3.6 * (10 ** 6);
+            case static::BRITISH_THERMAL: return $value * 1.0545 * (10 ** 3);
             case static::FOOT_POUNDFORCE: return $value * 1.3558179483314004;
             case static::INCH_POUNDFORCE: return $value * 0.1129848290276167;
-            case static::BARREL_OF_OIL: return $value * 5.8 * 1.0545 * pow(10, 9); //5.8 BTU
-            case static::ELECTRONVOLT: return $value * pow(10, -7);
+            case static::BARREL_OF_OIL: return $value * 5.8 * 1.0545 * (10 ** 9); //5.8 BTU
+            case static::ELECTRONVOLT: return $value * (10 ** -7);
         }
         return $value;
     }
@@ -74,14 +74,14 @@ class EnergyConverter extends UnitConverter
         switch($toUnit) {
             case static::KILOJOULE: return $value / 1000;
             case static::CALORIE: return $value / 4.1868;
-            case static::KILOCALORIE: return $value / 4.1868 * pow(10, -3);
-            case static::WATT_HOUR: return $value / 3.6 * pow(10, -3);
-            case static::KILOWATT_HOUR: return $value / 3.6 * pow(10, -6);
-            case static::BRITISH_THERMAL: return $value / 1.0545 * pow(10, -3);
+            case static::KILOCALORIE: return $value / 4.1868 * (10 ** -3);
+            case static::WATT_HOUR: return $value / 3.6 * (10 ** -3);
+            case static::KILOWATT_HOUR: return $value / 3.6 * (10 ** -6);
+            case static::BRITISH_THERMAL: return $value / 1.0545 * (10 ** -3);
             case static::FOOT_POUNDFORCE: return $value / 1.3558179483314004;
             case static::INCH_POUNDFORCE: return $value / 0.1129848290276167;
-            case static::BARREL_OF_OIL: return $value / 5.8 / 1.0545 * pow(10, -9);
-            case static::ELECTRONVOLT: return $value * pow(10, 7);
+            case static::BARREL_OF_OIL: return $value / 5.8 / 1.0545 * (10 ** -9);
+            case static::ELECTRONVOLT: return $value * (10 ** 7);
         }
         return $value;
     }

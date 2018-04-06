@@ -11,7 +11,7 @@ class DebugBacktracer
      * @param int $limit
      * @return array
      */
-    public static function debugBacktrace($limit = 0)
+    public static function debugBacktrace(int $limit = 0)
     {
         return debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, $limit);
     }
@@ -36,7 +36,7 @@ class DebugBacktracer
      * @param int $limit
      * @return array
      */
-    public static function getCallersTrace($limit = 0)
+    public static function getCallersTrace(int $limit = 0)
     {
         //first trace is debug method, second is here, third is where we call this, fourth is target caller
         $limit = $limit < 1 ? 0 : 2 + $limit;

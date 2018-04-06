@@ -55,18 +55,18 @@ class AreaConverter extends UnitConverter
     public static function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
-            case static::SQUARE_KILOMETRE: return $value * pow(10, 6);
-            case static::SQUARE_DECIMETRE: return $value * pow(10, -2);
-            case static::SQUARE_CENTIMETRE: return $value * pow(10, -4);
-            case static::SQUARE_MILLIMETRE: return $value * pow(10, -6);
-            case static::SQUARE_MICROMETRE: return $value * pow(10, -12);
-            case static::SQUARE_MILE: return $value / pow(1609.344, 2);
-            case static::SQUARE_INCH: return $value * pow(0.0254, 2);
-            case static::SQUARE_FOOT: return $value * pow(0.3048, 2);
-            case static::SQUARE_YARD: return $value * pow(0.9144, 2);
+            case static::SQUARE_KILOMETRE: return $value * (10 ** 6);
+            case static::SQUARE_DECIMETRE: return $value * (10 ** -2);
+            case static::SQUARE_CENTIMETRE: return $value * (10 ** -4);
+            case static::SQUARE_MILLIMETRE: return $value * (10 ** -6);
+            case static::SQUARE_MICROMETRE: return $value * (10 ** -12);
+            case static::SQUARE_MILE: return $value / (1609.344 ** 2);
+            case static::SQUARE_INCH: return $value * (0.0254 ** 2);
+            case static::SQUARE_FOOT: return $value * (0.3048 ** 2);
+            case static::SQUARE_YARD: return $value * (0.9144 ** 2);
             case static::ARE: return $value * 100;
             case static::ACRE: return $value * 4046.8564224;
-            case static::HECTARE: return $value * pow(10, 4);
+            case static::HECTARE: return $value * (10 ** 4);
         }
         return $value;
     }
@@ -78,18 +78,18 @@ class AreaConverter extends UnitConverter
     public static function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
-            case static::SQUARE_KILOMETRE: return $value * pow(10, -6);
-            case static::SQUARE_DECIMETRE: return $value * pow(10, 2);
-            case static::SQUARE_CENTIMETRE: return $value * pow(10, 4);
-            case static::SQUARE_MILLIMETRE: return $value * pow(10, 6);
-            case static::SQUARE_MICROMETRE: return $value * pow(10, 12);
-            case static::SQUARE_MILE: return $value * pow(1609.344, 2);
-            case static::SQUARE_INCH: return $value / pow(0.0254, 2);
-            case static::SQUARE_FOOT: return $value / pow(0.3048, 2);
-            case static::SQUARE_YARD: return $value / pow(0.9144, 2);
+            case static::SQUARE_KILOMETRE: return $value * (10 ** -6);
+            case static::SQUARE_DECIMETRE: return $value * (10 ** 2);
+            case static::SQUARE_CENTIMETRE: return $value * (10 ** 4);
+            case static::SQUARE_MILLIMETRE: return $value * (10 ** 6);
+            case static::SQUARE_MICROMETRE: return $value * (10 ** 12);
+            case static::SQUARE_MILE: return $value * (1609.344 ** 2);
+            case static::SQUARE_INCH: return $value / (0.0254 ** 2);
+            case static::SQUARE_FOOT: return $value / (0.3048 ** 2);
+            case static::SQUARE_YARD: return $value / (0.9144 ** 2);
             case static::ARE: return $value / 100;
             case static::ACRE: return $value / 4046.8564224;
-            case static::HECTARE: return $value * pow(10, -4);
+            case static::HECTARE: return $value * (10 ** -4);
         }
         return $value;
     }

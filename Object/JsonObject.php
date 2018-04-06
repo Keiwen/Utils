@@ -204,8 +204,7 @@ class JsonObject
         $parentData = $parent->exportData();
         //merge parent and child data
         $childData = $overwriteParentValue ? array_merge($parentData, $additionalJson) : array_merge($additionalJson, $parentData);
-        $child = new static($childData);
-        return $child;
+        return new static($childData);
     }
 
 
@@ -281,7 +280,7 @@ class JsonObject
      */
     public function has(string $attribute)
     {
-        return in_array($attribute, array_keys($this->data));
+        return array_key_exists($attribute, $this->data);
     }
 
 
@@ -369,6 +368,7 @@ class JsonObject
                         break;
                     }
                 }
+                unset($elmt);
             } else {
                 //user getter
                 $getter = 'get' . ucfirst($attr);
@@ -381,6 +381,5 @@ class JsonObject
         }
         return $jsonEncoded ? json_encode($dataExport) : $dataExport;
     }
-
 
 }

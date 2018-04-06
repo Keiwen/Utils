@@ -112,8 +112,7 @@ class StringSanitizer
 	public static function getArray(string $rawValue, string $separator, string $filter = self::FILTER_DEFAULT)
     {
         $rawList = explode($separator, $rawValue);
-        $list = static::processArray($rawList, $filter);
-        return $list;
+        return static::processArray($rawList, $filter);
     }
 
 

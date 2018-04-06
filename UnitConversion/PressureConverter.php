@@ -46,14 +46,14 @@ class PressureConverter extends UnitConverter
     {
         switch($fromUnit) {
             case static::HECTOPASCAL: return $value * 100;
-            case static::BAR: return $value * pow(10, 5);
-            case static::MILLIBAR: return $value * pow(10, 2);
+            case static::BAR: return $value * (10 ** 5);
+            case static::MILLIBAR: return $value * (10 ** 2);
             case static::ATMOSPHERE: return $value * 101325;
             case static::TORR: return $value * 101325 / 760;
             case static::MILLIMETRE_MERCURY: return $value * 133.322387415;
             //pound-force = 1 pound avoirdupois * standard gravity = 0.45359237 kg * 9.80665 m/s²
             //also 1 inch = 0.0254 m
-            case static::POUNDFORCE_SQUARE_INCH: return $value * 0.45359237 * 9.80665 / pow(0.0254, 2);
+            case static::POUNDFORCE_SQUARE_INCH: return $value * 0.45359237 * 9.80665 / (0.0254 ** 2);
         }
         return $value;
     }
@@ -66,12 +66,12 @@ class PressureConverter extends UnitConverter
     {
         switch($toUnit) {
             case static::HECTOPASCAL: return $value / 100;
-            case static::BAR: return $value * pow(10, -5);
-            case static::MILLIBAR: return $value * pow(10, -2);
+            case static::BAR: return $value * (10 ** -5);
+            case static::MILLIBAR: return $value * (10 ** -2);
             case static::ATMOSPHERE: return $value / 101325;
             case static::TORR: return $value / 101325 * 760;
             case static::MILLIMETRE_MERCURY: return $value / 133.322387415;
-            case static::POUNDFORCE_SQUARE_INCH: return $value / 0.45359237 / 9.80665 * pow(0.0254, 2);
+            case static::POUNDFORCE_SQUARE_INCH: return $value / 0.45359237 / 9.80665 * (0.0254 ** 2);
         }
         return $value;
     }

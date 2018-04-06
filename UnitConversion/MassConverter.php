@@ -72,19 +72,19 @@ class MassConverter extends UnitConverter
     {
         switch($fromUnit) {
             case static::GRAM: return $value / 1000;
-            case static::DECIGRAM: return $value * pow(10, -4);
-            case static::CENTIGRAM: return $value * pow(10, -5);
-            case static::MILLIGRAM: return $value * pow(10, -6);
-            case static::MICROGRAM: return $value * pow(10, -9);
-            case static::NANOGRAM: return $value * pow(10, -12);
-            case static::PICOGRAM: return $value * pow(10, -15);
+            case static::DECIGRAM: return $value * (10 ** -4);
+            case static::CENTIGRAM: return $value * (10 ** -5);
+            case static::MILLIGRAM: return $value * (10 ** -6);
+            case static::MICROGRAM: return $value * (10 ** -9);
+            case static::NANOGRAM: return $value * (10 ** -12);
+            case static::PICOGRAM: return $value * (10 ** -15);
             case static::HECTOGRAM: return $value / 10;
             case static::TONNE: return $value * 1000;
-            case static::CARAT: return $value * 200 * pow(10, -6);
-            case static::GRAIN: return $value * 64.79891 * pow(10, -6);
-            case static::OUNCE_TROY: return $value * 31.1034768 * pow(10, -3);
-            case static::OUNCE_AVOIRDUPOIS: return $value * 28.349523125 * pow(10, -3);
-            case static::OUNCE_US_LEGAL: return $value * 28 * pow(10, -3);
+            case static::CARAT: return $value * 200 * (10 ** -6);
+            case static::GRAIN: return $value * 64.79891 * (10 ** -6);
+            case static::OUNCE_TROY: return $value * 31.1034768 * (10 ** -3);
+            case static::OUNCE_AVOIRDUPOIS: return $value * 28.349523125 * (10 ** -3);
+            case static::OUNCE_US_LEGAL: return $value * 28 * (10 ** -3);
             case static::POUND_TROY: return $value * .3732417216;
             case static::POUND_AVOIRDUPOIS: return $value * 0.45359237;
             case static::POUND_METRIC: return $value * 0.5;
@@ -103,19 +103,19 @@ class MassConverter extends UnitConverter
     {
         switch($toUnit) {
             case static::GRAM: return $value * 1000;
-            case static::DECIGRAM: return $value * pow(10, 4);
-            case static::CENTIGRAM: return $value * pow(10, 5);
-            case static::MILLIGRAM: return $value * pow(10, 6);
-            case static::MICROGRAM: return $value * pow(10, 9);
-            case static::NANOGRAM: return $value * pow(10, 12);
-            case static::PICOGRAM: return $value * pow(10, 15);
+            case static::DECIGRAM: return $value * (10 ** 4);
+            case static::CENTIGRAM: return $value * (10 ** 5);
+            case static::MILLIGRAM: return $value * (10 ** 6);
+            case static::MICROGRAM: return $value * (10 ** 9);
+            case static::NANOGRAM: return $value * (10 ** 12);
+            case static::PICOGRAM: return $value * (10 ** 15);
             case static::HECTOGRAM: return $value * 10;
             case static::TONNE: return $value / 1000;
-            case static::CARAT: return $value / 200 * pow(10, 6);
-            case static::GRAIN: return $value / 64.79891 * pow(10, 6);
-            case static::OUNCE_TROY: return $value / 31.1034768 * pow(10, 3);
-            case static::OUNCE_AVOIRDUPOIS: return $value / 28.349523125 * pow(10, 3);
-            case static::OUNCE_US_LEGAL: return $value / 28 * pow(10, 3);
+            case static::CARAT: return $value / 200 * (10 ** 6);
+            case static::GRAIN: return $value / 64.79891 * (10 ** 6);
+            case static::OUNCE_TROY: return $value / 31.1034768 * (10 ** 3);
+            case static::OUNCE_AVOIRDUPOIS: return $value / 28.349523125 * (10 ** 3);
+            case static::OUNCE_US_LEGAL: return $value / 28 * (10 ** 3);
             case static::POUND_TROY: return $value / .3732417216;
             case static::POUND_AVOIRDUPOIS: return $value / 0.45359237;
             case static::POUND_METRIC: return $value / 0.5;

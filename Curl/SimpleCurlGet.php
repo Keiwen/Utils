@@ -19,16 +19,4 @@ class SimpleCurlGet extends SimpleCurl
     }
 
 
-    /**
-     * @param bool $baseOnly
-     * @return string
-     */
-    public function getUrl($baseOnly = false)
-    {
-        if($baseOnly) return $this->url;
-        return $this->url . '?' . $this->buildParameterString();
-    }
-
-
-
 }

@@ -48,13 +48,13 @@ class EloDuel
     public function getWinProbability()
     {
         $diff = $this->getDiff();
-        $probWin = 1 / (1 + pow(10,(-$diff / EloSystem::getMultiplier())));
-        return $probWin;
+        $pow = 10 ** (-$diff / EloSystem::getMultiplier());
+        return 1 / (1 + $pow);
     }
 
 
     /**
-     * @param mixed $result
+     * @param string|int $result
      * @param int   $opponentGain
      * @return int
      */
@@ -75,7 +75,7 @@ class EloDuel
     }
 
     /**
-     * @param mixed $result
+     * @param string|int $result
      */
     public function update($result)
     {

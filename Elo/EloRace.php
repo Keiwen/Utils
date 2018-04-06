@@ -29,6 +29,7 @@ class EloRace
                 $competitor = new EloRating($competitor);
             }
         }
+        unset($competitor);
         $this->competitorsCount = count($this->rankedEloList);
         $this->computeGains();
     }
