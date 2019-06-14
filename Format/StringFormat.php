@@ -50,28 +50,6 @@ class StringFormat
     const POST_PATTERN_CN = '6';
     const POST_PATTERN_KR = '5';
 
-    /**
-     * @param float  $number
-     * @param int    $decimals
-     * @param string $dec_sep
-     * @param string $thousand_sep
-     * @return string
-     */
-    public static function formatNumber(float $number, int $decimals = 0, string $dec_sep = '.', string $thousand_sep = ",")
-    {
-        return number_format($number, $decimals, $dec_sep, $thousand_sep);
-    }
-
-    /**
-     * @param float $number
-     * @param int   $decimals
-     * @return string
-     */
-    public static function formatNumberFr(float $number, int $decimals = 0)
-    {
-        return static::formatNumber($number, $decimals, ',', ' ');
-    }
-
 
     /**
      * @param string $subject
@@ -80,22 +58,6 @@ class StringFormat
     public static function formatNbsp(string $subject)
     {
         return str_replace(' ', '&nbsp;', trim($subject));
-    }
-
-
-    /**
-     * @param string|int $formattedNumber
-     * @param string     $currency
-     * @param bool       $currencyFirst
-     * @param bool       $space
-     * @return string
-     */
-    public static function formatPrice($formattedNumber,
-                                string $currency = '$',
-                                bool $currencyFirst = true,
-                                bool $space = true)
-    {
-        return static::formatNumberUnit($formattedNumber, $currency, $currencyFirst, $space);
     }
 
 
@@ -111,17 +73,15 @@ class StringFormat
                                      bool $unitFirst = false,
                                      bool $space = true)
     {
-        $space = $space ? ' ' : '';
+        $addSpace = $space ? ' ' : '';
         if($unitFirst) {
-            $number = $unit.$space.$formattedNumber;
+            $number = $unit.$addSpace.$formattedNumber;
         } else {
-            $number = $formattedNumber.$space.$unit;
+            $number = $formattedNumber.$addSpace.$unit;
         }
         return $number;
 
     }
-
-
 
 
     /**
