@@ -38,8 +38,10 @@ class DebugBacktracer
      */
     public static function getCallersTrace(int $limit = 0)
     {
-        //first trace is debug method, second is here, third is where we call this, fourth is target caller
-        $limit = $limit < 1 ? 0 : 2 + $limit;
+        //first trace is debug method we gonna call, second is here,
+        //third is where we call this, fourth is target caller
+        //so we need to add 3 to given limit to ignore internal calls
+        $limit = $limit < 1 ? 0 : 3 + $limit;
         $trace = static::debugBacktrace($limit);
         //removed first 3
         array_shift($trace);
