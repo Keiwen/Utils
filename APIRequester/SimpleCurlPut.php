@@ -1,22 +1,21 @@
 <?php
 
-namespace Keiwen\Utils\Curl;
+namespace Keiwen\Utils\APIRequester;
 
 
-class SimpleCurlGet extends SimpleCurl
+class SimpleCurlPut extends SimpleCurl
 {
 
 
     /**
-     * SimpleCurlGet constructor.
+     * SimpleCurlPut constructor.
      *
      * @param string $url
      * @param array  $parameters
      */
     public function __construct(string $url, array $parameters = array())
     {
-        parent::__construct($url, $parameters, self::METHOD_GET);
+        parent::__construct($url, $parameters, self::METHOD_PUT);
     }
-
 
 }

@@ -175,7 +175,7 @@ class StringFormat
      */
     public static function formatCamelCase(string $subject, $lcfirst = true)
     {
-        //lower, replace 8 by space, upper case on all words
+        //lower, replace _ by space, upper case on all words
         $return = ucwords(str_replace('_', ' ', strtolower($subject)));
         if($lcfirst) {
             //remove first uppercase if needed

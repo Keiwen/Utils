@@ -1,27 +1,32 @@
 <?php
 
-namespace Keiwen\Utils\Curl;
+namespace Keiwen\Utils\APIRequester;
 
 
-class SimpleCurl
+class SimpleCurl extends AbstractAPIRequester
 {
-
 
     const METHOD_GET = 'GET';
     const METHOD_POST = 'POST';
+    const METHOD_PUT = 'PUT';
     const METHOD_HEAD = 'HEAD';
+    const METHOD_DELETE = 'DELETE';
+    const METHOD_PATCH = 'PATCH';
+    const METHOD_CONNECT = 'CONNECT';
+    const METHOD_OPTIONS = 'OPTIONS';
+    const METHOD_TRACE = 'TRACE';
 
-    protected $url;
-    protected $parameters = array();
+    protected $method = self::METHOD_GET;
+
     protected $headers = array();
     protected $cookies = array();
     protected $options = array();
-    protected $method = self::METHOD_GET;
 
     protected $httpCode = 0;
     protected $headerSize = 0;
     protected $errno = 0;
-    protected $error = '';
+
+    protected $urlEncodeStringParameters = true;
 
     /**
      * SimpleCurl constructor.
@@ -30,10 +35,9 @@ class SimpleCurl
      * @param array  $parameters
      * @param string $method
      */
-    public function __construct(string $url, array $parameters = array(), string $method = self::METHOD_GET)
+    public function __construct(string $url, string $method = self::METHOD_GET)
     {
-        $this->url = $url;
-        $this->parameters = $parameters;
+        parent::__construct($url);
         $this->method = strtoupper($method);
     }
 
@@ -45,11 +49,11 @@ class SimpleCurl
     {
         $paramString = array();
         foreach($this->parameters as $key => $value) {
-            $paramString[] = $key . '=' . urlencode($value);
+            if ($this->urlEncodeStringParameters) $value = urlencode($value);
+            $paramString[] = $key . '=' . $value;
         }
         return implode('&', $paramString);
     }
-
 
     /**
      * @param bool $baseOnly
@@ -88,10 +92,12 @@ class SimpleCurl
     /**
      * @param string     $name
      * @param string|int $value
+     * @return $this
      */
     public function addCookie(string $name, $value)
     {
         $this->cookies[$name] = $value;
+        return $this;
     }
 
     /**
@@ -122,18 +128,22 @@ class SimpleCurl
      * use CURLOPT_* constants
      * @param int   $option
      * @param mixed $value
+     * @return $this
      */
     public function addOption(int $option, $value)
     {
         $this->options[$option] = $value;
+        return $this;
     }
 
     /**
-     * @param bool $jsonDecode
+     * @param array $parameters
+     * @param bool  $jsonDecode
      * @return array|string
      */
-    public function query(bool $jsonDecode = false)
+    public function query(array $parameters = array(), bool $jsonDecode = false)
     {
+        if(!empty($parameters)) $this->setParameters($parameters);
         $ch = curl_init($this->getUrl());
         $this->configureCurl($ch);
         $content = curl_exec($ch);
@@ -142,6 +152,9 @@ class SimpleCurl
         $this->headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $this->errno = curl_errno($ch);
         $this->error = curl_error($ch);
+
+        $this->parseLastRequest($ch, $content);
+
         curl_close($ch);
 
         if($jsonDecode) {
@@ -155,16 +168,61 @@ class SimpleCurl
 
     /**
      * @param $ch
+     * @param string $response
+     */
+    protected function parseLastRequest(&$ch, string $response)
+    {
+        $responseHeaders = array();
+        $headerString = substr($response, 0, $this->headerSize);
+        foreach (explode("\r\n", $headerString) as $i => $line) {
+            if ($i === 0) {
+                $responseHeaders['http_code'] = $line;
+            } else {
+                $exploded = explode(': ', $line);
+                $value = empty($exploded[1]) ? '' : $exploded[1];
+                if(isset($responseHeaders[$exploded[0]])) {
+                    if(is_array($responseHeaders[$exploded[0]])) {
+                        $responseHeaders[$exploded[0]][] = $value;
+                    } else {
+                        $responseHeaders[$exploded[0]] = array($responseHeaders[$exploded[0]], $value);
+                    }
+                } else {
+                    $responseHeaders[$exploded[0]] = $value;
+                }
+            }
+        }
+
+        $this->lastRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
+        if($this->method == self::METHOD_POST || $this->method == self::METHOD_PUT) {
+            $this->lastRequest .= PHP_EOL . $this->generatePostFields();
+        }
+        $this->lastRequestParameters = $this->parameters;
+        $this->lastResponseHeaders = $responseHeaders;
+        $this->lastResponseBody = substr($response, $this->headerSize);
+    }
+
+
+    /**
+     * @param $ch
      */
     protected function configureCurl(&$ch)
     {
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 100);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $this->getHeaders());
-        curl_setopt($ch, CURLOPT_COOKIE, $this->getCookies());
+        $cookies = $this->getCookies();
+        if(!empty($cookies)) {
+            curl_setopt($ch, CURLOPT_COOKIE, $cookies);
+        }
         if($this->method == self::METHOD_POST) {
             $this->addOption(CURLOPT_POST, true);
+            $this->addOption(CURLOPT_POSTFIELDS, $this->generatePostFields());
+        }
+        if($this->method == self::METHOD_PUT) {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
             $this->addOption(CURLOPT_POSTFIELDS, $this->generatePostFields());
         }
         //additional option
@@ -179,6 +237,15 @@ class SimpleCurl
      */
     protected function generatePostFields()
     {
+        $headers = $this->getHeaders(true);
+        if($headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+            $paramWwwForm = '';
+            foreach($this->parameters as $key => $valeur) {
+                $paramWwwForm .= '&' . $key . '=' . $valeur;
+            }
+            $paramWwwForm = trim($paramWwwForm, '&');
+            return $paramWwwForm;
+        }
         return json_encode($this->parameters);
     }
 
@@ -215,6 +282,37 @@ class SimpleCurl
     public function getCurlError()
     {
         return $this->errno . ': ' . $this->error;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getError()
+    {
+        if($this->hasCurlError()) return $this->getCurlError();
+        if($this->httpCode >= 400) return $this->httpCode;
+        return '';
+    }
+
+
+    /**
+     * @return int
+     */
+    public function getHeaderSize()
+    {
+        return $this->headerSize;
+    }
+
+
+    /**
+     * @param bool $urlEncodeStringParameters
+     * @return $this
+     */
+    public function setUrlEncodeStringParameters(bool $urlEncodeStringParameters)
+    {
+        $this->urlEncodeStringParameters = $urlEncodeStringParameters;
+        return $this;
     }
 
 }

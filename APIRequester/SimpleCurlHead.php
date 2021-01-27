@@ -1,6 +1,6 @@
 <?php
 
-namespace Keiwen\Utils\Curl;
+namespace Keiwen\Utils\APIRequester;
 
 
 class SimpleCurlHead extends SimpleCurl
