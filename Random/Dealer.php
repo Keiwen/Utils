@@ -6,10 +6,12 @@ namespace Keiwen\Utils\Random;
 class Dealer
 {
 
+    /** @var array $library */
     protected $library;
+    /** @var array $deck */
     protected $deck;
+    /** @var array $discardPile */
     protected $discardPile;
-
 
     /**
      * Dealer constructor.
@@ -25,17 +27,35 @@ class Dealer
 
     /**
      * empty discard pile and fill deck
+     * @param bool $shuffle
      */
-    public function initialize()
+    public function initialize(bool $shuffle = true)
     {
         $this->discardPile = array();
         $this->deck = $this->library;
-        $this->shuffleDeck();
+        if($shuffle) $this->shuffleDeck();
     }
 
 
     /**
-     * @param int $part number of part, must be greater than one
+     * @return array
+     */
+    public function getDeck()
+    {
+        return $this->deck;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDiscardPile()
+    {
+        return $this->discardPile;
+    }
+
+
+    /**
+     * @param int $part number of part, must be 1 or greater
      * @param int $maxRound max records retrieved for each part
      * @return array
      * @throws \RuntimeException when less than one part
@@ -45,16 +65,17 @@ class Dealer
         if($part < 1) throw new \RuntimeException("Cannot deal for less than one part");
         $deal = array();
         $currentRound = 1;
-        $currentPart = 1;
+        $currentPart = 0;
         while(!empty($this->deck)) {
-            $deal[$currentPart][] = $this->drawFromDeck();
+            $card = $this->drawFromDeck();
+            $deal[$currentPart][] = $card;
             $currentPart++;
             //if all part filled, start a new round
-            if($currentPart > $part) {
-                $currentPart = 1;
-                $currentRound++;
+            if($currentPart >= $part) {
+                $currentPart = 0;
                 //stop if max round reach
-                if($currentRound > $maxRound) break;
+                if(!empty($maxRound) && $currentRound >= $maxRound) break;
+                $currentRound++;
             }
         }
         return $deal;
@@ -67,31 +88,49 @@ class Dealer
      */
     public function drawFromDeck(bool $fromBottom = false)
     {
-        if($fromBottom) return array_shift($this->deck);
-        return array_pop($this->deck);
+        if($fromBottom) return array_pop($this->deck);
+        return array_shift($this->deck);
+    }
+
+
+    /**
+     * @param $record
+     * @param bool $shuffleDeck
+     * @param bool $toTop
+     */
+    public function addInDeck($record, bool $shuffleDeck = true, $toTop = false)
+    {
+        if($toTop) {
+            array_unshift($this->deck, $record);
+        } else {
+            // array_push($this->deck, $record);
+            // use command below, twice faster
+            $this->deck[] = $record;
+        }
+        if($shuffleDeck) $this->shuffleDeck();
+    }
+
+
+    /**
+     * @param array $record
+     * @param bool $shuffleDeck
+     * @param bool $toTop
+     */
+    public function addMultipleInDeck(array $records, bool $shuffleDeck = true, $toTop = false)
+    {
+        foreach($records as $record) {
+            $this->addInDeck($record, false, $toTop);
+        }
+        if($shuffleDeck) $this->shuffleDeck();
     }
 
 
     /**
      * @param mixed $record
-     * @param bool  $inDeck put record back in deck instead of discard pile
-     * @param bool  $topOfDeck put record back on top of deck
      */
-    public function discard($record, bool $inDeck = false, bool $topOfDeck = false)
+    public function discard($record)
     {
-        switch(true) {
-            case !$inDeck:
-                //put in discard pile
-                $this->discardPile[] = $record;
-                break;
-            case $topOfDeck:
-                //top of deck
-                $this->deck[] = $record;
-                break;
-            default:
-                //bottom of deck
-                array_unshift($this->deck, $record);
-        }
+        $this->discardPile[] = $record;
     }
 
 
@@ -106,7 +145,7 @@ class Dealer
         } elseif(!$shuffleDeck) {
             array_reverse($this->discardPile);
         }
-        $this->deck = array_merge($this->discardPile, $this->deck);
+        $this->deck = array_merge($this->deck, $this->discardPile);
         if($shuffleDeck) $this->shuffleDeck();
     }
 
@@ -118,5 +157,6 @@ class Dealer
     {
         shuffle($this->deck);
     }
+
 
 }

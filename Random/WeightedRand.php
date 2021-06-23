@@ -28,6 +28,9 @@ class WeightedRand
      */
     public function __construct(array $weightMap, array $referenceMap = array())
     {
+        if(empty($weightMap)) {
+            throw new \RuntimeException('Empty weight map');
+        }
         $this->normalizedPower = static::normalizeWeightMap($weightMap);
         $this->referenceMap = $referenceMap;
         $this->weightMap = $weightMap;
@@ -42,6 +45,9 @@ class WeightedRand
                 sprintf('Cumulative weights bigger than largest possible random value (%s)', mt_getrandmax())
             );
         }
+        if($this->totalWeight < 1) {
+            throw new \RuntimeException('Cumulative weights smaller than 1');
+        }
     }
 
     /**
@@ -54,18 +60,26 @@ class WeightedRand
 
 
     /**
+     * @param int|null $randomWeight
      * @return mixed corresponding reference or key
      */
-    public function random()
+    public function random(int &$randomWeight = null)
     {
-        $this->lastRandomWeight = mt_rand(1, $this->totalWeight);
+        $randomWeight = random_int(1, $this->totalWeight);
         foreach($this->cumulativeMap as $key => $cumulWeight) {
-            if($this->lastRandomWeight <= $cumulWeight) {
-                $this->lastRandomKey = $key;
+            if($randomWeight <= $cumulWeight) {
                 break;
             }
         }
-        return isset($this->referenceMap[$this->lastRandomKey]) ? $this->referenceMap[$this->lastRandomKey] : $this->lastRandomKey;
+//        dump($randomWeight, $this->cumulativeMap, $key);
+        if(!isset($key)) {
+            throw new \RuntimeException(
+                sprintf('Cannot find value for weight %s', $randomWeight)
+            );
+        }
+        $this->lastRandomKey = $key;
+        $this->lastRandomWeight = $randomWeight;
+        return $this->referenceMap[$key] ?? $key;
     }
 
 
@@ -102,8 +116,15 @@ class WeightedRand
                     sprintf('Weight bigger than largest possible integer (%s)', PHP_INT_MAX)
                 );
             }
+            // normalize weight according to last power found
+            $weight = $weight * (10 ** $power);
+            if($weight > PHP_INT_MAX) {
+                throw new \RuntimeException(
+                    sprintf('Normalized weight bigger than largest possible integer (%s)', PHP_INT_MAX)
+                );
+            }
             if(round($weight) != $weight) {
-                while($power < static::$maxNormalizerPower && round($weight) != $weight) {
+                while($power <= static::$maxNormalizerPower && round($weight) != $weight) {
                     $power++;
                     $weight = $weight * 10;
                 }
@@ -117,7 +138,7 @@ class WeightedRand
         //now we have the max power needed, normalize
         if($power > 0) {
             foreach($weightMap as $key => &$weight) {
-                $weight = $weight * (10 ** $power);
+                $weight = (int) ($weight * (10 ** $power));
                 if($weight > PHP_INT_MAX) {
                     throw new \RuntimeException(
                         sprintf('Normalized weight bigger than largest possible integer (%s)', PHP_INT_MAX)

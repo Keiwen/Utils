@@ -15,6 +15,7 @@ class Dice
      *
      * @param int            $faces
      * @param int[]|string[] $values array of values
+     * @throws \RuntimeException when faces < 2 or face value mismatch
      */
     public function __construct(int $faces = 6, array $values = array())
     {
@@ -24,7 +25,7 @@ class Dice
         if(empty($values)) $values = $valueRange;
         //if same amount of value, set as this
         if(count($values) == $faces) {
-            $this->faceValues = array_combine($valueRange, array_keys($values));
+            $this->faceValues = array_combine($valueRange, array_values($values));
         } else {
             //else, only some values are defined, so check by key
             $this->faceValues = array_combine($valueRange, $valueRange);
@@ -47,7 +48,7 @@ class Dice
      */
     public function roll()
     {
-        $throw = mt_rand(1, $this->faces);
+        $throw = random_int(1, $this->faces);
         return $this->faceValues[$throw];
     }
 
@@ -65,17 +66,17 @@ class Dice
     /**
      * @param int|string $value
      * @param int        $rollLimit 100 default, 1 if less than 0
-     * @return int number of roll done
+     * @return int       roll count
      */
     public function rollUntilValue($value, int $rollLimit = 100)
     {
         if($rollLimit <= 0) $rollLimit = 1;
-        for($roll = 1; $roll <= $rollLimit; $roll++) {
+        for($rollCount = 1; $rollCount <= $rollLimit; $rollCount++) {
             if($this->rollForValue($value)) {
                 break;
             }
         }
-        return $roll;
+        return $rollCount;
     }
 
 

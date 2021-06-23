@@ -16,6 +16,7 @@ class DiceCollection
      *
      * @param int $number default 0
      * @param int $defaultFaces (at least 2, default 6)
+     * @throws \RuntimeException
      */
     public function __construct(int $number = 0, int $defaultFaces = 6)
     {
@@ -52,7 +53,7 @@ class DiceCollection
 
     /**
      * add dice to collection
-     * @param Dice $dice
+     * @param Dice $dice dice is cloned when added
      * @param int  $number
      */
     public function addDice(Dice $dice, int $number = 1)
@@ -69,7 +70,7 @@ class DiceCollection
             $removed = 0;
             foreach($this->diceList[$faces] as $index => $diceStored) {
                 if($diceStored == $dice) {
-                    array_splice($array, $index, 1); //array_slice will reformat array indexes
+                    array_splice($this->diceList[$faces], $index, 1); //array_slice will reformat array indexes
                     $removed--;
                     if($removed == $number) break;
                 }
@@ -126,7 +127,11 @@ class DiceCollection
     {
         $allValues = array();
         foreach($this->lastRoll as $faces => $throws) {
-            if(empty($faces) || $faces == $forFaces) $allValues = array_merge($allValues, $throws);
+            if(empty($forFaces) || $faces == $forFaces) {
+                foreach($throws as $throw) {
+                    $allValues[] = $throw;
+                }
+            }
         }
         $allValuesCount = count($allValues);
         if($allValuesCount < 2) return false;
@@ -153,8 +158,9 @@ class DiceCollection
      * @param int   $rolls number of roll
      * @param array $throws list of value for each roll
      * @return int sum for all rolls
+     * @throws \RuntimeException when rolls < 1 or faces < 2
      */
-    public static function rollDice(int $faces = 6, int $rolls = 1, &$throws = array())
+    public static function rollDice(int $faces = 6, int $rolls = 1, array &$throws = null)
     {
         if($rolls < 1) throw new \RuntimeException("Cannot roll dice less than once");
         if($faces < 2) throw new \RuntimeException("Cannot roll dice with less than 2 faces");
@@ -169,5 +175,31 @@ class DiceCollection
         return $total;
     }
 
+
+    /**
+     * @return array associative array: faces => dice count
+     */
+    public function getDiceCountByFace()
+    {
+        $diceCount = array();
+        foreach($this->diceList as $faces => $diceList) {
+            $diceCount[$faces] = count($diceList);
+        }
+        return $diceCount;
+    }
+
+
+    /**
+     * @return int
+     */
+    public function getDiceCount()
+    {
+        $diceCountByFace = $this->getDiceCountByFace();
+        $diceCountTotal = 0;
+        foreach($diceCountByFace as $faces => $diceCount) {
+            $diceCountTotal += $diceCount;
+        }
+        return $diceCountTotal;
+    }
 
 }
