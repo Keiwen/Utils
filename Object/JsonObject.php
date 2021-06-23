@@ -34,16 +34,11 @@ class JsonObject
      */
     public function __construct($jsonData = '')
     {
-        static::sanitizeJsonData($jsonData);
+        $jsonData = static::sanitizeJsonData($jsonData);
         $data = static::extractData($jsonData, static::getDefaultDataAll(), true);
         foreach($data as $attr => $value) {
             //use setter
-            $setter = 'set' . ucfirst($attr);
-            if(method_exists($this, $setter)) {
-                $this->$setter($value);
-            } else {
-                $this->set($attr, $value);
-            }
+            $this->selfSet($attr, $value);
         }
     }
 
@@ -102,13 +97,13 @@ class JsonObject
     }
 
 
-
     /**
      * Ensure to get jsonData as array. If string provided, try to decode
-     * @param $jsonData
+     * @param array|string $jsonData
+     * @return array
      * @throws \RuntimeException
      */
-    public static function sanitizeJsonData(&$jsonData)
+    public static function sanitizeJsonData($jsonData)
     {
         if(empty($jsonData)) $jsonData = array();
         if(is_string($jsonData)) {
@@ -120,9 +115,10 @@ class JsonObject
         if(!is_array($jsonData)) {
             throw new \RuntimeException('JsonObject: invalid data type provided (must be valid JSON or array)');
         }
-        if(ArrayAnalyser::isSequential($jsonData, false)) {
+        if((new ArrayAnalyser($jsonData))->isSequential()) {
             throw new \RuntimeException('JsonObject: no associative data detected');
         }
+        return $jsonData;
     }
 
 
@@ -137,7 +133,7 @@ class JsonObject
     {
         //check field flagged as nested JsonObject
         $toNest = static::includedJsonObjects();
-        if(ArrayAnalyser::isSequential($toNest, false)) {
+        if((new ArrayAnalyser($toNest))->isSequential()) {
             //flip it to keep field name as keys
             $toNest = array_flip($toNest);
         }
@@ -168,7 +164,7 @@ class JsonObject
                 //      - declared as mapList: consider as array of nested object with keys
                 //      - not declared: consider as single object data
                 // - sequential, consider as array of nested object
-                $isObjectList = is_array($data) && (ArrayAnalyser::isSequential($data) || isset($toNestInList[$field]));
+                $isObjectList = is_array($data) && ((new ArrayAnalyser($data))->isSequential() || isset($toNestInList[$field]));
 
                 if($isObjectList) {
                     $nested = array();
@@ -200,7 +196,7 @@ class JsonObject
      */
     public static function generateFromParent(JsonObject $parent, $additionalJson = '', bool $overwriteParentValue = true)
     {
-        static::sanitizeJsonData($additionalJson);
+        $additionalJson = static::sanitizeJsonData($additionalJson);
         $parentData = $parent->exportData();
         //merge parent and child data
         $childData = $overwriteParentValue ? array_merge($parentData, $additionalJson) : array_merge($additionalJson, $parentData);
@@ -216,7 +212,7 @@ class JsonObject
         $default = array();
         //initialized nested object with null
         $nestedObjects = static::includedJsonObjects();
-        if(ArrayAnalyser::isSequential($nestedObjects, false)) {
+        if((new ArrayAnalyser($nestedObjects))->isSequential()) {
             //flip it to keep field name as keys
             $nestedObjects = array_flip($nestedObjects);
         }
@@ -285,13 +281,13 @@ class JsonObject
 
 
     /**
-     * Process an array of objects and return ones with attribute matching searched value
+     * Process an array of JsonObjects and return ones with attribute matching searched value
      * @param self[] $objectList
      * @param string $attribute
      * @param string $value
      * @return array
      */
-    public static function searchInList(array $objectList, string $attribute, string $value)
+    public static function extractFromList(array $objectList, string $attribute, string $value)
     {
         $found = array();
         foreach($objectList as $object) {
@@ -305,44 +301,35 @@ class JsonObject
 
 
     /**
-     * Process an array of objects and return FIRST ONE with attribute matching searched value
-     * @param self[] $objectList
+     * Try to call specific getter, or use generic one
      * @param string $attribute
-     * @param string $value
-     * @return self|null
+     * @param mixed  $defaultValue
+     * @return mixed
      */
-    public static function findInList(array $objectList, string $attribute, string $value)
+    protected function selfGet(string $attribute, $defaultValue = '')
     {
-        $found = static::searchInList($objectList, $attribute, $value);
-        return empty($found) ? null : reset($found);
+        $getter = 'get' . ucfirst($attribute);
+        if(method_exists($this, $getter)) {
+            return $this->$getter();
+        }
+        return $this->get($attribute, $defaultValue);
     }
 
-
     /**
-     * @param array  $objectList
-     * @param string $attribute can contains a dot char (only one) to check for nested attribute ("mainAttribute.subAttribute", main can be a JsonObject)
-     * @param bool   $reverse
-     * @param string $sortType
+     * Try to call specific setter, or use generic one
+     * @param string $attribute
+     * @param mixed  $value
+     * @return $this
      */
-    public static function sortByAttribute(array &$objectList, string $attribute, bool $reverse = false, string $sortType = ArrayMutator::NON_UNIQUE_SORT_VALUE)
+    protected function selfSet(string $attribute, $value)
     {
-        //"copy" object list to array list with same keys
-        $arrayList = array();
-        foreach($objectList as $key => $object) {
-            if($object instanceof self) {
-                $arrayList[$key] = $object->exportData();
-            }
+        $setter = 'set' . ucfirst($attribute);
+        if(method_exists($this, $setter)) {
+            $this->$setter($value);
+        } else {
+            $this->set($attribute, $value);
         }
-        //do not process if empty array or some object not valid
-        if(empty($arrayList) || count($arrayList) != count($objectList)) return;
-
-        ArrayMutator::sortByField($arrayList, $attribute, $reverse, $sortType);
-        //arrayList is sorted, now get object from list one by one using the keys to rebuild object list
-        $sorted = array();
-        foreach($arrayList as $key => $element) {
-            $sorted[$key] = $objectList[$key];
-        }
-        $objectList = $sorted;
+        return $this;
     }
 
     /**
@@ -371,12 +358,7 @@ class JsonObject
                 unset($elmt);
             } else {
                 //user getter
-                $getter = 'get' . ucfirst($attr);
-                if(method_exists($this, $getter)) {
-                    $this->$getter();
-                } else {
-                    $this->get($attr, $data);
-                }
+                $data = $this->selfGet($attr, $data);
             }
         }
         return $jsonEncoded ? json_encode($dataExport) : $dataExport;
