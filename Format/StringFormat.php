@@ -7,55 +7,62 @@ class StringFormat
 {
 
 
-    const PHONE_PATTERN_US = '334';
-    const PHONE_PATTERN_CA = '334';
-    const PHONE_PATTERN_FR = '22222';
-    const PHONE_PATTERN_SP = '3222';
-    const PHONE_PATTERN_IT = '244';
-    const PHONE_PATTERN_CH = '3322';
-    const PHONE_PATTERN_DE = '2323';
-    const PHONE_PATTERN_AR = '134';
-    const PHONE_PATTERN_BR = '244';
-    const PHONE_PATTERN_AU = '333';
-    const PHONE_PATTERN_JP = '144';
-    const PHONE_PATTERN_CN = '244';
+    public const PHONE_PATTERN_US = '334';
+    public const PHONE_PATTERN_CA = '334';
+    public const PHONE_PATTERN_FR = '22222';
+    public const PHONE_PATTERN_SP = '3222';
+    public const PHONE_PATTERN_IT = '244';
+    public const PHONE_PATTERN_CH = '3322';
+    public const PHONE_PATTERN_DE = '2323';
+    public const PHONE_PATTERN_AR = '134';
+    public const PHONE_PATTERN_BR = '244';
+    public const PHONE_PATTERN_AU = '333';
+    public const PHONE_PATTERN_JP = '144';
+    public const PHONE_PATTERN_CN = '244';
 
-    const PHONE_CODE_US = '+1';
-    const PHONE_CODE_CA = '+1';
-    const PHONE_CODE_FR = '+33';
-    const PHONE_CODE_SP = '+34';
-    const PHONE_CODE_IT = '+39';
-    const PHONE_CODE_CH = '+41';
-    const PHONE_CODE_UK = '+44';
-    const PHONE_CODE_DE = '+49';
-    const PHONE_CODE_AR = '+54';
-    const PHONE_CODE_BR = '+55';
-    const PHONE_CODE_AU = '+61';
-    const PHONE_CODE_KR = '+82';
-    const PHONE_CODE_JP = '+81';
-    const PHONE_CODE_CN = '+86';
+    public const PHONE_CODE_US = '+1';
+    public const PHONE_CODE_CA = '+1';
+    public const PHONE_CODE_FR = '+33';
+    public const PHONE_CODE_SP = '+34';
+    public const PHONE_CODE_IT = '+39';
+    public const PHONE_CODE_CH = '+41';
+    public const PHONE_CODE_UK = '+44';
+    public const PHONE_CODE_DE = '+49';
+    public const PHONE_CODE_AR = '+54';
+    public const PHONE_CODE_BR = '+55';
+    public const PHONE_CODE_AU = '+61';
+    public const PHONE_CODE_KR = '+82';
+    public const PHONE_CODE_JP = '+81';
+    public const PHONE_CODE_CN = '+86';
 
-    const POST_PATTERN_US = '54';
-    const POST_PATTERN_CA = '33';
-    const POST_PATTERN_UK = '43';
-    const POST_PATTERN_FR = '23';
-    const POST_PATTERN_SP = '5';
-    const POST_PATTERN_IT = '5';
-    const POST_PATTERN_CH = '4';
-    const POST_PATTERN_DE = '5';
-    const POST_PATTERN_AR = '8';
-    const POST_PATTERN_BR = '53';
-    const POST_PATTERN_AU = '4';
-    const POST_PATTERN_JP = '34';
-    const POST_PATTERN_CN = '6';
-    const POST_PATTERN_KR = '5';
+    public const POST_PATTERN_US = '54';
+    public const POST_PATTERN_CA = '33';
+    public const POST_PATTERN_UK = '43';
+    public const POST_PATTERN_FR = '23';
+    public const POST_PATTERN_SP = '5';
+    public const POST_PATTERN_IT = '5';
+    public const POST_PATTERN_CH = '4';
+    public const POST_PATTERN_DE = '5';
+    public const POST_PATTERN_AR = '8';
+    public const POST_PATTERN_BR = '53';
+    public const POST_PATTERN_AU = '4';
+    public const POST_PATTERN_JP = '34';
+    public const POST_PATTERN_CN = '6';
+    public const POST_PATTERN_KR = '5';
+
+    /**
+     * StringFormat constructor.
+     */
+    public function __construct()
+    {
+    }
 
 
     /**
      * @param string $subject
      * @return string
      */
-    public static function formatNbsp(string $subject)
+    public function formatNbsp(string $subject)
     {
         return str_replace(' ', '&nbsp;', trim($subject));
     }
@@ -68,7 +75,7 @@ class StringFormat
      * @param bool       $space
      * @return string
      */
-    public static function formatNumberUnit($formattedNumber,
+    public function formatNumberUnit($formattedNumber,
                                      string $unit = 'u',
                                      bool $unitFirst = false,
                                      bool $space = true)
@@ -90,7 +97,7 @@ class StringFormat
      * @param string     $separator
      * @return string
      */
-    public static function groupCharsCode($rawCode, string $pattern = '', string $separator = ' ')
+    public function groupCharsCode($rawCode, string $pattern = '', string $separator = ' ')
     {
         $rawCode = (string) $rawCode;
         if(empty($pattern)) return $pattern;
@@ -126,7 +133,7 @@ class StringFormat
      * @param string     $callingCode must be defined if present in raw number
      * @return string
      */
-    public static function formatPhoneNumber($rawNumber, string $pattern = self::PHONE_PATTERN_US, string $separator = ' ', $callingCode = '')
+    public function formatPhoneNumber($rawNumber, string $pattern = self::PHONE_PATTERN_US, string $separator = ' ', $callingCode = '')
     {
         $rawNumber = (string) $rawNumber;
         //is calling code included in rawnumber?
@@ -136,19 +143,19 @@ class StringFormat
             $callingCode = '+' . ltrim($callingCode, '+');
         }
         if($hasCallingCode) {
-            //remove calling code from raw number before format
-            $rawNumber = str_replace($callingCode, '', $rawNumber);
             //if calling code detected but not given, stop method
             //as we cannot retrieve code
             if(empty($callingCode)) return $rawNumber;
+            //remove calling code from raw number before format
+            $rawNumber = str_replace($callingCode, '', $rawNumber);
         }
         //group numbers
-        $numbers = self::groupCharsCode($rawNumber, $pattern, $separator);
+        $numbers = $this->groupCharsCode($rawNumber, $pattern, $separator);
 
         if(!empty($callingCode)) {
             //add calling code (remove the first 0 if needed)
             $numbers = ltrim($numbers, '0');
-            $numbers = $callingCode . ' ' . $numbers;
+            $numbers = $callingCode . $separator . $numbers;
         }
         return $numbers;
     }
@@ -161,9 +168,9 @@ class StringFormat
      * @param string     $separator
      * @return string
      */
-    public static function formatPostalCode($rawCode, string $pattern = self::POST_PATTERN_US, string $separator = ' ')
+    public function formatPostalCode($rawCode, string $pattern = self::POST_PATTERN_US, string $separator = ' ')
     {
-        return static::groupCharsCode($rawCode, $pattern, $separator);
+        return $this->groupCharsCode($rawCode, $pattern, $separator);
     }
 
 
@@ -173,7 +180,7 @@ class StringFormat
      * @param bool   $lcfirst
      * @return string
      */
-    public static function formatCamelCase(string $subject, $lcfirst = true)
+    public function formatCamelCase(string $subject, $lcfirst = true)
     {
         //lower, replace _ by space, upper case on all words
         $return = ucwords(str_replace('_', ' ', strtolower($subject)));
@@ -191,7 +198,7 @@ class StringFormat
      * @param string $subject
      * @return string
      */
-    public static function formatSnakeCase(string $subject)
+    public function formatSnakeCase(string $subject)
     {
         //replace single char isolated with spaces or underscores
         $subject = preg_replace('#(^|[_ ])([a-zA-Z0-9])([ _]|$)#', '$2', $subject);
@@ -202,6 +209,21 @@ class StringFormat
             $match = ($match == strtoupper($match)) ? strtolower($match) : lcfirst($match);
         }
         return implode('_', $words);
+    }
+
+
+    /**
+     * @param string $subject
+     * @return string
+     */
+    public function slug(string $subject)
+    {
+        $subject = str_replace(array(' ', '-'), '_', $subject);
+        //remove all chars except letter, number and underscores
+        $pattern = '/(?![a-zA-Z0-9_])./';
+        $slugged = preg_replace($pattern, '', $subject);
+        if (!is_string($slugged)) $slugged = '';
+        return $slugged;
     }
 
 
