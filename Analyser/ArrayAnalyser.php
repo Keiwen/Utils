@@ -6,47 +6,54 @@ namespace Keiwen\Utils\Analyser;
 class ArrayAnalyser
 {
 
+    protected $analyseIfEmpty;
+    protected $dataArray;
+
+    public function __construct(array $dataArray, bool $analyseIfEmpty = false)
+    {
+        $this->dataArray = $dataArray;
+        $this->analyseIfEmpty = $analyseIfEmpty;
+    }
+
 
     /**
-     * Check if array keys are strings
-     * @param array $array
-     * @param bool  $ifEmpty
+     * Check if all array keys are strings
      * @return bool
      */
-    public static function hasStringKeys(array $array, bool $ifEmpty = false)
+    public function hasStringKeys()
     {
-        if(empty($array)) return $ifEmpty;
-        return !empty(array_filter(array_keys($array), 'is_string'));
+        if(empty($this->dataArray)) return $this->analyseIfEmpty;
+        foreach(array_keys($this->dataArray) as $key) {
+            if (!is_string($key)) return false;
+        }
+        return true;
     }
 
 
     /**
      * Check if array keys are sequential (0,1,2,... to x, x=size-1)
-     * @param array $array
-     * @param bool  $ifEmpty
      * @return bool
      */
-    public static function isSequential(array $array, bool $ifEmpty = true)
+    public function isSequential()
     {
-        if(empty($array)) return $ifEmpty;
+        if(empty($this->dataArray)) return $this->analyseIfEmpty;
         //check if keys equal to ordered numbers
-        return array_keys($array) === range(0, count($array) - 1);
+        return array_keys($this->dataArray) === range(0, count($this->dataArray) - 1);
     }
 
 
     /**
      * Check if array elements share same type
-     * @param array  $array
-     * @param bool   $ifEmpty
      * @param bool   $classFamily false to detect same class strictly, true to allow subclasses
-     * @param string $type reference to type detected
+     * @param string|null $type reference to type detected
      * @return bool
      */
-    public static function hasHomogeneousElements(array $array, bool $ifEmpty = true, bool $classFamily = false, string &$type = '')
+    public function hasHomogeneousElements(bool $classFamily = false, &$type = '')
     {
-        if(empty($array)) return $ifEmpty;
+        if(!is_string($type)) $type = '';
+        if(empty($this->dataArray)) return $this->analyseIfEmpty;
         //detect first element type. All other element should be the same
-        $first = array_shift($array);
+        $first = array_shift($this->dataArray);
         switch(true) {
             case is_object($first): $type = get_class($first); break;
             case is_array($first): $type = 'array'; break;
@@ -54,18 +61,20 @@ class ArrayAnalyser
             case $first === null: $type = 'null'; break;
             case is_string($first): $type = 'string'; break;
             case is_bool($first): $type = 'boolean'; break;
+            case is_int($first): $type = 'int'; break;
             //if cannot determine type, return false
             default: return false;
         }
 
         $classesFound = array();
-        foreach($array as $element) {
+        foreach($this->dataArray as $element) {
             switch($type) {
                 case 'array': if(!is_array($element)) return false; break;
                 case 'float': if(!is_float($element)) return false; break;
                 case 'null': if(!($element === null)) return false; break;
                 case 'string': if(!is_string($element)) return false; break;
                 case 'boolean': if(!is_bool($element)) return false; break;
+                case 'int': if(!is_int($element)) return false; break;
                 default:
                     if(!is_object($element)) return false;
                     //check for strict class
@@ -89,9 +98,9 @@ class ArrayAnalyser
             while(count($classesFound) > 1 && $loop < $classesFoundNumber) {
                 //handle first class in queue
                 $handleClass = array_shift($classesFound);
-                foreach($classesFound as $index => $class) {
+                foreach($classesFound as $index => $classFound) {
                     //remove classes in queue that are subclasses
-                    if(is_subclass_of($class, $handleClass)) {
+                    if(is_subclass_of($classFound, $handleClass)) {
                         unset($classesFound[$index]);
                     }
                 }
@@ -99,8 +108,28 @@ class ArrayAnalyser
                 $classesFound[] = $handleClass;
                 $loop++;
             }
-            //if more than on class left, then no subclass link found, return false
-            if(count($classesFound) > 1) return false;
+            //if more than on class left, then no subclass link found, maybe parent class?
+            $classesCount = count($classesFound);
+            if($classesCount > 1) {
+                $parentClassesCounters = array();
+                foreach($classesFound as $classFound) {
+                    $parentClasses = array_unique(class_parents($classFound, false));
+                    foreach($parentClasses as $parentClass) {
+                        if(!isset($parentClassesCounters[$parentClass])) $parentClassesCounters[$parentClass] = 0;
+                        $parentClassesCounters[$parentClass]++;
+                    }
+                }
+                foreach($parentClassesCounters as $parentClass => $parentCount) {
+                    /** @var string $parentClass */
+                    if($classesCount == $parentCount) {
+                        //all classes left are a common parent
+                        $type = $parentClass;
+                        return true;
+                    }
+                }
+                //no common parent found, return false
+                return false;
+            }
             $type = reset($classesFound);
         }
 
@@ -112,18 +141,19 @@ class ArrayAnalyser
     /**
      * Check if array elements belongs to specified class
      * If object found from a parent class, will return false.
-     * @param array  $array
      * @param string $className
      * @param bool   $allowSub
-     * @param bool   $ifEmpty
      * @return bool
      */
-    public static function isFilledOfObjectsFromClass(array $array, string $className, bool $allowSub = true, bool $ifEmpty = false)
+    public function isFilledOfObjectsFromClass(string $className, bool $allowSub = true)
     {
-        if(empty($array)) return $ifEmpty;
+        if(empty($this->dataArray)) return $this->analyseIfEmpty;
         $parentClassFound = '';
-        $homogeneous = static::hasHomogeneousElements($array, $ifEmpty, $allowSub, $parentClassFound);
-        return $homogeneous && $parentClassFound == $className;
+        $homogeneous = static::hasHomogeneousElements($allowSub, $parentClassFound);
+        $directClassFound = ($parentClassFound == $className);
+        $subClassFound = is_subclass_of($parentClassFound, $className);
+
+        return $homogeneous && ($directClassFound || $subClassFound);
     }
 
 
