@@ -1,16 +1,16 @@
 <?php
 
 
-require_once 'Parsing/HtmlParsing.php';
+include 'Parsing/HtmlParser.php';
 
-use Keiwen\Utils\Parsing\HtmlParsing;
+use Keiwen\Utils\Parsing\HtmlParser;
 
 function queryCurl($url) {
     $ch = curl_init($url);
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_MAXREDIRS, 100);
+    curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     
     $content = curl_exec($ch);
@@ -63,44 +63,44 @@ if(!empty($url) || !empty($rawFile)) {
             case 'id':
                 if(is_array($parsed)) {
                     foreach($parsed as &$part) {
-                        $part = HtmlParsing::parseHtmlElmt($part, $step['value']);
+                        $part = (new HtmlParser($part))->parseHtmlElmt($step['value']);
                     }
                 } else {
-                    $parsed = HtmlParsing::parseHtmlElmt($parsed, $step['value']);
+                    $parsed = (new HtmlParser($parsed))->parseHtmlElmt($step['value']);
                 }
                 break;
             case 'class':
                 if(is_array($parsed)) {
                     foreach($parsed as &$part) {
-                        $part = HtmlParsing::parseHtmlElmt($part, $step['value'], false, $step['iteration']);
+                        $part = (new HtmlParser($part))->parseHtmlElmt($step['value'], false, $step['iteration']);
                     }
                 } else {
-                    $parsed = HtmlParsing::parseHtmlElmt($parsed, $step['value'], false, $step['iteration']);
+                    $parsed = (new HtmlParser($parsed))->parseHtmlElmt($step['value'], false, $step['iteration']);
                 }
                 break;
             case 'tag':
                 if(is_array($parsed)) {
                     foreach($parsed as &$part) {
-                        $part = HtmlParsing::parseTag($part, $step['value'], false, $step['iteration']);
+                        $part = (new HtmlParser($part))->parseTag($step['value'], false, $step['iteration']);
                     }
                 } else {
-                    $parsed = HtmlParsing::parseTag($parsed, $step['value'], false, $step['iteration']);
+                    $parsed = (new HtmlParser($parsed))->parseTag($step['value'], false, $step['iteration']);
                 }
                 break;
             case 'taglist':
                 if(is_array($parsed)) {
                     $error = 'More than one list tag is not supported';
                 } else {
-                    $parsed = HtmlParsing::parseTagList($parsed, $step['value']);
+                    $parsed = (new HtmlParser($parsed))->parseTagList($step['value']);
                 }
                 break;
             case 'tagattr':
                 if(is_array($parsed)) {
                     foreach($parsed as &$part) {
-                        $part = HtmlParsing::parseTagAttribute($part, $step['value']);
+                        $part = (new HtmlParser($part))->parseTagAttribute($step['value']);
                     }
                 } else {
-                    $parsed = HtmlParsing::parseTagAttribute($parsed, $step['value']);
+                    $parsed = (new HtmlParser($parsed))->parseTagAttribute($step['value']);
                 }
                 break;
         }
@@ -226,12 +226,12 @@ if(!empty($url) || !empty($rawFile)) {
         </div>
         <div id="template_class" class="form-group row">
             <label class="col-form-label col-xs-2">Class:</label>
-            <div class="col-xs-5">
+            <div class="col-xs-4">
                 <input name="value" type="text" class="form-control"/>
                 <input name="type" type="hidden" value="class"/>
             </div>
             <label class="col-form-label col-xs-1">Iter.:</label>
-            <div class="col-xs-2">
+            <div class="col-xs-3">
                 <input name="iteration" type="number" value="1" min="1" class="form-control"/>
             </div>
         </div>
@@ -244,12 +244,12 @@ if(!empty($url) || !empty($rawFile)) {
         </div>
         <div id="template_tag" class="form-group row">
             <label class="col-form-label col-xs-2">Tag:</label>
-            <div class="col-xs-5">
+            <div class="col-xs-4">
                 <input name="value" type="text" class="form-control"/>
                 <input name="type" type="hidden" value="tag"/>
             </div>
             <label class="col-form-label col-xs-1">Iter.:</label>
-            <div class="col-xs-2">
+            <div class="col-xs-3">
                 <input name="iteration" type="number" value="1" min="1" class="form-control"/>
             </div>
         </div>
