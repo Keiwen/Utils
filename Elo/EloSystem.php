@@ -6,20 +6,36 @@ namespace Keiwen\Utils\Elo;
 class EloSystem
 {
 
-    const WIN = 'W';
-    const TIE = 'T';
-    const LOSS = 'L';
+    public const WIN = 'W';
+    public const TIE = 'T';
+    public const LOSS = 'L';
 
-    protected static $maxDiff = 800;
-    protected static $maxGain = 0;
-    protected static $multiplier = 400;
-    protected static $defaultKFactor = 20;
+    protected $startingElo = 1200;
+    protected $maxDiff = 800;
+    protected $maxGain = 0;
+    protected $multiplier = 400;
+    protected $defaultKFactor = 20;
+    protected $kFactorGainCountModifier = array(0 => 0);
+    protected $kFactorEloModifier = array(0 => 0);
+
+
+    /**
+     * EloSystem constructor.
+     * @param int $startingElo
+     * @param int $defaultKFactor
+     */
+    public function __construct(int $startingElo = 1200, int $defaultKFactor = 20)
+    {
+        $this->setStartingElo($startingElo);
+        $this->setDefaultKFactor($defaultKFactor);
+    }
+
 
     /**
      * @param string|int $result can use string constants [W/T/L] or 0 for loss or 1 for win
      * @return float
      */
-    public static function getResultFactor($result)
+    public function getResultFactor($result)
     {
         if($result === 0 || $result === 1) return $result;
         if($result == self::WIN) return 1;
@@ -30,29 +46,29 @@ class EloSystem
     /**
      * @param int $maxDiff
      */
-    public static function setMaxDiff(int $maxDiff)
+    public function setMaxDiff(int $maxDiff)
     {
-        static::$maxDiff = $maxDiff;
+        $this->maxDiff = $maxDiff;
     }
 
     /**
-     * Max diff considered between 2 elos, considering that above,
-     * lowest player has no chance to beat highest,
-     * diff in computing will be limited to this value
+     * Max diff considered between 2 elos.
+     * Above this diff, lowest player has "no chance" to beat highest.
+     * Diff in computing will be limited to this value
      * Default is 800, 0 is no limit
      * @return int
      */
-    public static function getMaxDiff()
+    public function getMaxDiff()
     {
-        return static::$maxDiff;
+        return $this->maxDiff;
     }
 
     /**
      * @param int $maxGain
      */
-    public static function setMaxGain(int $maxGain)
+    public function setMaxGain(int $maxGain)
     {
-        static::$maxGain = $maxGain;
+        $this->maxGain = $maxGain;
     }
 
     /**
@@ -60,48 +76,159 @@ class EloSystem
      * Default is 0 (no limit)
      * @return int
      */
-    public static function getMaxGain()
+    public function getMaxGain()
     {
-        return static::$maxGain;
+        return $this->maxGain;
     }
 
     /**
      * @param int $multiplier
      */
-    public static function setMultiplier(int $multiplier)
+    public function setMultiplier(int $multiplier)
     {
-        static::$multiplier = $multiplier;
+        $this->multiplier = $multiplier;
     }
 
     /**
      * Used to adjust result probability according to elo diff.
-     * usually equal to maxDiff / 2
+     * Usually equal to maxDiff / 2
      * Default is 400
      * @return int
      */
-    public static function getMultiplier()
+    public function getMultiplier()
     {
-        return static::$multiplier;
+        return $this->multiplier;
     }
 
     /**
-     * @param int $defaultKFactor
+     * @param int $kFactor
      */
-    public static function setDefaultKFactor(int $defaultKFactor)
+    public function setDefaultKFactor(int $kFactor)
     {
-        static::$defaultKFactor = $defaultKFactor;
+        $this->defaultKFactor = $kFactor;
     }
 
     /**
-     * Default value used to adjust match/competition gain.
-     * @see EloRating::getKFactor()
      * @return int
      */
-    public static function getDefaultKFactor()
+    public function getDefaultKFactor()
     {
-        return static::$defaultKFactor;
+        return $this->defaultKFactor;
     }
 
+
+    /**
+     * @param int $threshold
+     * @param array $table
+     * @return int|mixed
+     */
+    protected static function getValueFromThreshold(int $threshold, array $table)
+    {
+        if(isset($table[$threshold])) return $table[$threshold];
+        $lastValue = 0;
+        foreach($table as $th => $value) {
+            if($th > $threshold) return $lastValue;
+            $lastValue = $value;
+        }
+        return $lastValue;
+
+    }
+
+
+    /**
+     * Value used to adjust match/competition gain.
+     * Could vary according to competitor's games number or current elo.
+     * Higher value will increase gain and accelerate competitor's rating change
+     * Example with default K factor set as 20:
+     * - 40 for first games to quickly place competitor around his "true" value
+     * - 10 for highest elo floors
+     * => add gainCountMultiplier on threshold 0, value 20
+     * => add gainCountMultiplier on threshold 10, value 0
+     * => add eloMultiplier on threshold 1800, value -10
+     * @param int $gainCount
+     * @param int $elo
+     * @return int
+     */
+    public function getKFactor(int $gainCount = 0, int $elo = 0)
+    {
+        $kFactor = $this->getDefaultKFactor();
+        $kFactor += static::getValueFromThreshold($gainCount, $this->getKFactorGainCountModifier());
+        $kFactor += static::getValueFromThreshold($elo, $this->getKFactorEloModifier());
+        return $kFactor;
+    }
+
+    /**
+     * @return array
+     */
+    public function getKFactorGainCountModifier()
+    {
+        return $this->kFactorGainCountModifier;
+    }
+
+    /**
+     * @return array
+     */
+    public function getKFactorEloModifier()
+    {
+        return $this->kFactorEloModifier;
+    }
+
+    /**
+     * @param int $threshold
+     */
+    public function removeKFactorGainCountModifier(int $threshold)
+    {
+        unset($this->kFactorGainCountModifier[$threshold]);
+        if(empty($this->kFactorGainCountModifier)) {
+            $this->kFactorGainCountModifier = array(0 => 0);
+        }
+    }
+
+    /**
+     * @param int $threshold
+     */
+    public function removeKFactorEloModifier(int $threshold)
+    {
+        unset($this->kFactorEloModifier[$threshold]);
+        if(empty($this->kFactorEloModifier)) {
+            $this->kFactorEloModifier = array(0 => 0);
+        }
+    }
+
+    /**
+     * @param int $threshold
+     * @param int $value
+     */
+    public function addKFactorGainCountModifier(int $threshold, int $value)
+    {
+        $this->kFactorGainCountModifier[$threshold] = $value;
+    }
+
+    /**
+     * @param int $threshold
+     * @param int $value
+     */
+    public function addKFactorEloModifier(int $threshold, int $value)
+    {
+        $this->kFactorEloModifier[$threshold] = $value;
+    }
+
+    /**
+     * @param int $startingElo
+     */
+    public function setStartingElo(int $startingElo)
+    {
+        $this->startingElo = $startingElo;
+    }
+
+    /**
+     * Default ELO value on initialization.
+     * @return int
+     */
+    public function getStartingElo()
+    {
+        return $this->startingElo;
+    }
 
     /**
      * @param mixed $value raw value
@@ -111,8 +238,8 @@ class EloSystem
     protected static function adjustMaxLimit($value, $max)
     {
         if(!$max) return $value;
-        if($value > $max) $value = $max;
-        if($value < -$max) $value = -$max;
+        if($value > $max) return $max;
+        if($value < -$max) return -$max;
         return $value;
     }
 
@@ -120,18 +247,18 @@ class EloSystem
      * @param int $diff
      * @return int
      */
-    public static function adjustDiffLimit(int $diff)
+    public function adjustDiffLimit(int $diff)
     {
-        return static::adjustMaxLimit($diff, static::getMaxDiff());
+        return static::adjustMaxLimit($diff, $this->getMaxDiff());
     }
 
     /**
      * @param int $gain
      * @return int
      */
-    public static function adjustGainLimit(int $gain)
+    public function adjustGainLimit(int $gain)
     {
-        return static::adjustMaxLimit($gain, static::getMaxGain());
+        return static::adjustMaxLimit($gain, $this->getMaxGain());
     }
 
 }

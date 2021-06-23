@@ -6,29 +6,56 @@ namespace Keiwen\Utils\Elo;
 class EloRating
 {
 
+    /** @var EloSystem $globalSystem */
+    protected static $globalSystem;
+
     protected $elo;
-    protected $kFactor;
+    /** @var EloSystem $eloSystem */
+    protected $eloSystem;
+    protected $gainCount = 0;
 
 
     /**
      * EloRating constructor.
      *
-     * @param int $elo
-     * @param int $kFactor default (0) to match EloSystem value
+     * @param int|null  $elo default (null) to match EloSystem value
+     * @param EloSystem $eloSystem
      */
-    public function __construct(int $elo, int $kFactor = 0)
+    public function __construct($elo = null, EloSystem $eloSystem = null)
     {
+        if($eloSystem === null) $eloSystem = static::getGlobalSystem();
+        $this->eloSystem = $eloSystem;
+        if(!is_int($elo)) $elo = $eloSystem->getStartingElo();
         $this->elo = $elo;
-        $this->setKFactor($kFactor);
     }
 
+
+    /**
+     * @param EloSystem $eloSystem
+     */
+    public static function setGlobalSystem(EloSystem $eloSystem)
+    {
+        static::$globalSystem = $eloSystem;
+    }
+
+    /**
+     * @return EloSystem
+     */
+    public static function getGlobalSystem()
+    {
+        if(static::$globalSystem === null) {
+            static::$globalSystem = new EloSystem();
+        }
+        return static::$globalSystem;
+    }
 
     /**
      * @param int $gain
      */
     public function gainElo(int $gain) {
-        $gain = EloSystem::adjustGainLimit($gain);
+        $gain = $this->eloSystem->adjustGainLimit($gain);
         $this->elo += $gain;
+        $this->gainCount++;
     }
 
     /**
@@ -41,25 +68,39 @@ class EloRating
 
 
     /**
-     * @param int $kFactor
+     * @return int
      */
-    public function setKFactor(int $kFactor) {
-        $this->kFactor = empty($kFactor) ? EloSystem::getDefaultKFactor() : $kFactor;
+    public function getCurrentKFactor()
+    {
+        return $this->eloSystem->getKFactor($this->gainCount, $this->elo);
     }
 
     /**
-     * Used to adjust match/competition gain.
-     * Usually vary according to competitor's games number.
-     * Higher value will increase gain and accelerate competitor's rating change
-     * Example:
-     * - 40 for first games to quickly place competitor around his "true" value
-     * - 20 for lower elo floors
-     * - 10 for highest elo floors
      * @return int
      */
-    public function getKFactor()
+    public function getGainCount()
     {
-        return $this->kFactor;
+        return $this->gainCount;
+    }
+
+
+    /**
+     * @param int $gainCount
+     * @return $this
+     */
+    public function setGainCount(int $gainCount)
+    {
+        $this->gainCount = $gainCount;
+        return $this;
+    }
+
+
+    /**
+     * @return EloSystem
+     */
+    public function getEloSystem()
+    {
+        return $this->eloSystem;
     }
 
 }

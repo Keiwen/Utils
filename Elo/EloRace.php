@@ -7,6 +7,7 @@ class EloRace
 {
 
     protected $rawList = array();
+    protected $rawListKeys = array();
     protected $updatedList = array();
     /** @var EloRating[] */
     protected $rankedEloList;
@@ -21,8 +22,9 @@ class EloRace
      */
     public function __construct(array $rankedEloList)
     {
-        $this->rawList = array_values($rankedEloList);
-        $this->rankedEloList = $this->rawList;
+        $this->rawList = $rankedEloList;
+        $this->rawListKeys = array_keys($rankedEloList);
+        $this->rankedEloList = $rankedEloList;
         foreach($this->rankedEloList as &$competitor) {
             if(!$competitor instanceof EloRating) {
                 if(!is_int($competitor)) throw new \RuntimeException('Invalid elo value');
@@ -42,12 +44,13 @@ class EloRace
      */
     protected function computeGain(int $competitorIndex)
     {
-        $competitor = $this->rankedEloList[$competitorIndex];
+        $competitorKey = $this->rawListKeys[$competitorIndex];
+        $competitor = $this->rankedEloList[$competitorKey];
 
         $result = EloSystem::LOSS;
         $gain = 0;
-        foreach($this->rankedEloList as $index => $eloRating) {
-            if($index == $competitorIndex) {
+        foreach($this->rankedEloList as $key => $eloRating) {
+            if($key == $competitorKey) {
                 $result = EloSystem::WIN;
                 continue;
             }
@@ -56,7 +59,7 @@ class EloRace
         }
         $gain = $gain / $this->competitorsCount;
         $gain = round($gain);
-        $gain = EloSystem::adjustGainLimit($gain);
+        $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
         return $gain;
     }
 
@@ -66,8 +69,10 @@ class EloRace
      */
     protected function computeGains()
     {
-        foreach($this->rankedEloList as $index => $competitor) {
+        $index = 0;
+        foreach($this->rankedEloList as $key => $competitor) {
             $this->gains[$index + 1] = $this->computeGain($index);
+            $index++;
         }
     }
 
@@ -95,13 +100,15 @@ class EloRace
     /**
      * update competitors values
      */
-    public function update()
+    public function updateElo()
     {
         if(!empty($this->updatedList)) return;
 
         $this->updatedList = $this->rawList;
-        foreach($this->updatedList as $index => &$competitor) {
-            $gain = $this->getGain($index + 1);
+        $rank = 0;
+        foreach($this->updatedList as $key => &$competitor) {
+            $rank++;
+            $gain = $this->getGain($rank);
             if($competitor instanceof EloRating) {
                 $competitor->gainElo($gain);
             } else {
@@ -117,7 +124,7 @@ class EloRace
      */
     public function getResultingList()
     {
-        if(empty($this->updatedList)) $this->update();
+        if(empty($this->updatedList)) $this->updateElo();
         return $this->updatedList;
     }
 
