@@ -6,45 +6,65 @@ namespace Keiwen\Utils\UnitConversion;
 class SpeedConverter extends UnitConverter
 {
 
-    const METRE_PER_SECOND = 'Metre per second';
-    const KILOMETRE_PER_HOUR = 'Kilometre per hour';
-    const MILE_PER_SECOND = 'Mile per second';
-    const MILE_PER_HOUR = 'Mile per hour';
-    const FOOT_PER_SECOND = 'Foot per second';
-    const INCH_PER_SECOND = 'Inch per second';
-    const KNOT = 'Knot';
-    const MACH = 'Mach';
-    const SPEED_OF_LIGHT = 'Speed of light in vacuum';
+    public const METRE_PER_SECOND = 'Metre per second';
+    public const KILOMETRE_PER_HOUR = 'Kilometre per hour';
+    public const MILE_PER_SECOND = 'Mile per second';
+    public const MILE_PER_HOUR = 'Mile per hour';
+    public const FOOT_PER_SECOND = 'Foot per second';
+    public const INCH_PER_SECOND = 'Inch per second';
+    public const KNOT = 'Knot';
+    public const MACH = 'Mach';
+    public const SPEED_OF_LIGHT = 'Speed of light in vacuum';
 
-    protected static $siBaseUnit = self::METRE_PER_SECOND;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    /**
+     * @inheritdoc
+     */
+    public function getBaseUnit(): string
+    {
+        return static::METRE_PER_SECOND;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getUnitsSymbol(): array
     {
-        switch($unit) {
-            case static::METRE_PER_SECOND: return 'm/s';
-            case static::KILOMETRE_PER_HOUR: return 'km/h';
-            case static::MILE_PER_SECOND: return 'mps';
-            case static::MILE_PER_HOUR: return 'mph';
-            case static::FOOT_PER_SECOND: return 'fps';
-            case static::INCH_PER_SECOND: return 'ips';
-            case static::KNOT: return 'kn';
-            case static::MACH: return 'M';
-            case static::SPEED_OF_LIGHT: return 'c';
-        }
-        return '';
+        return array(
+            static::METRE_PER_SECOND => 'm/s',
+            static::KILOMETRE_PER_HOUR => 'km/h',
+            static::MILE_PER_SECOND => 'mps',
+            static::MILE_PER_HOUR => 'mph',
+            static::FOOT_PER_SECOND => 'fps',
+            static::INCH_PER_SECOND => 'ips',
+            static::KNOT => 'kn',
+            static::MACH => 'M',
+            static::SPEED_OF_LIGHT => 'c',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::KILOMETRE_PER_HOUR: return $value * 1000 / 3600;
@@ -63,7 +83,7 @@ class SpeedConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::KILOMETRE_PER_HOUR: return $value / 1000 * 3600;

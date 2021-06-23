@@ -6,39 +6,59 @@ namespace Keiwen\Utils\UnitConversion;
 class PlaneAngleConverter extends UnitConverter
 {
 
-    const RADIAN = 'Radian';
-    const DEGREE = 'Degree';
-    const ARCMINUTE = 'Arc minute';
-    const ARCSECOND = 'Arc second';
-    const GRADIAN = 'Gradian';
-    const MILLIRADIAN = 'Milliradian';
+    public const RADIAN = 'Radian';
+    public const DEGREE = 'Degree';
+    public const ARCMINUTE = 'Arc minute';
+    public const ARCSECOND = 'Arc second';
+    public const GRADIAN = 'Gradian';
+    public const MILLIRADIAN = 'Milliradian';
 
-    protected static $siBaseUnit = self::RADIAN;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    /**
+     * @inheritdoc
+     */
+    public function getBaseUnit(): string
+    {
+        return static::RADIAN;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getUnitsSymbol(): array
     {
-        switch($unit) {
-            case static::RADIAN: return 'rad';
-            case static::DEGREE: return '°';
-            case static::ARCMINUTE: return '\'';
-            case static::ARCSECOND: return '"';
-            case static::GRADIAN: return 'grad';
-            case static::MILLIRADIAN: return 'mil';
-        }
-        return '';
+        return array(
+            static::RADIAN => 'rad',
+            static::DEGREE => '°',
+            static::ARCMINUTE => '\'',
+            static::ARCSECOND => '"',
+            static::GRADIAN => 'grad',
+            static::MILLIRADIAN => 'mil',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::DEGREE: return $value / M_PI * 180;
@@ -54,7 +74,7 @@ class PlaneAngleConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::DEGREE: return $value * M_PI / 180;

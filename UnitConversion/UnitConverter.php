@@ -6,32 +6,24 @@ namespace Keiwen\Utils\UnitConversion;
 abstract class UnitConverter
 {
 
-    protected static $siBaseUnit = '';
-    protected static $physicalMinimum = null;
-    protected static $physicalMaximum = null;
-    protected static $units = array();
+
+    public function __construct()
+    {
+    }
 
     /**
      * @return string
      */
-    public static function getSIBaseUnit() : string {
-        return static::$siBaseUnit;
-    }
+    public abstract function getBaseUnit(): string;
 
     /**
      * @param string $unit
      * @return bool
      */
-    public static function isSIBaseUnit(string $unit) : bool
+    public function isBaseUnit(string $unit): bool
     {
-        return $unit == static::getSIBaseUnit();
+        return $unit === $this->getBaseUnit();
     }
-
-    /**
-     * @param string $unit
-     * @return string
-     */
-    public abstract static function getUnitSymbol(string $unit) : string;
 
     /**
      * @param float  $value
@@ -39,12 +31,23 @@ abstract class UnitConverter
      * @param string $toUnit
      * @return float
      */
-    public static function convert(float $value, string $fromUnit, string $toUnit) : float
+    public function convert(float $value, string $fromUnit, string $toUnit): float
     {
         if($fromUnit == $toUnit) return $value;
-        $siValue = static::convertToBaseUnit($value, $fromUnit);
-        return static::convertFromBaseUnit($siValue, $toUnit);
+        $baseValue = $this->convertToBaseUnit($value, $fromUnit);
+        return $this->convertFromBaseUnit($baseValue, $toUnit);
     }
+
+
+    /**
+     * @return float|null
+     */
+    public abstract function getBasePhysicalMinimum();
+
+    /**
+     * @return float|null
+     */
+    public abstract function getBasePhysicalMaximum();
 
 
     /**
@@ -52,7 +55,7 @@ abstract class UnitConverter
      * @param string $fromUnit
      * @return float
      */
-    public abstract static function convertToBaseUnit(float $value, string $fromUnit) : float;
+    public abstract function convertToBaseUnit(float $value, string $fromUnit): float;
 
 
     /**
@@ -60,7 +63,7 @@ abstract class UnitConverter
      * @param string $toUnit
      * @return float
      */
-    public abstract static function convertFromBaseUnit(float $value, string $toUnit) : float;
+    public abstract function convertFromBaseUnit(float $value, string $toUnit): float;
 
 
     /**
@@ -68,11 +71,11 @@ abstract class UnitConverter
      * @param string $unit
      * @return bool
      */
-    public static function isAbovePhysicalMinimum(float $value, string $unit = '') : bool
+    public function isAbovePhysicalMinimum(float $value, string $unit = ''): bool
     {
-        if(static::$physicalMinimum === null) return true;
-        $siValue = empty($unit) ? $value : static::convertToBaseUnit($value, $unit);
-        return $siValue >= static::$physicalMinimum;
+        if($this->getBasePhysicalMinimum() === null) return true;
+        $baseValue = empty($unit) ? $value : $this->convertToBaseUnit($value, $unit);
+        return $baseValue >= $this->getBasePhysicalMinimum();
     }
 
     /**
@@ -80,11 +83,11 @@ abstract class UnitConverter
      * @param string $unit
      * @return bool
      */
-    public static function isUnderPhysicalMaximum(float $value, string $unit = '') : bool
+    public function isUnderPhysicalMaximum(float $value, string $unit = ''): bool
     {
-        if(static::$physicalMaximum === null) return true;
-        $siValue = empty($unit) ? $value : static::convertToBaseUnit($value, $unit);
-        return $siValue <= static::$physicalMaximum;
+        if($this->getBasePhysicalMaximum() === null) return true;
+        $baseValue = empty($unit) ? $value : $this->convertToBaseUnit($value, $unit);
+        return $baseValue <= $this->getBasePhysicalMaximum();
     }
 
 
@@ -93,9 +96,9 @@ abstract class UnitConverter
      * @param string $unit
      * @return bool
      */
-    public static function isInPhysicalRange(float $value, string $unit = '') : bool
+    public function isInPhysicalRange(float $value, string $unit = ''): bool
     {
-        return static::isUnderPhysicalMaximum($value, $unit) && static::isUnderPhysicalMaximum($value, $unit);
+        return $this->isAbovePhysicalMinimum($value, $unit) && $this->isUnderPhysicalMaximum($value, $unit);
     }
 
 
@@ -103,11 +106,11 @@ abstract class UnitConverter
      * @param string $unit
      * @return float|null
      */
-    public static function getPhysicalMinimum(string $unit = '')
+    public function getPhysicalMinimum(string $unit = '')
     {
-        if(static::$physicalMinimum === null) return null;
-        $minValue = static::$physicalMinimum;
-        if(!empty($unit)) $minValue = static::convertFromBaseUnit($minValue, $unit);
+        if($this->getBasePhysicalMinimum() === null) return null;
+        $minValue = $this->getBasePhysicalMinimum();
+        if(!empty($unit)) $minValue = $this->convertFromBaseUnit($minValue, $unit);
         return $minValue;
     }
 
@@ -116,39 +119,38 @@ abstract class UnitConverter
      * @param string $unit
      * @return float|null
      */
-    public static function getPhysicalMaximum(string $unit = '')
+    public function getPhysicalMaximum(string $unit = '')
     {
-        if(static::$physicalMaximum === null) return null;
-        $maxValue = static::$physicalMaximum;
-        if(!empty($unit)) $maxValue = static::convertFromBaseUnit($maxValue, $unit);
+        if($this->getBasePhysicalMaximum() === null) return null;
+        $maxValue = $this->getBasePhysicalMaximum();
+        if(!empty($unit)) $maxValue = $this->convertFromBaseUnit($maxValue, $unit);
         return $maxValue;
     }
 
 
     /**
-     * @return array
+     * @return array unitName => $symbol
      */
-    public static function getUnits()
-    {
-        if(empty(static::$units)) {
-            $rClass = new \ReflectionClass(static::class);
-            static::$units = array_values($rClass->getConstants());
-        }
-        return static::$units;
-    }
-
+    public abstract function getUnitsSymbol(): array;
 
     /**
      * @return array
      */
-    public static function getUnitsSymbol()
+    public function getUnits(): array
     {
-        $units = static::getUnits();
-        $unitsSymbol = array_fill_keys($units, '');
-        foreach($unitsSymbol as $unit => &$symbol) {
-            $symbol = static::getUnitSymbol($unit);
-        }
-        return $unitsSymbol;
+        $units = $this->getUnitsSymbol();
+        return array_keys($units);
+    }
+
+
+    /**
+     * @param string $unit
+     * @return string
+     */
+    public function getUnitSymbol(string $unit): string
+    {
+        $units = $this->getUnitsSymbol();
+        return $units[$unit] ?? '';
     }
 
 
@@ -156,10 +158,10 @@ abstract class UnitConverter
      * @param string $symbol
      * @return string
      */
-    public static function getUnitName(string $symbol)
+    public function getUnitName(string $symbol): string
     {
-        $unitsSymbol = array_flip(static::getUnitsSymbol());
-        return empty($unitsSymbol[$symbol]) ? '' : $unitsSymbol[$symbol];
+        $unitsSymbol = array_flip($this->getUnitsSymbol());
+        return $unitsSymbol[$symbol] ?? '';
     }
 
 
@@ -167,23 +169,24 @@ abstract class UnitConverter
      * @param string $unit
      * @return bool
      */
-    public static function isUnitValid(string $unit)
+    public function isUnitValid(string $unit): bool
     {
-        return in_array($unit, static::getUnits());
+        return in_array($unit, $this->getUnits());
     }
 
 
     /**
      * @param string $domain
+     * @param string|null $namespace
      * @return UnitConverter|null
      */
-    public static function getConverter(string $domain)
+    public static function getConverter(string $domain, string $namespace = null)
     {
+        if($namespace == null) $namespace = __NAMESPACE__;
         $converter = ucfirst(strtolower($domain)) . 'Converter';
-        $className = __NAMESPACE__ . '\\' . $converter;
+        $className = $namespace . '\\' . $converter;
         if(!class_exists($className)) return null;
-        $rClass = new \ReflectionClass($className);
-        return ($rClass->isInstantiable()) ? new $className() : null;
+        return new $className();
     }
 
 }

@@ -6,43 +6,63 @@ namespace Keiwen\Utils\UnitConversion;
 class PressureConverter extends UnitConverter
 {
 
-    const PASCAL = 'Pascal';
-    const HECTOPASCAL = 'Hectopascal';
-    const BAR = 'Bar';
-    const MILLIBAR = 'Millibar';
-    const ATMOSPHERE = 'Atmosphere';
-    const TORR = 'Torr';
-    const MILLIMETRE_MERCURY = 'Millimetre of mercury';
-    const POUNDFORCE_SQUARE_INCH = 'Pound-force per square inch';
+    public const PASCAL = 'Pascal';
+    public const HECTOPASCAL = 'Hectopascal';
+    public const BAR = 'Bar';
+    public const MILLIBAR = 'Millibar';
+    public const ATMOSPHERE = 'Atmosphere';
+    public const TORR = 'Torr';
+    public const MILLIMETRE_MERCURY = 'Millimetre of mercury';
+    public const POUNDFORCE_SQUARE_INCH = 'Pound-force per square inch';
 
-    protected static $siBaseUnit = self::PASCAL;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    /**
+     * @inheritdoc
+     */
+    public function getBaseUnit(): string
+    {
+        return static::PASCAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getUnitsSymbol(): array
     {
-        switch($unit) {
-            case static::PASCAL: return 'Pa';
-            case static::HECTOPASCAL: return 'hPa';
-            case static::BAR: return 'bar';
-            case static::MILLIBAR: return 'mbar';
-            case static::ATMOSPHERE: return 'atm';
-            case static::TORR: return 'torr';
-            case static::MILLIMETRE_MERCURY: return 'mmHg';
-            case static::POUNDFORCE_SQUARE_INCH: return 'psi';
-        }
-        return '';
+        return array(
+            static::PASCAL => 'Pa',
+            static::HECTOPASCAL => 'hPa',
+            static::BAR => 'bar',
+            static::MILLIBAR => 'mbar',
+            static::ATMOSPHERE => 'atm',
+            static::TORR => 'torr',
+            static::MILLIMETRE_MERCURY => 'mmHg',
+            static::POUNDFORCE_SQUARE_INCH => 'psi',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::HECTOPASCAL: return $value * 100;
@@ -62,7 +82,7 @@ class PressureConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::HECTOPASCAL: return $value / 100;

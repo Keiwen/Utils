@@ -6,69 +6,89 @@ namespace Keiwen\Utils\UnitConversion;
 class MassConverter extends UnitConverter
 {
 
-    const KILOGRAM = 'Kilogram';
-    const GRAM = 'gram';
-    const DECIGRAM = 'Decigram';
-    const CENTIGRAM = 'Centigram';
-    const MILLIGRAM = 'Milligram';
-    const MICROGRAM = 'Microgram';
-    const NANOGRAM = 'Nanogram';
-    const PICOGRAM = 'Picogram';
-    const HECTOGRAM = 'Hectogram';
-    const TONNE = 'Tonne';
-    const CARAT = 'Carat';
-    const GRAIN = 'Grain';
-    const OUNCE_TROY = 'Ounce (troy)';
-    const OUNCE_AVOIRDUPOIS = 'Ounce (avoirdupois)';
-    const OUNCE_US_LEGAL = 'Ounce (US legal)';
-    const POUND_TROY = 'Pound (troy)';
-    const POUND_AVOIRDUPOIS = 'Pound (avoirdupois)';
-    const POUND_METRIC = 'Pound (metric)';
-    const QUINTAL = 'Quintal';
-    const TON_IMP = 'Ton (imp)';
-    const TON_US = 'Ton (us)';
+    public const KILOGRAM = 'Kilogram';
+    public const GRAM = 'gram';
+    public const DECIGRAM = 'Decigram';
+    public const CENTIGRAM = 'Centigram';
+    public const MILLIGRAM = 'Milligram';
+    public const MICROGRAM = 'Microgram';
+    public const NANOGRAM = 'Nanogram';
+    public const PICOGRAM = 'Picogram';
+    public const HECTOGRAM = 'Hectogram';
+    public const TONNE = 'Tonne';
+    public const CARAT = 'Carat';
+    public const GRAIN = 'Grain';
+    public const OUNCE_TROY = 'Ounce (troy)';
+    public const OUNCE_AVOIRDUPOIS = 'Ounce (avoirdupois)';
+    public const OUNCE_US_LEGAL = 'Ounce (US legal)';
+    public const POUND_TROY = 'Pound (troy)';
+    public const POUND_AVOIRDUPOIS = 'Pound (avoirdupois)';
+    public const POUND_METRIC = 'Pound (metric)';
+    public const QUINTAL = 'Quintal';
+    public const TON_IMP = 'Ton (imp)';
+    public const TON_US = 'Ton (us)';
 
-    protected static $siBaseUnit = self::KILOGRAM;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    /**
+     * @inheritdoc
+     */
+    public function getBaseUnit(): string
+    {
+        return static::KILOGRAM;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getUnitsSymbol(): array
     {
-        switch($unit) {
-            case static::KILOGRAM: return 'kg';
-            case static::GRAM: return 'g';
-            case static::DECIGRAM: return 'dg';
-            case static::CENTIGRAM: return 'cg';
-            case static::MILLIGRAM: return 'mg';
-            case static::MICROGRAM: return 'μg';
-            case static::NANOGRAM: return 'ng';
-            case static::PICOGRAM: return 'pg';
-            case static::HECTOGRAM: return 'hg';
-            case static::TONNE: return 't';
-            case static::CARAT: return 'ct';
-            case static::GRAIN: return 'gr';
-            case static::OUNCE_TROY: return 'oz t';
-            case static::OUNCE_AVOIRDUPOIS: return 'oz av';
-            case static::OUNCE_US_LEGAL: return 'oz';
-            case static::POUND_TROY: return 'lb t';
-            case static::POUND_AVOIRDUPOIS: return 'lb av';
-            case static::POUND_METRIC: return 'lb';
-            case static::QUINTAL: return 'q';
-            case static::TON_IMP: return 'ton';
-            case static::TON_US: return 'ton (US)';
-        }
-        return '';
+        return array(
+            static::KILOGRAM => 'kg',
+            static::GRAM => 'g',
+            static::DECIGRAM => 'dg',
+            static::CENTIGRAM => 'cg',
+            static::MILLIGRAM => 'mg',
+            static::MICROGRAM => 'μg',
+            static::NANOGRAM => 'ng',
+            static::PICOGRAM => 'pg',
+            static::HECTOGRAM => 'hg',
+            static::TONNE => 't',
+            static::CARAT => 'ct',
+            static::GRAIN => 'gr',
+            static::OUNCE_TROY => 'oz t',
+            static::OUNCE_AVOIRDUPOIS => 'oz av',
+            static::OUNCE_US_LEGAL => 'oz',
+            static::POUND_TROY => 'lb t',
+            static::POUND_AVOIRDUPOIS => 'lb av',
+            static::POUND_METRIC => 'lb',
+            static::QUINTAL => 'q',
+            static::TON_IMP => 'ton',
+            static::TON_US => 'ton (US)',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::GRAM: return $value / 1000;
@@ -99,7 +119,7 @@ class MassConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::GRAM: return $value * 1000;

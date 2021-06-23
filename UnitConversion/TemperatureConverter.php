@@ -6,43 +6,63 @@ namespace Keiwen\Utils\UnitConversion;
 class TemperatureConverter extends UnitConverter
 {
 
-    const KELVIN = 'Kelvin';
-    const CELSIUS = 'Degree Celsius';
-    const FAHRENHEIT = 'Degree Fahrenheit';
-    const NEWTON = 'Degree Newton';
-    const RANKINE = 'Degree Rankine';
-    const DELISLE = 'Degree Delisle';
-    const REAUMUR = 'Degree Réaumur';
-    const ROMER = 'Degree Rømer';
-
-    protected static $siBaseUnit = self::KELVIN;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    public const KELVIN = 'Kelvin';
+    public const CELSIUS = 'Degree Celsius';
+    public const FAHRENHEIT = 'Degree Fahrenheit';
+    public const NEWTON = 'Degree Newton';
+    public const RANKINE = 'Degree Rankine';
+    public const DELISLE = 'Degree Delisle';
+    public const REAUMUR = 'Degree Réaumur';
+    public const ROMER = 'Degree Rømer';
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getBaseUnit(): string
     {
-        switch($unit) {
-            case static::KELVIN: return 'K';
-            case static::CELSIUS: return '°C';
-            case static::FAHRENHEIT: return '°F';
-            case static::NEWTON: return '°N';
-            case static::RANKINE: return '°R';
-            case static::DELISLE: return '°De';
-            case static::REAUMUR: return '°Ré';
-            case static::ROMER: return '°Rø';
-        }
-        return '';
+        return static::KELVIN;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function getUnitsSymbol(): array
+    {
+        return array(
+            static::KELVIN => 'K',
+            static::CELSIUS => '°C',
+            static::FAHRENHEIT => '°F',
+            static::NEWTON => '°N',
+            static::RANKINE => '°R',
+            static::DELISLE => '°De',
+            static::REAUMUR => '°Ré',
+            static::ROMER => '°Rø',
+        );
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::CELSIUS: return $value + 273.15;
@@ -60,7 +80,7 @@ class TemperatureConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::CELSIUS: return $value - 273.15;

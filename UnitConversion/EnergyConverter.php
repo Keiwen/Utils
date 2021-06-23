@@ -6,49 +6,69 @@ namespace Keiwen\Utils\UnitConversion;
 class EnergyConverter extends UnitConverter
 {
 
-    const JOULE = 'Joule';
-    const KILOJOULE = 'Kilojoule';
-    const CALORIE = 'Calorie';
-    const KILOCALORIE = 'Kilocalorie';
-    const WATT_HOUR = 'Watt hour';
-    const KILOWATT_HOUR = 'Kilowatt hour';
-    const BRITISH_THERMAL = 'British thermal unit';
-    const FOOT_POUNDFORCE = 'Foot pound-force';
-    const INCH_POUNDFORCE = 'Inch pound-force';
-    const BARREL_OF_OIL = 'Barrel of oil equivalent';
-    const ELECTRONVOLT = 'Electronvolt';
+    public const JOULE = 'Joule';
+    public const KILOJOULE = 'Kilojoule';
+    public const CALORIE = 'Calorie';
+    public const KILOCALORIE = 'Kilocalorie';
+    public const WATT_HOUR = 'Watt hour';
+    public const KILOWATT_HOUR = 'Kilowatt hour';
+    public const BRITISH_THERMAL = 'British thermal unit';
+    public const FOOT_POUNDFORCE = 'Foot pound-force';
+    public const INCH_POUNDFORCE = 'Inch pound-force';
+    public const BARREL_OF_OIL = 'Barrel of oil equivalent';
+    public const ELECTRONVOLT = 'Electronvolt';
 
-    protected static $siBaseUnit = self::JOULE;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    /**
+     * @inheritdoc
+     */
+    public function getBaseUnit(): string
+    {
+        return static::JOULE;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getUnitsSymbol(): array
     {
-        switch($unit) {
-            case static::JOULE: return 'J';
-            case static::KILOJOULE: return 'kJ';
-            case static::CALORIE: return 'cal';
-            case static::KILOCALORIE: return 'kcal';
-            case static::WATT_HOUR: return 'Wh';
-            case static::KILOWATT_HOUR: return 'kWh';
-            case static::BRITISH_THERMAL: return 'BTU';
-            case static::FOOT_POUNDFORCE: return 'ft lbf';
-            case static::INCH_POUNDFORCE: return 'in lbf';
-            case static::BARREL_OF_OIL: return 'boe';
-            case static::ELECTRONVOLT: return 'eV';
-        }
-        return '';
+        return array(
+            static::JOULE => 'J',
+            static::KILOJOULE => 'kJ',
+            static::CALORIE => 'cal',
+            static::KILOCALORIE => 'kcal',
+            static::WATT_HOUR => 'Wh',
+            static::KILOWATT_HOUR => 'kWh',
+            static::BRITISH_THERMAL => 'BTU',
+            static::FOOT_POUNDFORCE => 'ft lbf',
+            static::INCH_POUNDFORCE => 'in lbf',
+            static::BARREL_OF_OIL => 'boe',
+            static::ELECTRONVOLT => 'eV',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::KILOJOULE: return $value * 1000;
@@ -69,7 +89,7 @@ class EnergyConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::KILOJOULE: return $value / 1000;

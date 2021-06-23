@@ -6,53 +6,74 @@ namespace Keiwen\Utils\UnitConversion;
 class AreaConverter extends UnitConverter
 {
 
-    const SQUARE_METER = 'Square metre';
-    const SQUARE_KILOMETRE = 'Square kilometre';
-    const SQUARE_DECIMETRE = 'Square decimetre';
-    const SQUARE_CENTIMETRE = 'Square centimetre';
-    const SQUARE_MILLIMETRE = 'Square millimetre';
-    const SQUARE_MICROMETRE = 'Square micrometre';
-    const SQUARE_MILE = 'Square mile';
-    const SQUARE_INCH = 'Square inch';
-    const SQUARE_FOOT = 'Square foot';
-    const SQUARE_YARD = 'Square yard';
-    const ARE = 'Are';
-    const ACRE = 'Acre';
-    const HECTARE = 'Hectare';
-
-    protected static $siBaseUnit = self::SQUARE_METER;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    public const SQUARE_METER = 'Square metre';
+    public const SQUARE_KILOMETRE = 'Square kilometre';
+    public const SQUARE_DECIMETRE = 'Square decimetre';
+    public const SQUARE_CENTIMETRE = 'Square centimetre';
+    public const SQUARE_MILLIMETRE = 'Square millimetre';
+    public const SQUARE_MICROMETRE = 'Square micrometre';
+    public const SQUARE_MILE = 'Square mile';
+    public const SQUARE_INCH = 'Square inch';
+    public const SQUARE_FOOT = 'Square foot';
+    public const SQUARE_YARD = 'Square yard';
+    public const ARE = 'Are';
+    public const ACRE = 'Acre';
+    public const HECTARE = 'Hectare';
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getBaseUnit(): string
     {
-        switch($unit) {
-            case static::SQUARE_METER: return 'm²';
-            case static::SQUARE_KILOMETRE: return 'km²';
-            case static::SQUARE_DECIMETRE: return 'dm²';
-            case static::SQUARE_CENTIMETRE: return 'cm²';
-            case static::SQUARE_MILLIMETRE: return 'mm²';
-            case static::SQUARE_MICROMETRE: return 'μm²';
-            case static::SQUARE_MILE: return 'sq mi';
-            case static::SQUARE_INCH: return 'sq in';
-            case static::SQUARE_FOOT: return 'sq ft';
-            case static::SQUARE_YARD: return 'sq yd';
-            case static::ARE: return 'a';
-            case static::ACRE: return 'ac';
-            case static::HECTARE: return 'ha';
-        }
-        return '';
+        return static::SQUARE_METER;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getUnitsSymbol(): array
+    {
+        return array(
+            static::SQUARE_METER => 'm²',
+            static::SQUARE_KILOMETRE => 'km²',
+            static::SQUARE_DECIMETRE => 'dm²',
+            static::SQUARE_CENTIMETRE => 'cm²',
+            static::SQUARE_MILLIMETRE => 'mm²',
+            static::SQUARE_MICROMETRE => 'μm²',
+            static::SQUARE_MILE => 'sq mi',
+            static::SQUARE_INCH => 'sq in',
+            static::SQUARE_FOOT => 'sq ft',
+            static::SQUARE_YARD => 'sq yd',
+            static::ARE => 'a',
+            static::ACRE => 'ac',
+            static::HECTARE => 'ha',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::SQUARE_KILOMETRE: return $value * (10 ** 6);
@@ -75,7 +96,7 @@ class AreaConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::SQUARE_KILOMETRE: return $value * (10 ** -6);

@@ -6,74 +6,94 @@ namespace Keiwen\Utils\UnitConversion;
 class VolumeConverter extends UnitConverter
 {
 
-    const CUBIC_METER = 'Cubic metre';
-    const CUBIC_DECIMETRE = 'Cubic decimetre';
-    const CUBIC_CENTIMETRE = 'Cubic centimetre';
-    const CUBIC_MILLIMETRE = 'Cubic millimetre';
-    const CUBIC_MICROMETRE = 'Cubic micrometre';
-    const CUBIC_MILE = 'Cubic mile';
-    const CUBIC_INCH = 'Cubic inch';
-    const CUBIC_FOOT = 'Cubic foot';
-    const CUBIC_YARD = 'Cubic yard';
-    const LITRE = 'Litre';
-    const DECILITRE = 'Decilitre';
-    const CENTILITRE = 'Centilitre';
-    const MILLILITRE = 'Millllitre';
-    const GALLON_IMP = 'Gallon (imperial)';
-    const GALLON_US = 'Gallon (US)';
-    const OUNCE_IMP = 'Ounce (imperial)';
-    const OUNCE_US_CUSTOMARY = 'Ounce (US customary)';
-    const OUNCE_US_LEGAL = 'Ounce (US legal)';
-    const CUP_IMP = 'Cup (imperial)';
-    const CUP_US_CUSTOMARY = 'Cup (US customary)';
-    const CUP_US_LEGAL = 'Cup (US legal)';
-    const CUP_CA = 'Cup (CA)';
-    const CUP_METRIC = 'Cup (Metric)';
-
-
-    protected static $siBaseUnit = self::CUBIC_METER;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
+    public const CUBIC_METER = 'Cubic metre';
+    public const CUBIC_DECIMETRE = 'Cubic decimetre';
+    public const CUBIC_CENTIMETRE = 'Cubic centimetre';
+    public const CUBIC_MILLIMETRE = 'Cubic millimetre';
+    public const CUBIC_MICROMETRE = 'Cubic micrometre';
+    public const CUBIC_MILE = 'Cubic mile';
+    public const CUBIC_INCH = 'Cubic inch';
+    public const CUBIC_FOOT = 'Cubic foot';
+    public const CUBIC_YARD = 'Cubic yard';
+    public const LITRE = 'Litre';
+    public const DECILITRE = 'Decilitre';
+    public const CENTILITRE = 'Centilitre';
+    public const MILLILITRE = 'Millllitre';
+    public const GALLON_IMP = 'Gallon (imperial)';
+    public const GALLON_US = 'Gallon (US)';
+    public const OUNCE_IMP = 'Ounce (imperial)';
+    public const OUNCE_US_CUSTOMARY = 'Ounce (US customary)';
+    public const OUNCE_US_LEGAL = 'Ounce (US legal)';
+    public const CUP_IMP = 'Cup (imperial)';
+    public const CUP_US_CUSTOMARY = 'Cup (US customary)';
+    public const CUP_US_LEGAL = 'Cup (US legal)';
+    public const CUP_CA = 'Cup (CA)';
+    public const CUP_METRIC = 'Cup (Metric)';
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getBaseUnit(): string
     {
-        switch($unit) {
-            case static::CUBIC_METER: return 'm³';
-            case static::CUBIC_DECIMETRE: return 'dm³';
-            case static::CUBIC_CENTIMETRE: return 'cm³';
-            case static::CUBIC_MILLIMETRE: return 'mm³';
-            case static::CUBIC_MICROMETRE: return 'μm³';
-            case static::CUBIC_MILE: return 'cu mi';
-            case static::CUBIC_INCH: return 'cu in';
-            case static::CUBIC_FOOT: return 'cu ft';
-            case static::CUBIC_YARD: return 'cu yd';
-            case static::LITRE: return 'L';
-            case static::DECILITRE: return 'dL';
-            case static::CENTILITRE: return 'cL';
-            case static::MILLILITRE: return 'mL';
-            case static::GALLON_IMP: return 'gal';
-            case static::GALLON_US: return 'gal (us)';
-            case static::OUNCE_IMP: return 'fl oz';
-            case static::OUNCE_US_CUSTOMARY: return 'US fl oz (customary)';
-            case static::OUNCE_US_LEGAL: return 'US fl oz (legal)';
-            case static::CUP_IMP: return 'c';
-            case static::CUP_US_CUSTOMARY: return 'c (US customary)';
-            case static::CUP_US_LEGAL: return 'c (US legal)';
-            case static::CUP_CA: return 'c (CA)';
-            case static::CUP_METRIC: return 'c (metric)';
-        }
-        return '';
+        return static::CUBIC_METER;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getUnitsSymbol(): array
+    {
+        return array(
+            static::CUBIC_METER => 'm³',
+            static::CUBIC_DECIMETRE => 'dm³',
+            static::CUBIC_CENTIMETRE => 'cm³',
+            static::CUBIC_MILLIMETRE => 'mm³',
+            static::CUBIC_MICROMETRE => 'μm³',
+            static::CUBIC_MILE => 'cu mi',
+            static::CUBIC_INCH => 'cu in',
+            static::CUBIC_FOOT => 'cu ft',
+            static::CUBIC_YARD => 'cu yd',
+            static::LITRE => 'L',
+            static::DECILITRE => 'dL',
+            static::CENTILITRE => 'cL',
+            static::MILLILITRE => 'mL',
+            static::GALLON_IMP => 'gal',
+            static::GALLON_US => 'gal (us)',
+            static::OUNCE_IMP => 'fl oz',
+            static::OUNCE_US_CUSTOMARY => 'US fl oz (customary)',
+            static::OUNCE_US_LEGAL => 'US fl oz (legal)',
+            static::CUP_IMP => 'c',
+            static::CUP_US_CUSTOMARY => 'c (US customary)',
+            static::CUP_US_LEGAL => 'c (US legal)',
+            static::CUP_CA => 'c (CA)',
+            static::CUP_METRIC => 'c (metric)',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::CUBIC_DECIMETRE: return $value * (10 ** -3);
@@ -106,7 +126,7 @@ class VolumeConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::CUBIC_DECIMETRE: return $value * (10 ** 3);

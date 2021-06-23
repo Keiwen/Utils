@@ -6,59 +6,81 @@ namespace Keiwen\Utils\UnitConversion;
 class LengthConverter extends UnitConverter
 {
 
-    const METRE = 'Metre';
-    const KILOMETRE = 'Kilometre';
-    const DECIMETRE = 'Decimetre';
-    const CENTIMETRE = 'Centimetre';
-    const MILLIMETRE = 'Millimetre';
-    const MICROMETRE = 'Micrometre';
-    const NANOMETRE = 'Nanometre';
-    const PICOMETRE = 'Picometre';
-    const FEMTOMETRE = 'Femtometre';
-    const LIGHTYEAR = 'Light-year';
-    const MILE = 'Mile';
-    const NAUTICAL_MILE = 'Nautical mile';
-    const INCH = 'Inch';
-    const FOOT = 'Foot';
-    const YARD = 'Yard';
-    const ANGSTROM = 'Ångström';
+    public const METRE = 'Metre';
+    public const KILOMETRE = 'Kilometre';
+    public const DECIMETRE = 'Decimetre';
+    public const CENTIMETRE = 'Centimetre';
+    public const MILLIMETRE = 'Millimetre';
+    public const MICROMETRE = 'Micrometre';
+    public const NANOMETRE = 'Nanometre';
+    public const PICOMETRE = 'Picometre';
+    public const FEMTOMETRE = 'Femtometre';
+    public const LIGHTYEAR = 'Light-year';
+    public const MILE = 'Mile';
+    public const NAUTICAL_MILE = 'Nautical mile';
+    public const INCH = 'Inch';
+    public const FOOT = 'Foot';
+    public const YARD = 'Yard';
+    public const ANGSTROM = 'Ångström';
 
-    protected static $siBaseUnit = self::METRE;
-    protected static $physicalMinimum = 0;
-    protected static $physicalMaximum = null;
 
 
     /**
      * @inheritdoc
      */
-    public static function getUnitSymbol(string $unit) : string
+    public function getBaseUnit(): string
     {
-        switch($unit) {
-            case static::METRE: return 'm';
-            case static::KILOMETRE: return 'km';
-            case static::DECIMETRE: return 'dm';
-            case static::CENTIMETRE: return 'cm';
-            case static::MILLIMETRE: return 'mm';
-            case static::MICROMETRE: return 'μm';
-            case static::NANOMETRE: return 'nm';
-            case static::PICOMETRE: return 'pm';
-            case static::FEMTOMETRE: return 'fm';
-            case static::LIGHTYEAR: return 'ly';
-            case static::MILE: return 'mi';
-            case static::NAUTICAL_MILE: return 'M';
-            case static::INCH: return 'in';
-            case static::FOOT: return 'ft';
-            case static::YARD: return 'yd';
-            case static::ANGSTROM: return 'Å';
-        }
-        return '';
+        return static::METRE;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMinimum()
+    {
+        return 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getBasePhysicalMaximum()
+    {
+        return null;
+    }
+
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getUnitsSymbol(): array
+    {
+        return array(
+            static::METRE => 'm',
+            static::KILOMETRE => 'km',
+            static::DECIMETRE => 'dm',
+            static::CENTIMETRE => 'cm',
+            static::MILLIMETRE => 'mm',
+            static::MICROMETRE => 'μm',
+            static::NANOMETRE => 'nm',
+            static::PICOMETRE => 'pm',
+            static::FEMTOMETRE => 'fm',
+            static::LIGHTYEAR => 'ly',
+            static::MILE => 'mi',
+            static::NAUTICAL_MILE => 'M',
+            static::INCH => 'in',
+            static::FOOT => 'ft',
+            static::YARD => 'yd',
+            static::ANGSTROM => 'Å',
+        );
     }
 
 
     /**
      * @inheritdoc
      */
-    public static function convertToBaseUnit(float $value, string $fromUnit) : float
+    public function convertToBaseUnit(float $value, string $fromUnit) : float
     {
         switch($fromUnit) {
             case static::KILOMETRE: return $value * 1000;
@@ -84,7 +106,7 @@ class LengthConverter extends UnitConverter
     /**
      * @inheritdoc
      */
-    public static function convertFromBaseUnit(float $value, string $toUnit) : float
+    public function convertFromBaseUnit(float $value, string $toUnit) : float
     {
         switch($toUnit) {
             case static::KILOMETRE: return $value / 1000;
