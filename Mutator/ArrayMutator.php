@@ -3,43 +3,38 @@
 namespace Keiwen\Utils\Mutator;
 
 
-use Keiwen\Utils\Analyser\ArrayAnalyser;
-
 class ArrayMutator
 {
 
     /** array values considered as unique (if not, some data could be lost) */
-    const UNIQUE_SORT = 'unique';
+    public const UNIQUE_SORT = 'unique';
     /** array values could be shared, elements with same values will be returned in same order as received */
-    const NON_UNIQUE_SORT_VALUE = 'value';
+    public const NON_UNIQUE_SORT_VALUE = 'value';
     /** count number of element in element field, elements with same number will be returned in same order as received  */
-    const NON_UNIQUE_SORT_COUNT = 'count';
+    public const NON_UNIQUE_SORT_COUNT = 'count';
 
+    protected $data;
 
+    public function __construct(array $data)
+    {
+        $this->data = $data;
+    }
 
     /**
-     * @param array  $array array keys are preserved
-     * @param string $field can contains a dot char (only one) to check for nested field ("mainField.subField")
+     * @param string $fieldName can contains dot char (can be multiple) to check for nested field ("mainField.subField")
      * @param bool   $reverse
      * @param string $sortType
-     * @param bool   $forceKeyPreserve
+     * @return array
      */
-    public static function sortByField(array &$array, string $field, bool $reverse = false, string $sortType = self::NON_UNIQUE_SORT_VALUE, bool $forceKeyPreserve = false)
+    public function sortByField(string $fieldName, bool $reverse = false, string $sortType = self::NON_UNIQUE_SORT_VALUE)
     {
-        $sequential = ArrayAnalyser::isSequential($array);
         $arraySort = array();
         //use same process on keys to preserve it
         $arrayKeysSort = array();
-        foreach($array as $key => $element) {
+        foreach($this->data as $key => $element) {
             //get value for each element
-            if(strpos($field, '.') === false) {
-                //simple attribute
-                $value = isset($element[$field]) ? $element[$field] : 0;
-            } else {
-                //composed attribute
-                list($first, $second) = explode('.', $field, 2);
-                $value = isset($element[$first][$second]) ? $element[$first][$second] : 0;
-            }
+            $value = $this->getValueFromElementField($fieldName, $element);
+            if($value === null) $value = 0;
             if(is_object($value) || (is_array($value) && $sortType != self::NON_UNIQUE_SORT_COUNT)) {
                 //invalid type, should be scalar, or array in count sort type
                 $value = 0;
@@ -90,22 +85,33 @@ class ArrayMutator
         }
 
         //combine back keys with element
-        $array = ($sequential && !$forceKeyPreserve) ? $arraySort : array_combine($arrayKeysSort, $arraySort);
+        return array_combine($arrayKeysSort, $arraySort);
     }
 
 
     /**
      * From several level array, flatten to one level array (iterative)
      * Keys are concatenated and could overwrite existing keys
-     * array('one' => array('two' => 2, 'three' => 3));
+     * array('a' => array('b' => 1, 'c' => 2));
      * will become
-     * array('one_two' => 2, 'one_three' => 3);
-     * @param array  $data
+     * array('a_b' => 1, 'a_c' => 2);
      * @param string $prefixKey
-     * @param string $keySep
+     * @param string $keySeparator
      * @return array
      */
-    public static function flattenArray(array $data, string $prefixKey = '', string $keySep = '_')
+    public function flattenArray(string $prefixKey = '', string $keySeparator = '_')
+    {
+        $flatten = $this->data;
+        return $this->flattenArrayIteration($flatten, $prefixKey, $keySeparator);
+    }
+
+    /**
+     * @param array $data
+     * @param string $prefixKey
+     * @param string $keySeparator
+     * @return array
+     */
+    protected function flattenArrayIteration(array $data, string $prefixKey = '', string $keySeparator = '_')
     {
         foreach($data as $key => $value) {
             //generate new key and remove old one
@@ -113,7 +119,7 @@ class ArrayMutator
             unset($data[$key]);
             if(is_array($value)) {
                 //if is array, iterate
-                $value = static::flattenArray($value, $newKey . $keySep, $keySep);
+                $value = $this->flattenArrayIteration($value, $newKey . $keySeparator, $keySeparator);
                 //from resulting array, get all keys and put in parent array
                 foreach($value as $nk => $v) {
                     $data[$nk] = $v;
@@ -126,7 +132,6 @@ class ArrayMutator
         return $data;
     }
 
-
     /**
      * add prefix and/or suffix to array keys
      * @param array  $data
@@ -134,51 +139,11 @@ class ArrayMutator
      * @param string $suffix
      * @return array
      */
-    public static function amendKeys(array $data, string $prefix = '', string $suffix = '')
+    public function amendKeys(string $prefix = '', string $suffix = '')
     {
         $newData = array();
-        foreach($data as $key => $value) {
+        foreach($this->data as $key => $value) {
             $newData[$prefix.$key.$suffix] = $value;
-        }
-        return $newData;
-    }
-
-
-    /**
-     * Search correspondence between given data element field and reference element.
-     * Extract key from corresponding reference found (own key or given field)
-     * Set data element key as extracted key
-     *
-     * If no correspondence, data element is lost
-     * Fields value must NOT be empty
-     * If correspondence find twice, first element will be erased
-     * @param array  $data array of element to convert
-     * @param string $dataField field to compare to reference
-     * @param array  $ref array of referencing element
-     * @param string $refField fill it to use a field to compare to data instead of full element
-     * @param string $refKeyField fill it to use a reference field as key instead of element key
-     * @return array converted data
-     */
-    public static function convertKeysWithRefMap(array $data, string $dataField, array $ref, string $refField = '', string $refKeyField = '')
-    {
-        $newData = array();
-        foreach($data as $dataKey => $dataRow) {
-            //check that map field is found
-            if(empty($dataRow[$dataField])) continue;
-            //search in ref for corresponding value
-            foreach($ref as $refKey => $refRow) {
-                //check that map field is found
-                if(!empty($refField) && empty($refRow[$refField])) continue;
-                $compareTo = $refField ? $refRow[$refField] : $refRow;
-                //check correspondence
-                if($compareTo == $dataRow[$dataField]) {
-                    //newkey is either fieldKey provided if filled or ref element key
-                    $newKey = (empty($refKeyField) || empty($refRow[$refKeyField])) ? $refKey : $refRow[$refKeyField];
-                    $newData[$newKey] = $dataRow;
-                    break;
-                }
-            }
-            //not found, skip
         }
         return $newData;
     }
@@ -196,6 +161,104 @@ class ArrayMutator
         if($key === false) return false;
         unset($data[$key]);
         return true;
+    }
+
+
+    /**
+     * @param string $fieldName
+     * @param $element
+     * @return null|mixed
+     */
+    protected function getValueFromElementField(string $fieldName, $element)
+    {
+        if(strpos($fieldName, '.') === false) {
+            //simple attribute
+            return $element[$fieldName] ?? null;
+        }
+
+        //composed attribute
+        $attributeParts = explode('.', $fieldName);
+        $value = $element;
+        foreach($attributeParts as $attributePart) {
+            if(isset($value[$attributePart])) {
+                $value = $value[$attributePart];
+            } else {
+                return null;
+            }
+        }
+        return $value;
+    }
+
+
+    /**
+     * @param string $fieldName can contains dot char (can be multiple) to check for nested field ("mainField.subField")
+     * @return array
+     */
+    public function extractSubFieldList(string $fieldName)
+    {
+        $subFieldList = array();
+        foreach($this->data as $key => $element) {
+            //get value for each element
+            $subFieldList[$key] = $this->getValueFromElementField($fieldName, $element);
+        }
+        return $subFieldList;
+    }
+
+
+    /**
+     * @param array $fieldNames list of field names to be extracted. Can contains dot char (can be multiple) to check for nested field ("mainField.subField")
+     * @param array $newFieldNames list of corresponding field names to replace original one. Can be empty to preserve names
+     * @return array
+     */
+    public function extractMultipleSubField(array $fieldNames, array $newFieldNames = array())
+    {
+        if(empty($newFieldNames)) $newFieldNames = $fieldNames;
+        $extracted = array();
+        foreach($this->data as $key => $element) {
+            $newElement = array();
+            foreach($fieldNames as $index => $fieldName) {
+                $newFieldName = empty($newFieldNames[$index]) ? $fieldName : $newFieldNames[$index];
+                $newElement[$newFieldName] = $this->getValueFromElementField($fieldName, $element);
+            }
+            $extracted[$key] = $newElement;
+        }
+        return $extracted;
+    }
+
+
+    /**
+     * Extract elements when field equal a given value
+     * @param string $fieldName can contains dot char (can be multiple) to check for nested field ("mainField.subField")
+     * @param $value
+     * @param bool $strict true to check with ===, false for == (1 = '1' = true)
+     * @return array
+     */
+    public function searchByField(string $fieldName, $value, bool $strict = true)
+    {
+        $found = array();
+        foreach($this->data as $key => $element) {
+            //get value for each element
+            $dataValue = $this->getValueFromElementField($fieldName, $element);
+            $condition = $strict ? ($dataValue === $value) : ($dataValue == $value);
+            if ($condition) {
+               $found[$key] = $element;
+            }
+        }
+        return $found;
+    }
+
+
+    /**
+     * Extract first element when field equal a given value
+     * @param string $fieldName can contains dot char (can be multiple) to check for nested field ("mainField.subField")
+     * @param $value
+     * @param bool $strict true to check with ===, false for == (1 = '1' = true)
+     * @return mixed
+     */
+    public function findByField(string $fieldName, $value, bool $strict = true)
+    {
+        $found = $this->searchByField($fieldName, $value, $strict);
+        return empty($found) ? null : reset($found);
     }
 
 }
