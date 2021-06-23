@@ -40,52 +40,64 @@ class Divisibility {
      * @param bool  $floor
      * @return int
      */
-    public static function getValuePartFromTotal(float $value, float $total, int $partCount, bool $floor = true) {
-        $valuePart = $partCount * $value / $total;
+    public static function getPartFromTotal(float $value, int $partCount, bool $floor = true) {
+        if ($partCount == 0) return 0;
+        $part = $value / $partCount;
         if($floor) {
-            $valuePart = floor($valuePart) + 1;
+            $part = floor($part) + 1;
         } else {
-            $valuePart = ceil($valuePart);
+            $part = ceil($part);
         }
-        if($valuePart <= 0) $valuePart = 1;
-        if($valuePart > $partCount) $valuePart = $partCount;
-        return $valuePart;
+        if($part < 0) $part = 0;
+        if($part > $value) $part = $value;
+        return $part;
     }
 
 
     /**
      * @param float $value
-     * @param float $total
      * @param bool  $floor
      * @return int
      */
-    public static function getHalf(float $value, float $total, bool $floor = true)
+    public static function getHalf(float $value, bool $floor = true)
     {
-        return static::getValuePartFromTotal($value, $total, 2, $floor);
+        return static::getPartFromTotal($value, 2, $floor);
     }
 
 
     /**
      * @param float $value
-     * @param float $total
      * @param bool  $floor
      * @return int
      */
-    public static function getThird(float $value, float $total, bool $floor = true)
+    public static function getThird(float $value, bool $floor = true)
     {
-        return static::getValuePartFromTotal($value, $total, 3, $floor);
+        return static::getPartFromTotal($value, 3, $floor);
     }
 
 
     /**
      * @param float $value
-     * @param float $total
      * @param bool  $floor
      * @return int
      */
-    public static function getQuarter(float $value, float $total, bool $floor = true)
+    public static function getQuarter(float $value, bool $floor = true)
     {
-        return static::getValuePartFromTotal($value, $total, 4, $floor);
+        return static::getPartFromTotal($value, 4, $floor);
+    }
+
+
+    /**
+     * @param int $number
+     * @param int $divisor
+     * @return int[] array with: quotient, remainder
+     */
+    public static function getEuclideanDivision(int $number, int $divisor) {
+        if ($divisor == 0) return array(0, 0);
+        $euclidean = array();
+        $euclidean[] = intdiv($number, $divisor);
+        $euclidean[] = $number % $divisor;
+        return $euclidean;
     }
 
 
