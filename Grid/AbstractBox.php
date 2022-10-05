@@ -86,6 +86,6 @@ abstract class AbstractBox
      * @param int $direction
      * @return AbstractBox|null
      */
-    abstract public function getNeighbor(int $direction): AbstractBox;
+    abstract public function getNeighbor(int $direction): ?AbstractBox;
 
 }

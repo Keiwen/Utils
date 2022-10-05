@@ -147,7 +147,7 @@ class CharGroupPatternKngProcess extends KngProcess
 
     /**
      * Count number of possibilities for term generation
-     * @return int
+     * @return int|null
      */
     public function countPossibilities()
     {

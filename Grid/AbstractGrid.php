@@ -50,7 +50,7 @@ abstract class AbstractGrid
     /**
      * get box to given coordinates or create a new one
      * @param int[] $coord
-     * @return AbstractBox
+     * @return AbstractBox|null
      */
     public function getBox(array $coord)
     {

@@ -8,7 +8,7 @@ class TetragonBox extends AbstractBox
      * @param int $direction
      * @return TetragonBox|null
      */
-    public function getNeighbor(int $direction): AbstractBox
+    public function getNeighbor(int $direction): ?AbstractBox
     {
         $neighborsCoord = $this->coord;
         switch($direction) {

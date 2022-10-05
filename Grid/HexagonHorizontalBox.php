@@ -9,7 +9,7 @@ class HexagonHorizontalBox extends AbstractBox
      * @param int $direction
      * @return HexagonHorizontalBox|null
      */
-    public function getNeighbor(int $direction): AbstractBox
+    public function getNeighbor(int $direction): ?AbstractBox
     {
         $neighborsCoord = $this->coord;
         $maxColOffset = ceil($this->grid->getMaxWidth() / 2);

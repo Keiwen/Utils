@@ -9,7 +9,7 @@ class TetragonDiagonalBox extends TetragonBox
      * @param int $direction
      * @return TetragonDiagonalBox|null
      */
-    public function getNeighbor(int $direction): AbstractBox
+    public function getNeighbor(int $direction): ?AbstractBox
     {
         $neighbor = parent::getNeighbor($direction);
         if ($neighbor !== null) return $neighbor;
