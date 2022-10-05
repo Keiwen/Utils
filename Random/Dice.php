@@ -32,7 +32,7 @@ class Dice
             foreach($values as $raw => $value) {
                 if(!isset($this->faceValues[$raw])) {
                     throw new \RuntimeException(
-                        sprintf('Mismatch: tried to define value %s for unrecognized face %s', $values, $raw)
+                        sprintf('Mismatch: tried to define value %s for unrecognized face %s', $value, $raw)
                     );
                 }
                 $this->faceValues[$raw] = $value;
