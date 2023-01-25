@@ -157,12 +157,13 @@ class SimpleCurl extends AbstractAPIRequester
 
         curl_close($ch);
 
+        $response = $this->lastResponseBody;
         if($jsonDecode) {
-            $content = json_decode($content, true);
-            if(empty($content)) $content = array();
+            $response = json_decode($response, true);
+            if(empty($response)) $response = array();
         }
 
-        return $content;
+        return $response;
     }
 
 
