@@ -6,6 +6,15 @@ namespace Keiwen\Utils\UnitConversion;
 abstract class UnitConverter
 {
 
+    const DOMAIN_AREA = 'area';
+    const DOMAIN_ENERGY = 'energy';
+    const DOMAIN_LENGTH = 'length';
+    const DOMAIN_MASS = 'mass';
+    const DOMAIN_PLANE_ANGLE = 'planeAngle';
+    const DOMAIN_PRESSURE = 'pressure';
+    const DOMAIN_SPEED = 'speed';
+    const DOMAIN_TEMPERATURE = 'temperature';
+    const DOMAIN_VOLUME = 'volume';
 
     public function __construct()
     {
@@ -176,8 +185,8 @@ abstract class UnitConverter
 
 
     /**
-     * @param string $domain
-     * @param string|null $namespace
+     * @param string $domain you can use constants DOMAIN_XXXX
+     * @param string|null $namespace specify if specific converter defined outside library
      * @return UnitConverter|null
      */
     public static function getConverter(string $domain, string $namespace = null)
