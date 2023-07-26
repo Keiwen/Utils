@@ -36,6 +36,14 @@ abstract class AbstractAPIRequester
         return $this->url;
     }
 
+    /**
+     * @param string $url
+     */
+    public function setUrl(string $url)
+    {
+        $this->url = $url;
+    }
+
 
     abstract public function query();
 
