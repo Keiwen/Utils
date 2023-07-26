@@ -1,11 +1,12 @@
 # Utils
 A bench of utils functions
 
-## ArrayAnalyser and ArrayMutator
+## Analyser and Mutator
 * Check if array is sequential (numerical keys ordered)
 * Check if array has homogeneous elements in it (with inheritance support)
 * Flatten array (nested field brought up to first level, concatenating keys)
-* Sort by field
+* Sort array by (sub)field
+* Get classes and subdir from namespace
 
 ## JsonObject
 * Generate objects from json, with each json field converted to attribute
