@@ -13,6 +13,7 @@
         "ext-curl": "*",
         "ext-json": "*",
         "ext-intl": "*",
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "ext-xml": "*"
     }
 }
