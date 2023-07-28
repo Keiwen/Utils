@@ -227,4 +227,19 @@ class StringFormat
     }
 
 
+    /**
+     * @param int|string $timeInMinutes for example 107
+     * @param string     $separator separator between hours and minutes, ':' by default
+     * @return string    formatted time in hours, for example 1:47
+     */
+    public function formatMinutesToHours($timeInMinutes, string $separator = ':')
+    {
+        if ($timeInMinutes < 1) {
+            return '';
+        }
+        $hours = floor($timeInMinutes / 60);
+        $minutes = ($timeInMinutes % 60);
+        return sprintf('%d' . $separator . '%02d', $hours, $minutes);
+    }
+
 }
