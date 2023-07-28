@@ -43,13 +43,18 @@ class XmlParser {
             $attributes = $data['attributes'] ?? array();
             $value = $data['value'] ?? null;
             $result = array();
-            if ($value !== null) {
-                $result['value'] = $value;
-            }
             if (!empty($attributes)) {
                 foreach ($attributes as $attr => $val) {
                     //Set all the attributes in a separated array
                     $result[static::DEFAULT_ATTRIBUTES_FIELDNAME][$attr] = $val;
+                }
+                if ($value !== null) {
+                    $result['value'] = $value;
+                }
+            } else {
+                //set direct value
+                if ($value !== null) {
+                    $result = $value;
                 }
             }
             if ($data['type'] == "open") {
@@ -136,6 +141,11 @@ class XmlParser {
                 // if we are not on attributes data, apply this method again for recursive
                 $this->renameAttributesField($childData, $attributesField);
             }
+        }
+        $remainingKeys = array_keys($data);
+        // if nothing remain but value, set value directly to avoid subfield
+        if (count($remainingKeys) === 1 && $data['value']) {
+            $data = $data['value'];
         }
 
     }
