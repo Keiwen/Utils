@@ -144,7 +144,7 @@ class XmlParser {
         }
         $remainingKeys = array_keys($data);
         // if nothing remain but value, set value directly to avoid subfield
-        if (count($remainingKeys) === 1 && $data['value']) {
+        if (count($remainingKeys) === 1 && isset($data['value'])) {
             $data = $data['value'];
         }
 
