@@ -12,6 +12,7 @@
         "php": ">=7.1",
         "ext-curl": "*",
         "ext-json": "*",
-        "ext-intl": "*"
+        "ext-intl": "*",
+        "ext-openssl": "*"
     }
 }
