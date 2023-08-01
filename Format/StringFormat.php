@@ -234,12 +234,51 @@ class StringFormat
      */
     public function formatMinutesToHours($timeInMinutes, string $separator = ':')
     {
-        if ($timeInMinutes < 1) {
+        if ($timeInMinutes < 0) {
             return '';
         }
         $hours = floor($timeInMinutes / 60);
         $minutes = ($timeInMinutes % 60);
         return sprintf('%d' . $separator . '%02d', $hours, $minutes);
+    }
+
+    /**
+     * @param int|string $timeInSeconds for example 107
+     * @param string     $separator separator between minutes and seconds, ':' by default
+     * @return string    formatted time in minutes, for example 1:47
+     */
+    public function formatSecondsToMinutes($timeInSeconds, string $separator = ':')
+    {
+        if ($timeInSeconds < 0) {
+            return '';
+        }
+        $minutes = floor($timeInSeconds / 60);
+        $seconds = ($timeInSeconds % 60);
+        return sprintf('%d' . $separator . '%02d', $minutes, $seconds);
+    }
+
+    /**
+     * @param int|string $timeInSeconds for example 3677
+     * @param string     $separatorMS separator between minutes and seconds, ':' by default
+     * @param string     $separatorHM separator between hours and minutes, ':' by default
+     * @return string    formatted time in hours, for example 1:01:17. If no hours, they are not displayed
+     */
+    public function formatSecondsToHours($timeInSeconds, string $separatorMS = ':', string $separatorHM = ':')
+    {
+        if ($timeInSeconds < 0) {
+            return '';
+        }
+        $minutes = floor($timeInSeconds / 60);
+
+        $hours = floor($minutes / 60);
+        $minutes = ($minutes % 60);
+        if ($hours > 0) {
+            $formattedHours = sprintf('%d' . $separatorHM . '%02d', $hours, $minutes);
+        } else {
+            $formattedHours = sprintf('%d', $minutes);
+        }
+        $seconds = ($timeInSeconds % 60);
+        return sprintf($formattedHours . $separatorMS . '%02d', $seconds);
     }
 
 }
