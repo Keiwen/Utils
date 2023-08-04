@@ -2,7 +2,7 @@
     "name": "keiwen/utils",
     "type": "library",
     "description": "Common utils fonctions",
-	"version": "2.2",
+	"version": "2.3",
     "autoload": {
         "psr-4": {
             "Keiwen\\Utils\\": ""
