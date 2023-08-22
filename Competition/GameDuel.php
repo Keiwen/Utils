@@ -7,7 +7,7 @@ class GameDuel extends AbstractGame
 
     protected $idHome;
     protected $idAway;
-    /** @var CompetitionChampionship $affectedChampionship */
+    /** @var CompetitionChampionshipDuel $affectedChampionship */
     protected $affectedTo = null;
     protected $scoreHome = 0;
     protected $scoreAway = 0;
@@ -48,19 +48,19 @@ class GameDuel extends AbstractGame
     }
 
     /**
-     * @param CompetitionChampionship $competition
+     * @param CompetitionChampionshipDuel $competition
      * @param int $gameNumber
      * @return bool true if affected
      */
     public function affectTo($competition, int $gameNumber): bool
     {
-        if (!$competition instanceof CompetitionChampionship) {
-            throw new CompetitionException(sprintf('Duel require %s as affectation, %s given', CompetitionChampionship::class, get_class($competition)));
+        if (!$competition instanceof CompetitionChampionshipDuel) {
+            throw new CompetitionException(sprintf('Duel require %s as affectation, %s given', CompetitionChampionshipDuel::class, get_class($competition)));
         }
         return parent::affectTo($competition, $gameNumber);
     }
 
-    public function getChampionship(): ?CompetitionChampionship
+    public function getChampionship(): ?CompetitionChampionshipDuel
     {
         return parent::getAffectation();
     }
