@@ -2,16 +2,13 @@
 
 namespace Keiwen\Utils\Competition;
 
-class CompetitionGame
+class CompetitionGameDuel extends AbstractCompetitionGame
 {
 
     protected $idHome;
     protected $idAway;
-    protected $number = 0;
-    protected $played = false;
-    protected $affected = false;
-    /** @var Championship $affectedChampionship */
-    protected $affectedChampionship = null;
+    /** @var CompetitionChampionship $affectedChampionship */
+    protected $affectedTo = null;
     protected $scoreHome = 0;
     protected $scoreAway = 0;
 
@@ -51,41 +48,21 @@ class CompetitionGame
     }
 
     /**
-     * @return int
-     */
-    public function getGameNumber(): int
-    {
-        return $this->number;
-    }
-
-    /**
-     * @param Championship $championship
+     * @param CompetitionChampionship $competition
      * @param int $gameNumber
      * @return bool true if affected
      */
-    public function affectToChampionship(Championship $championship, int $gameNumber): bool
+    public function affectTo($competition, int $gameNumber): bool
     {
-        if ($this->isAffected()) return false;
-        $this->affectedChampionship = $championship;
-        $this->number = $gameNumber;
-        $this->affected = true;
-        return true;
+        if (!$competition instanceof CompetitionChampionship) {
+            throw new CompetitionException(sprintf('Duel require %s as affectation, %s given', CompetitionChampionship::class, get_class($competition)));
+        }
+        return parent::affectTo($competition, $gameNumber);
     }
 
-
-    public function isPlayed(): bool
+    public function getChampionship(): ?CompetitionChampionship
     {
-        return $this->played;
-    }
-
-    public function isAffected(): bool
-    {
-        return $this->affected;
-    }
-
-    public function getChampionship(): Championship
-    {
-        return $this->affectedChampionship;
+        return parent::getAffectation();
     }
 
     /**
@@ -100,8 +77,8 @@ class CompetitionGame
         $this->scoreHome = $scoreHome;
         $this->scoreAway = $scoreAway;
         $this->played = true;
-        if ($this->isAffected() && $this->affectedChampionship) {
-            $this->affectedChampionship->updateGamesPlayed();
+        if ($this->isAffected() && $this->affectedTo) {
+            $this->affectedTo->updateGamesPlayed();
         }
         return true;
     }

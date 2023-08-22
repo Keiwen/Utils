@@ -96,7 +96,7 @@ class CompetitionRanking
             + $this->getLoss() * static::getPointsForLoss();
     }
 
-    public function saveGame(CompetitionGame $game)
+    public function saveGame(AbstractCompetitionGame $game)
     {
         $isHome = $isAway = false;
         if ($game->getIdHome() == $this->getIdPlayer()) $isHome = true;

@@ -4,42 +4,26 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class Championship
+class CompetitionChampionship extends AbstractCompetition
 {
-    protected $givenPlayers;
-    protected $players;
-    protected $playerCount;
     protected $serieCount;
     protected $calendar;
     protected $calendarRoundCount;
-    /** @var CompetitionGame[] $gameRepository */
+
+    /** @var CompetitionGameDuel[] $gameRepository */
     protected $gameRepository = array();
-    protected $nextGameNumber = 1;
+
     protected $nextRoundNumber = 1;
-    /** @var CompetitionRanking[] $rankings */
-    protected $rankings = array();
-    /** @var CompetitionRanking[] $orderedRankings */
-    protected $orderedRankings = array();
 
 
     public function __construct(array $players, int $serieCount = 1, bool $shuffleCalendar = false)
     {
+        if (count($players) < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
+        parent::__construct($players);
+
         if ($serieCount < 1) $serieCount = 1;
-        $this->playerCount = count($players);
-        if ($this->playerCount < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
-        $this->givenPlayers = $players;
-        $this->players = array_keys($players);
         $this->serieCount = $serieCount;
         $this->generateCalendar($shuffleCalendar);
-        // initialize rankings;
-        for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
-            $this->rankings[$playerOrd] = new CompetitionRanking($playerOrd);
-        }
-    }
-
-    public function getPlayerCount()
-    {
-        return $this->playerCount;
     }
 
     public function getRoundCount()
@@ -47,28 +31,14 @@ class Championship
         return $this->calendarRoundCount;
     }
 
-    public function getGameCount()
-    {
-        return count($this->gameRepository);
-    }
-
-    public function getGameCountByPlayer()
-    {
-        return ($this->playerCount - 1) * $this->serieCount;
-    }
-
     public function getSerieCount()
     {
         return $this->serieCount;
     }
 
-    /**
-     * @param int $playerOrd
-     * @return mixed|null if found, full player data passed in constructor
-     */
-    public function getFullPlayer(int $playerOrd)
+    public function getGameCountByPlayer()
     {
-        return $this->givenPlayers[$playerOrd - 1] ?? null;
+        return ($this->playerCount - 1) * $this->serieCount;
     }
 
     protected function generateCalendar(bool $shuffle = false): void
@@ -160,7 +130,7 @@ class Championship
             foreach ($baseCalendar as $baseRound => $gamesOfRound) {
                 // for each games
                 foreach ($gamesOfRound as $game) {
-                    /** @var CompetitionGame $game */
+                    /** @var CompetitionGameDuel $game */
                     // add a copy for a new round but switch home/away for each round
                     $reverse = (Divisibility::isNumberEven($serie) && Divisibility::isNumberOdd($baseRound))
                         || (Divisibility::isNumberOdd($serie) && Divisibility::isNumberEven($baseRound));
@@ -185,7 +155,7 @@ class Championship
             for ($round = 1; $round <= $this->calendarRoundCount; $round++) {
                 if (Divisibility::isNumberEven($round)) {
                     foreach ($this->calendar[$round] as $firstSerieGame) {
-                        /** @var CompetitionGame $firstSerieGame */
+                        /** @var CompetitionGameDuel $firstSerieGame */
                         $firstSerieGame->reverseHomeAway();
                     }
                 }
@@ -201,8 +171,8 @@ class Championship
         foreach ($this->calendar as $round => $gamesOfTheRound) {
             foreach ($gamesOfTheRound as $index => $game) {
                 // for each game, give a number to order it
-                /** @var CompetitionGame $game */
-                $game->affectToChampionship($this, $gameNumber);
+                /** @var CompetitionGameDuel $game */
+                $game->affectTo($this, $gameNumber);
                 $this->gameRepository[$gameNumber] = array(
                     'round' => $round,
                     'index' => $index,
@@ -223,7 +193,7 @@ class Championship
     /**
      * get games for given round
      * @param int $round
-     * @return CompetitionGame[]] games of the round
+     * @return CompetitionGameDuel[]] games of the round
      */
     public function getGamesByRound(int $round): array
     {
@@ -233,9 +203,9 @@ class Championship
     /**
      * get game with a given number
      * @param int $number
-     * @return CompetitionGame|null game if found
+     * @return CompetitionGameDuel|null game if found
      */
-    public function getGameByNumber(int $number): ?CompetitionGame
+    public function getGameByNumber(int $number): ?AbstractCompetitionGame
     {
         if (!isset($this->gameRepository[$number])) return null;
         $round = $this->gameRepository[$number]['round'] ?? 0;
@@ -257,55 +227,13 @@ class Championship
 
 
     /**
-     * get next game to play
-     * @return CompetitionGame|null game if found
+     * @param int $gameNumber
      */
-    public function getNextGame(): ?CompetitionGame
+    protected function setNextGame(int $gameNumber)
     {
-        return $this->getGameByNumber($this->nextGameNumber);
-    }
-
-    public function updateGamesPlayed()
-    {
-        $gameNumber = $this->nextGameNumber;
-        do {
-            $nextGamePlayed = false;
-            $game = $this->getGameByNumber($gameNumber);
-            if ($game) {
-                if ($game->isPlayed()) {
-                    $nextGamePlayed = true;
-                    $gameNumber++;
-                }
-            }
-        } while ($nextGamePlayed);
-        if ($game) {
-            if ($gameNumber != $this->nextGameNumber) {
-                $this->updateRankings($this->nextGameNumber, $gameNumber - 1);
-                $this->nextGameNumber = $gameNumber;
-                $this->nextRoundNumber = $this->getGameRound($game->getGameNumber());
-            }
-        } else {
-            $this->nextGameNumber = -1;
-            $this->nextRoundNumber = -1;
-        }
-    }
-
-    /**
-     * @param int $fromGame
-     * @param int $toGame
-     */
-    protected function updateRankings(int $fromGame, int $toGame) {
-        for ($gameNumber = $fromGame; $gameNumber <= $toGame; $gameNumber++) {
-            $game = $this->getGameByNumber($gameNumber);
-            if (!$game) continue;
-            if (!isset($this->rankings[$game->getIdHome()])) continue;
-            ($this->rankings[$game->getIdHome()])->saveGame($game);
-            if (!isset($this->rankings[$game->getIdAway()])) continue;
-            ($this->rankings[$game->getIdAway()])->saveGame($game);
-        }
-        $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(CompetitionRanking::class, 'orderRankings'));
-        $this->orderedRankings = array_reverse($this->orderedRankings);
+        parent::setNextGame($gameNumber);
+        $this->nextRoundNumber = $this->getGameRound($gameNumber);
+        if (empty($this->nextRoundNumber)) $this->nextRoundNumber = -1;
     }
 
 
@@ -317,80 +245,10 @@ class Championship
         return $nextRound;
     }
 
-    protected function ordGapInPlayers(int $currentOrd, int $ordGap): int
+    protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1)
     {
-        $nextOrd = $currentOrd + $ordGap;
-        if ($nextOrd > $this->playerCount) $nextOrd -= $this->playerCount;
-        if ($nextOrd < 1) $nextOrd += $this->playerCount;
-        return $nextOrd;
+        $this->calendar[$round][] = new CompetitionGameDuel($ordHome, $ordAway);
     }
-
-
-    protected function addGame(int $ordHome, int $ordAway, int $round)
-    {
-        $this->calendar[$round][] = new CompetitionGame($ordHome, $ordAway);
-    }
-
-    /**
-     * @return CompetitionRanking[] first to last
-     */
-    public function getRankings()
-    {
-        return $this->orderedRankings;
-    }
-
-    /**
-     * @param int $playerOrd
-     * @return bool
-     */
-    public function canPlayerWin(int $playerOrd)
-    {
-        return $this->canPlayerReachRank($playerOrd, 1);
-    }
-
-    /**
-     * @param int $playerOrd
-     * @param int $rank
-     * @return bool
-     */
-    public function canPlayerReachRank(int $playerOrd, int $rank)
-    {
-        $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerOrd] ?? null;
-        if (empty($rankRanking) || empty($playerRanking)) return false;
-        $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * CompetitionRanking::getPointsForLoss();
-        $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * CompetitionRanking::getPointsForWon();
-        return $maxPointsForPlayer >= $minPointsForRank;
-    }
-
-    /**
-     * @param int $playerOrd
-     * @param int $rank
-     * @return bool
-     */
-    public function canPlayerDropToRank(int $playerOrd, int $rank)
-    {
-        $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerOrd] ?? null;
-        if (empty($rankRanking) || empty($playerRanking)) return false;
-        $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * CompetitionRanking::getPointsForWon();
-        $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * CompetitionRanking::getPointsForLoss();
-        return $maxPointsForRank >= $minPointsForPlayer;
-    }
-
-    /**
-     * @param int $playerOrd
-     * @return bool
-     */
-    public function canPlayerLoose(int $playerOrd)
-    {
-        return $this->canPlayerDropToRank($playerOrd, 2);
-    }
-
 
 
 }
