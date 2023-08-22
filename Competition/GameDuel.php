@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
-class CompetitionGameDuel extends AbstractCompetitionGame
+class GameDuel extends AbstractGame
 {
 
     protected $idHome;

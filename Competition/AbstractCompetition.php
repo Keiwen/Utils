@@ -8,13 +8,13 @@ abstract class AbstractCompetition
     protected $players;
     protected $playerCount;
 
-    /** @var AbstractCompetitionGame[] $gameRepository */
+    /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
     protected $nextGameNumber = 1;
 
-    /** @var AbstractCompetitionRanking[] $rankings */
+    /** @var AbstractRanking[] $rankings */
     protected $rankings = array();
-    /** @var AbstractCompetitionRanking[] $orderedRankings */
+    /** @var AbstractRanking[] $orderedRankings */
     protected $orderedRankings = array();
 
 
@@ -53,9 +53,9 @@ abstract class AbstractCompetition
     /**
      * get game with a given number
      * @param int $number
-     * @return AbstractCompetitionGame|null game if found
+     * @return AbstractGame|null game if found
      */
-    public function getGameByNumber(int $number): ?AbstractCompetitionGame
+    public function getGameByNumber(int $number): ?AbstractGame
     {
         return $this->gameRepository[$number - 1] ?? null;
     }
@@ -63,9 +63,9 @@ abstract class AbstractCompetition
 
     /**
      * get next game to play
-     * @return AbstractCompetitionGame|null game if found
+     * @return AbstractGame|null game if found
      */
-    public function getNextGame(): ?AbstractCompetitionGame
+    public function getNextGame(): ?AbstractGame
     {
         return $this->getGameByNumber($this->nextGameNumber);
     }
@@ -117,7 +117,7 @@ abstract class AbstractCompetition
     protected function orderRankings()
     {
         $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(AbstractCompetitionRanking::class, 'orderRankings'));
+        usort($this->orderedRankings, array(AbstractRanking::class, 'orderRankings'));
         $this->orderedRankings = array_reverse($this->orderedRankings);
     }
 
@@ -135,7 +135,7 @@ abstract class AbstractCompetition
     abstract protected function addGame();
 
     /**
-     * @return AbstractCompetitionRanking[] first to last
+     * @return AbstractRanking[] first to last
      */
     public function getRankings()
     {

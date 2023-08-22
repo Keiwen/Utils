@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
-abstract class AbstractCompetitionGame
+abstract class AbstractGame
 {
 
     protected $number = 0;

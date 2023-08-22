@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
-class CompetitionRankingDuel extends AbstractCompetitionRanking
+class RankingDuel extends AbstractRanking
 {
 
     protected $scoreFor = 0;
@@ -64,10 +64,10 @@ class CompetitionRankingDuel extends AbstractCompetitionRanking
     }
 
 
-    public function saveGame(AbstractCompetitionGame $game): bool
+    public function saveGame(AbstractGame $game): bool
     {
-        if (!$game instanceof CompetitionGameDuel) {
-            throw new CompetitionException(sprintf('Ranking duel require %s as game, %s given', CompetitionGameDuel::class, get_class($game)));
+        if (!$game instanceof GameDuel) {
+            throw new CompetitionException(sprintf('Ranking duel require %s as game, %s given', GameDuel::class, get_class($game)));
         }
         $isHome = $isAway = false;
         if ($game->getIdHome() == $this->getIdPlayer()) $isHome = true;
@@ -94,7 +94,7 @@ class CompetitionRankingDuel extends AbstractCompetitionRanking
     /**
      * @return int
      */
-    public static function orderRankings(AbstractCompetitionRanking $rankingA, AbstractCompetitionRanking $rankingB)
+    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB)
     {
         // first compare points: more points is first
         if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;

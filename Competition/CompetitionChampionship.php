@@ -10,7 +10,7 @@ class CompetitionChampionship extends AbstractCompetition
     protected $calendar;
     protected $calendarRoundCount;
 
-    /** @var CompetitionGameDuel[] $gameRepository */
+    /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
 
     protected $nextRoundNumber = 1;
@@ -29,7 +29,7 @@ class CompetitionChampionship extends AbstractCompetition
     protected function initializeRanking()
     {
         for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
-            $this->rankings[$playerOrd] = new CompetitionRankingDuel($playerOrd);
+            $this->rankings[$playerOrd] = new RankingDuel($playerOrd);
         }
     }
 
@@ -137,7 +137,7 @@ class CompetitionChampionship extends AbstractCompetition
             foreach ($baseCalendar as $baseRound => $gamesOfRound) {
                 // for each games
                 foreach ($gamesOfRound as $game) {
-                    /** @var CompetitionGameDuel $game */
+                    /** @var GameDuel $game */
                     // add a copy for a new round but switch home/away for each round
                     $reverse = (Divisibility::isNumberEven($serie) && Divisibility::isNumberOdd($baseRound))
                         || (Divisibility::isNumberOdd($serie) && Divisibility::isNumberEven($baseRound));
@@ -162,7 +162,7 @@ class CompetitionChampionship extends AbstractCompetition
             for ($round = 1; $round <= $this->calendarRoundCount; $round++) {
                 if (Divisibility::isNumberEven($round)) {
                     foreach ($this->calendar[$round] as $firstSerieGame) {
-                        /** @var CompetitionGameDuel $firstSerieGame */
+                        /** @var GameDuel $firstSerieGame */
                         $firstSerieGame->reverseHomeAway();
                     }
                 }
@@ -178,7 +178,7 @@ class CompetitionChampionship extends AbstractCompetition
         foreach ($this->calendar as $round => $gamesOfTheRound) {
             foreach ($gamesOfTheRound as $index => $game) {
                 // for each game, give a number to order it
-                /** @var CompetitionGameDuel $game */
+                /** @var GameDuel $game */
                 $game->affectTo($this, $gameNumber);
                 $this->gameRepository[$gameNumber] = array(
                     'round' => $round,
@@ -200,7 +200,7 @@ class CompetitionChampionship extends AbstractCompetition
     /**
      * get games for given round
      * @param int $round
-     * @return CompetitionGameDuel[]] games of the round
+     * @return GameDuel[]] games of the round
      */
     public function getGamesByRound(int $round): array
     {
@@ -210,9 +210,9 @@ class CompetitionChampionship extends AbstractCompetition
     /**
      * get game with a given number
      * @param int $number
-     * @return CompetitionGameDuel|null game if found
+     * @return GameDuel|null game if found
      */
-    public function getGameByNumber(int $number): ?AbstractCompetitionGame
+    public function getGameByNumber(int $number): ?AbstractGame
     {
         if (!isset($this->gameRepository[$number])) return null;
         $round = $this->gameRepository[$number]['round'] ?? 0;
@@ -254,7 +254,7 @@ class CompetitionChampionship extends AbstractCompetition
 
     protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1)
     {
-        $this->calendar[$round][] = new CompetitionGameDuel($ordHome, $ordAway);
+        $this->calendar[$round][] = new GameDuel($ordHome, $ordAway);
     }
 
 
@@ -272,7 +272,7 @@ class CompetitionChampionship extends AbstractCompetition
     protected function orderRankings()
     {
         $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(CompetitionRankingDuel::class, 'orderRankings'));
+        usort($this->orderedRankings, array(RankingDuel::class, 'orderRankings'));
         $this->orderedRankings = array_reverse($this->orderedRankings);
     }
 

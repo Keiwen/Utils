@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
-abstract class AbstractCompetitionRanking
+abstract class AbstractRanking
 {
 
     protected $idPlayer;
@@ -87,7 +87,7 @@ abstract class AbstractCompetitionRanking
     }
 
 
-    abstract public function saveGame(AbstractCompetitionGame $game): bool;
+    abstract public function saveGame(AbstractGame $game): bool;
 
 
     /**
