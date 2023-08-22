@@ -26,6 +26,13 @@ class CompetitionChampionship extends AbstractCompetition
         $this->generateCalendar($shuffleCalendar);
     }
 
+    protected function initializeRanking()
+    {
+        for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
+            $this->rankings[$playerOrd] = new CompetitionRankingDuel($playerOrd);
+        }
+    }
+
     public function getRoundCount()
     {
         return $this->calendarRoundCount;
@@ -248,6 +255,25 @@ class CompetitionChampionship extends AbstractCompetition
     protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1)
     {
         $this->calendar[$round][] = new CompetitionGameDuel($ordHome, $ordAway);
+    }
+
+
+    protected function updateRankingsForGame($game)
+    {
+        if (isset($this->rankings[$game->getIdHome()])) {
+            ($this->rankings[$game->getIdHome()])->saveGame($game);
+        }
+        if (isset($this->rankings[$game->getIdAway()])) {
+            ($this->rankings[$game->getIdAway()])->saveGame($game);
+        }
+    }
+
+
+    protected function orderRankings()
+    {
+        $this->orderedRankings = $this->rankings;
+        usort($this->orderedRankings, array(CompetitionRankingDuel::class, 'orderRankings'));
+        $this->orderedRankings = array_reverse($this->orderedRankings);
     }
 
 

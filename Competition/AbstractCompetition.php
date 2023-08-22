@@ -12,9 +12,9 @@ abstract class AbstractCompetition
     protected $gameRepository = array();
     protected $nextGameNumber = 1;
 
-    /** @var CompetitionRanking[] $rankings */
+    /** @var AbstractCompetitionRanking[] $rankings */
     protected $rankings = array();
-    /** @var CompetitionRanking[] $orderedRankings */
+    /** @var AbstractCompetitionRanking[] $orderedRankings */
     protected $orderedRankings = array();
 
 
@@ -24,10 +24,10 @@ abstract class AbstractCompetition
         $this->givenPlayers = $players;
         $this->players = array_keys($players);
         // initialize rankings;
-        for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
-            $this->rankings[$playerOrd] = new CompetitionRanking($playerOrd);
-        }
+        $this->initializeRanking();
     }
+
+    abstract protected function initializeRanking();
 
     public function getPlayerCount()
     {
@@ -109,16 +109,19 @@ abstract class AbstractCompetition
         for ($gameNumber = $fromGame; $gameNumber <= $toGame; $gameNumber++) {
             $game = $this->getGameByNumber($gameNumber);
             if (!$game) continue;
-            if (!isset($this->rankings[$game->getIdHome()])) continue;
-            ($this->rankings[$game->getIdHome()])->saveGame($game);
-            if (!isset($this->rankings[$game->getIdAway()])) continue;
-            ($this->rankings[$game->getIdAway()])->saveGame($game);
+            $this->updateRankingsForGame($game);
         }
+        $this->orderRankings();
+    }
+
+    protected function orderRankings()
+    {
         $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(CompetitionRanking::class, 'orderRankings'));
+        usort($this->orderedRankings, array(AbstractCompetitionRanking::class, 'orderRankings'));
         $this->orderedRankings = array_reverse($this->orderedRankings);
     }
 
+    abstract protected function updateRankingsForGame($game);
 
     protected function ordGapInPlayers(int $currentOrd, int $ordGap): int
     {
@@ -132,7 +135,7 @@ abstract class AbstractCompetition
     abstract protected function addGame();
 
     /**
-     * @return CompetitionRanking[] first to last
+     * @return AbstractCompetitionRanking[] first to last
      */
     public function getRankings()
     {
@@ -159,9 +162,9 @@ abstract class AbstractCompetition
         $playerRanking = $this->rankings[$playerOrd] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * CompetitionRanking::getPointsForLoss();
+        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * $rankRanking::getPointsForLoss();
         $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * CompetitionRanking::getPointsForWon();
+        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * $playerRanking::getPointsForWon();
         return $maxPointsForPlayer >= $minPointsForRank;
     }
 
@@ -176,9 +179,9 @@ abstract class AbstractCompetition
         $playerRanking = $this->rankings[$playerOrd] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * CompetitionRanking::getPointsForWon();
+        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * $rankRanking::getPointsForWon();
         $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * CompetitionRanking::getPointsForLoss();
+        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * $playerRanking::getPointsForLoss();
         return $maxPointsForRank >= $minPointsForPlayer;
     }
 
