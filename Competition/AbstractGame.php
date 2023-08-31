@@ -5,7 +5,7 @@ namespace Keiwen\Utils\Competition;
 abstract class AbstractGame
 {
 
-    protected $number = 0;
+    protected $gameNumber = 0;
     protected $played = false;
     protected $affected = false;
     protected $affectedTo = null;
@@ -15,7 +15,7 @@ abstract class AbstractGame
      */
     public function getGameNumber(): int
     {
-        return $this->number;
+        return $this->gameNumber;
     }
 
     /**
@@ -27,7 +27,7 @@ abstract class AbstractGame
     {
         if ($this->isAffected()) return false;
         $this->affectedTo = $competition;
-        $this->number = $gameNumber;
+        $this->gameNumber = $gameNumber;
         $this->affected = true;
         return true;
     }
