@@ -85,6 +85,7 @@ abstract class AbstractRanking
      */
     public static function orderRankings(self $rankingA, self $rankingB)
     {
+        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
         if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
         if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
@@ -94,6 +95,16 @@ abstract class AbstractRanking
         // last case, first registered player is first
         if ($rankingA->getIdPlayer() < $rankingB->getIdPlayer()) return 1;
         return -1;
+    }
+
+    protected static function checkStaticRankingClass(self $rankingA, self $rankingB)
+    {
+        if (!$rankingA instanceof static) {
+            throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', static::class, get_class($rankingA)));
+        }
+        if (!$rankingB instanceof static) {
+            throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', static::class, get_class($rankingB)));
+        }
     }
 
 }
