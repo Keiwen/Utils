@@ -15,21 +15,12 @@ abstract class AbstractRanking
     {
         $this->idPlayer = $idPlayer;
         // initialize game by result
-        $this->gameByResult = array_fill_keys(static::getPossibleResults(), 0);
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getPossibleResults(): array
-    {
-        return array_keys(static::$pointByResult);
+        $this->gameByResult = array_fill_keys(array_keys(static::$pointByResult), 0);
     }
 
 
-    public static function setPointsAttributionForResult(string $result, int $points)
+    public static function setPointsAttributionForResult($result, int $points)
     {
-        if (!in_array($result, static::getPossibleResults())) return false;
         static::$pointByResult[$result] = $points;
         return true;
     }
@@ -51,7 +42,7 @@ abstract class AbstractRanking
         return true;
     }
 
-    public static function getPointsForResult(string $result): int
+    public static function getPointsForResult($result): int
     {
         return static::$pointByResult[$result] ?? 0;
     }
@@ -64,15 +55,14 @@ abstract class AbstractRanking
     public function getPlayed(): int
     {
         $played = 0;
-        foreach (static::getPossibleResults() as $result) {
-            $played += $this->getPlayedByResult($result);
+        foreach ($this->gameByResult as $gameCount) {
+            $played += $gameCount;
         }
         return $played;
     }
 
-    public function getPlayedByResult(string $result): int
+    public function getPlayedByResult($result): int
     {
-        if (!in_array($result, static::getPossibleResults())) return 0;
         return $this->gameByResult[$result] ?? 0;
     }
 
@@ -80,8 +70,8 @@ abstract class AbstractRanking
     public function getPoints()
     {
         $points = 0;
-        foreach (static::getPossibleResults() as $result) {
-            $points += $this->getPlayedByResult($result) * static::getPointsForResult($result);
+        foreach (static::$pointByResult as $result => $resultPoints) {
+            $points += $resultPoints * $this->getPlayedByResult($result);
         }
         return $points;
     }
