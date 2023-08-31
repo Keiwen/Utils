@@ -26,6 +26,14 @@ abstract class AbstractGame
 
 
     /**
+     * @return int
+     */
+    public function getPlayerCount(): int
+    {
+        return count($this->players);
+    }
+
+    /**
      * @param int $idPlayer
      * @return int 0 if not found
      */
