@@ -21,11 +21,6 @@ class CompetitionChampionshipRace extends AbstractCompetition
         }
     }
 
-    public function getGameCountByPlayer()
-    {
-        return count($this->gameRepository);
-    }
-
 
     /**
      * get game with a given number
