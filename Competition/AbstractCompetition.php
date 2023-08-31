@@ -39,7 +39,10 @@ abstract class AbstractCompetition
         return count($this->gameRepository);
     }
 
-    abstract public function getGameCountByPlayer();
+    public function getGameCountByPlayer()
+    {
+        return count($this->gameRepository);
+    }
 
     /**
      * @param int $playerOrd
