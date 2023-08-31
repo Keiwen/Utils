@@ -73,25 +73,23 @@ abstract class AbstractCompetition
     public function updateGamesPlayed()
     {
         $gameNumber = $this->nextGameNumber;
+        // check first if championship already done
+        if ($gameNumber == -1) return;
         do {
             $nextGamePlayed = false;
             $game = $this->getGameByNumber($gameNumber);
-            if ($game) {
-                if ($game->isPlayed()) {
-                    $nextGamePlayed = true;
-                    $gameNumber++;
-                }
+            if ($game && $game->isPlayed()) {
+                $nextGamePlayed = true;
+                $gameNumber++;
             }
         } while ($nextGamePlayed);
-        if ($game) {
-            if ($gameNumber != $this->nextGameNumber) {
-                $this->updateRankings($this->nextGameNumber, $gameNumber - 1);
-                $this->setNextGame($gameNumber);
-            }
-        } else {
-            $this->setNextGame(-1);
+
+        if ($gameNumber != $this->nextGameNumber) {
+            $this->updateRankings($this->nextGameNumber, $gameNumber - 1);
+            $this->setNextGame($gameNumber);
         }
     }
+
 
     /**
      * @param int $gameNumber
@@ -99,6 +97,10 @@ abstract class AbstractCompetition
     protected function setNextGame(int $gameNumber)
     {
         $this->nextGameNumber = $gameNumber;
+        if ($gameNumber <= 0 || $gameNumber > $this->getGameCount()) {
+            // set to -1 if out of bounds
+            $this->nextGameNumber = -1;
+        }
     }
 
     /**
@@ -162,9 +164,9 @@ abstract class AbstractCompetition
         $playerRanking = $this->rankings[$playerOrd] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * $rankRanking::getPointsForLoss();
+        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMinPointForAGame();
         $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * $playerRanking::getPointsForWon();
+        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * static::getMaxPointForAGame();
         return $maxPointsForPlayer >= $minPointsForRank;
     }
 
@@ -179,9 +181,9 @@ abstract class AbstractCompetition
         $playerRanking = $this->rankings[$playerOrd] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * $rankRanking::getPointsForWon();
+        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMaxPointForAGame();
         $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * $playerRanking::getPointsForLoss();
+        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * static::getMinPointForAGame();
         return $maxPointsForRank >= $minPointsForPlayer;
     }
 
@@ -195,5 +197,7 @@ abstract class AbstractCompetition
     }
 
 
+    abstract public static function getMaxPointForAGame(): int;
+    abstract public static function getMinPointForAGame(): int;
 
 }

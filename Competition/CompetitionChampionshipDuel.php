@@ -280,4 +280,16 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     }
 
 
+    public static function getMaxPointForAGame(): int
+    {
+        return RankingDuel::getPointsForWon();
+    }
+
+
+    public static function getMinPointForAGame(): int
+    {
+        return RankingDuel::getPointsForLoss();
+    }
+
+
 }
