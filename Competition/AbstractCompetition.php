@@ -52,12 +52,12 @@ abstract class AbstractCompetition
 
     /**
      * get game with a given number
-     * @param int $number
+     * @param int $gameNumber
      * @return AbstractGame|null game if found
      */
-    public function getGameByNumber(int $number): ?AbstractGame
+    public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
-        return $this->gameRepository[$number - 1] ?? null;
+        return $this->gameRepository[$gameNumber - 1] ?? null;
     }
 
 
