@@ -49,6 +49,16 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
 
     /**
+     * @param int $count
+     */
+    public function addRaces(int $count)
+    {
+        for ($i = 1; $i <= $count; $i++) {
+            $this->addRace();
+        }
+    }
+
+    /**
      * @param GameRace $game
      */
     protected function updateRankingsForGame($game)
