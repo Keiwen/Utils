@@ -209,14 +209,14 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 
     /**
      * get game with a given number
-     * @param int $number
+     * @param int $gameNumber
      * @return GameDuel|null game if found
      */
-    public function getGameByNumber(int $number): ?AbstractGame
+    public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
-        if (!isset($this->gameRepository[$number])) return null;
-        $round = $this->gameRepository[$number]['round'] ?? 0;
-        $index = $this->gameRepository[$number]['index'] ?? 0;
+        if (!isset($this->gameRepository[$gameNumber])) return null;
+        $round = $this->gameRepository[$gameNumber]['round'] ?? 0;
+        $index = $this->gameRepository[$gameNumber]['index'] ?? 0;
         if (empty($round)) return null;
         if (!isset($this->calendar[$round])) return null;
         return $this->calendar[$round][$index] ?? null;
@@ -258,6 +258,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     }
 
 
+    /**
+     * @param GameDuel $game
+     */
     protected function updateRankingsForGame($game)
     {
         if (isset($this->rankings[$game->getIdHome()])) {
