@@ -14,7 +14,9 @@ class DirectoryParser
     public function __construct(string $baseDirectory, string $pathSeparator = '/')
     {
         $this->pathSeparator = $pathSeparator;
-        $baseDirectory = trim($baseDirectory, $this->pathSeparator) . $this->pathSeparator;
+        if (substr($baseDirectory, -1) !== $this->pathSeparator) {
+            $baseDirectory .= $this->pathSeparator;
+        }
         if(!is_dir($baseDirectory)) {
             throw new \LogicException(sprintf('Directory %s not found, or is not a directory', $baseDirectory));
         }
