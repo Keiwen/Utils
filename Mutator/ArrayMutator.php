@@ -191,6 +191,7 @@ class ArrayMutator
 
 
     /**
+     * given an array of homogeneous elements, extract subfield values of each element
      * @param string $fieldName can contains dot char (can be multiple) to check for nested field ("mainField.subField")
      * @return array
      */
@@ -206,6 +207,7 @@ class ArrayMutator
 
 
     /**
+     * given an array of homogeneous elements, extract subfields values of each element
      * @param array $fieldNames list of field names to be extracted. Can contains dot char (can be multiple) to check for nested field ("mainField.subField")
      * @param array $newFieldNames list of corresponding field names to replace original one. Can be empty to preserve names
      * @return array
@@ -223,6 +225,28 @@ class ArrayMutator
             $extracted[$key] = $newElement;
         }
         return $extracted;
+    }
+
+
+    /**
+     * given an array as object, extract specific 'attributes' or subfields
+     * If only one attribute specified, return direct value
+     * @param string[] $fieldNames can contains dot char (can be multiple) to check for nested field ("mainField.subField")
+     * @param string[] $newFieldNames list of corresponding field names to replace original one. Can be empty to preserve names
+     * @return array
+     */
+    public function extractAttributes(array $fieldNames, array $newFieldNames = array())
+    {
+        if(empty($newFieldNames)) $newFieldNames = $fieldNames;
+        $attributeList = array();
+        foreach($fieldNames as $index => $fieldName) {
+            $newFieldName = empty($newFieldNames[$index]) ? $fieldName : $newFieldNames[$index];
+            $attributeList[$newFieldName] = $this->getValueFromElementField($fieldName, $this->data);
+        }
+        if(count($fieldNames) === 1) {
+            $attributeList = $attributeList[$newFieldName];
+        }
+        return $attributeList;
     }
 
 
