@@ -18,7 +18,7 @@ class VolumeConverter extends UnitConverter
     public const LITRE = 'Litre';
     public const DECILITRE = 'Decilitre';
     public const CENTILITRE = 'Centilitre';
-    public const MILLILITRE = 'Millllitre';
+    public const MILLILITRE = 'Millilitre';
     public const GALLON_IMP = 'Gallon (imperial)';
     public const GALLON_US = 'Gallon (US)';
     public const OUNCE_IMP = 'Ounce (imperial)';
