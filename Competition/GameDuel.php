@@ -40,8 +40,8 @@ class GameDuel extends AbstractGame
     public function reverseHomeAway(): bool
     {
         if ($this->isPlayed()) return false;
-        $this->players = array_reverse(array_values($this->players));
-        $this->players = array_combine(range(1, count($this->players)), $this->players);
+        $idPlayers = array_keys($this->players);
+        $this->players = array_combine(array_reverse($idPlayers), range(1, count($this->players)));
         return true;
     }
 
