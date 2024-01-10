@@ -56,16 +56,24 @@ class CompetitionChampionshipDuel extends AbstractCompetition
             $this->generateBaseCalendarOdd();
         }
 
+        $roundInASerie = $this->getRoundCount();
         $this->generateFullCalendar();
 
         if ($shuffle) {
-            $calendarCopy = $this->calendar;
-            shuffle($calendarCopy);
+            // shuffle each serie individually instead of full calendar
+            $calendarCopy = array_values($this->calendar);
             $this->calendar = array();
             $round = 1;
-            foreach ($calendarCopy as $randomRound => $games) {
-                $this->calendar[$round] = $calendarCopy[$randomRound];
-                $round++;
+            for ($i = 1; $i <= $this->serieCount; $i++) {
+                //for each serie, shuffle rounds inside
+                //get calendar of current serie
+                $calendarRandom = array_slice($calendarCopy, ($i - 1) * $roundInASerie, $roundInASerie);
+                shuffle($calendarRandom);
+                //shuffle and distirbute again in actual calendar
+                foreach ($calendarRandom as $randomRound => $games) {
+                    $this->calendar[$round] = $calendarRandom[$randomRound];
+                    $round++;
+                }
             }
         }
 
