@@ -5,8 +5,10 @@ namespace Keiwen\Utils\Competition;
 class RankingBrawl extends AbstractRanking
 {
 
-    protected $totalBrawlCountWon = 0;
-    protected $totalBrawlCountLoss = 0;
+    const PERF_TOTAL_BRAWL_COUNT_WON = 'totalBrawlCountWon';
+    const PERF_TOTAL_BRAWL_COUNT_LOSS = 'totalBrawlCountLoss';
+
+    protected static $performanceTypesToRank = array(self::PERF_TOTAL_BRAWL_COUNT_WON, self::PERF_TOTAL_BRAWL_COUNT_LOSS);
 
     protected static $pointByResult = array(
         GameBrawl::RESULT_WON => 1,
@@ -35,12 +37,12 @@ class RankingBrawl extends AbstractRanking
 
     public function getBrawlCountWon(): int
     {
-        return $this->totalBrawlCountWon;
+        return $this->getPerformanceTotal(self::PERF_TOTAL_BRAWL_COUNT_WON);
     }
 
     public function getBrawlCountLoss(): int
     {
-        return $this->totalBrawlCountLoss;
+        return $this->getPerformanceTotal(self::PERF_TOTAL_BRAWL_COUNT_LOSS);
     }
 
     public function getBrawlCount(): int
@@ -72,12 +74,17 @@ class RankingBrawl extends AbstractRanking
         if (!$game instanceof GameBrawl) {
             throw new CompetitionException(sprintf('Ranking brawl require %s as game, %s given', GameBrawl::class, get_class($game)));
         }
+
+        $this->saveGamePerformances($game);
+        if (!isset($this->performances[self::PERF_TOTAL_BRAWL_COUNT_WON])) $this->performances[self::PERF_TOTAL_BRAWL_COUNT_WON] = 0;
+        if (!isset($this->performances[self::PERF_TOTAL_BRAWL_COUNT_LOSS])) $this->performances[self::PERF_TOTAL_BRAWL_COUNT_LOSS] = 0;
+
         if ($game->hasPlayerWon($this->getIdPlayer())) {
             $this->gameByResult[GameBrawl::RESULT_WON]++;
-            $this->totalBrawlCountWon += $game->getPlayerCount();
+            $this->performances[self::PERF_TOTAL_BRAWL_COUNT_WON] += $game->getPlayerCount();
         } else {
             $this->gameByResult[GameBrawl::RESULT_LOSS]++;
-            $this->totalBrawlCountLoss += $game->getPlayerCount();
+            $this->performances[self::PERF_TOTAL_BRAWL_COUNT_LOSS] += $game->getPlayerCount();
         }
         return true;
     }
@@ -94,15 +101,14 @@ class RankingBrawl extends AbstractRanking
         // won games: more won is first
         if ($rankingA->getWon() > $rankingB->getWon()) return 1;
         if ($rankingA->getWon() < $rankingB->getWon()) return -1;
+
+        // compare performances if declared
+        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        if ($perfRanking !== 0) return $perfRanking;
+
         // played games: more played is first
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return -1;
-        // count for won: more opponent for won is first
-        if ($rankingA->getBrawlAverageCountWon() > $rankingB->getBrawlAverageCountWon()) return 1;
-        if ($rankingA->getBrawlAverageCountWon() < $rankingB->getBrawlAverageCountWon()) return -1;
-        // count for loss: more opponent for loss is first
-        if ($rankingA->getBrawlAverageCountLoss() > $rankingB->getBrawlAverageCountLoss()) return 1;
-        if ($rankingA->getBrawlAverageCountLoss() < $rankingB->getBrawlAverageCountLoss()) return -1;
         // last case, first registered player is first
         if ($rankingA->getIdPlayer() < $rankingB->getIdPlayer()) return 1;
         return -1;

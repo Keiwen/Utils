@@ -5,8 +5,11 @@ namespace Keiwen\Utils\Competition;
 class RankingDuel extends AbstractRanking
 {
 
-    protected $scoreFor = 0;
-    protected $scoreAgainst = 0;
+    const PERF_SCORE_FOR = 'scoreFor';
+    const PERF_SCORE_AGAINST = 'scoreAgainst';
+    const PERF_SCORE_DIFF = 'scoreDiff';
+
+    protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR);
 
     protected static $pointByResult = array(
         GameDuel::RESULT_WON => 3,
@@ -31,17 +34,17 @@ class RankingDuel extends AbstractRanking
 
     public function getScoreFor(): int
     {
-        return $this->scoreFor;
+        return $this->getPerformanceTotal(self::PERF_SCORE_FOR);
     }
 
     public function getScoreAgainst(): int
     {
-        return $this->scoreAgainst;
+        return $this->getPerformanceTotal(self::PERF_SCORE_AGAINST);
     }
 
     public function getScoreDiff(): int
     {
-        return $this->getScoreFor() - $this->getScoreAgainst();
+        return $this->getPerformanceTotal(self::PERF_SCORE_DIFF);
     }
 
     public static function getPointsForWon(): int
@@ -70,18 +73,25 @@ class RankingDuel extends AbstractRanking
         if ($game->getIdAway() == $this->getIdPlayer()) $isAway = true;
         if (!$isHome && !$isAway) return false;
 
+        $this->saveGamePerformances($game);
+        if (!isset($this->performances[self::PERF_SCORE_FOR])) $this->performances[self::PERF_SCORE_FOR] = 0;
+        if (!isset($this->performances[self::PERF_SCORE_AGAINST])) $this->performances[self::PERF_SCORE_AGAINST] = 0;
+        if (!isset($this->performances[self::PERF_SCORE_DIFF])) $this->performances[self::PERF_SCORE_DIFF] = 0;
+
         if ($isHome) {
             if ($game->hasHomeWon()) $this->gameByResult[GameDuel::RESULT_WON]++;
             if ($game->hasAwayWon()) $this->gameByResult[GameDuel::RESULT_LOSS]++;
             if ($game->isDraw()) $this->gameByResult[GameDuel::RESULT_DRAWN]++;
-            $this->scoreFor += $game->getScoreHome();
-            $this->scoreAgainst += $game->getScoreAway();
+            $this->performances[self::PERF_SCORE_FOR] += $game->getScoreHome();
+            $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreAway();
+            $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreHome() - $game->getScoreAway());
         } else {
             if ($game->hasHomeWon()) $this->gameByResult[GameDuel::RESULT_LOSS]++;
             if ($game->hasAwayWon()) $this->gameByResult[GameDuel::RESULT_WON]++;
             if ($game->isDraw()) $this->gameByResult[GameDuel::RESULT_DRAWN]++;
-            $this->scoreFor += $game->getScoreAway();
-            $this->scoreAgainst += $game->getScoreHome();
+            $this->performances[self::PERF_SCORE_FOR] += $game->getScoreAway();
+            $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreHome();
+            $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreAway() - $game->getScoreHome());
         }
 
         return true;
@@ -99,12 +109,11 @@ class RankingDuel extends AbstractRanking
         // won games: more won is first
         if ($rankingA->getWon() > $rankingB->getWon()) return 1;
         if ($rankingA->getWon() < $rankingB->getWon()) return -1;
-        // score diff: more diff is first
-        if ($rankingA->getScoreDiff() > $rankingB->getScoreDiff()) return 1;
-        if ($rankingA->getScoreDiff() < $rankingB->getScoreDiff()) return -1;
-        // score for: more score is first
-        if ($rankingA->getScoreFor() > $rankingB->getScoreFor()) return 1;
-        if ($rankingA->getScoreFor() < $rankingB->getScoreFor()) return -1;
+
+        // then compare performances if declared
+        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        if ($perfRanking !== 0) return $perfRanking;
+
         // played games: less played is first
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;

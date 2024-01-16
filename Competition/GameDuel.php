@@ -72,8 +72,8 @@ class GameDuel extends AbstractGame
     public function setScores(int $scoreHome, int $scoreAway)
     {
         if ($this->isPlayed()) return false;
-        $this->setPlayerPerformance($this->getIdHome(), $scoreHome);
-        $this->setPlayerPerformance($this->getIdAway(), $scoreAway);
+        $this->setPlayerPerformanceType($this->getIdHome(), 'score', $scoreHome);
+        $this->setPlayerPerformanceType($this->getIdAway(), 'score', $scoreAway);
 
         if($scoreHome > $scoreAway) {
             $this->setPlayerResult($this->getIdHome(), self::RESULT_WON);
@@ -94,12 +94,12 @@ class GameDuel extends AbstractGame
 
     public function getScoreHome(): int
     {
-        return $this->getPlayerPerformance($this->getIdHome());
+        return $this->getPlayerPerformanceType($this->getIdHome(), 'score');
     }
 
     public function getScoreAway(): int
     {
-        return $this->getPlayerPerformance($this->getIdAway());
+        return $this->getPlayerPerformanceType($this->getIdAway(), 'score');
     }
 
     public function hasHomeWon(): bool

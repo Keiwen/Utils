@@ -35,6 +35,8 @@ class RankingRace extends AbstractRanking
             throw new CompetitionException(sprintf('Ranking race require %s as game, %s given', GameRace::class, get_class($game)));
         }
 
+        $this->saveGamePerformances($game);
+
         $position = $game->getPlayerPosition($this->getIdPlayer());
         if (empty($position)) return false;
 
@@ -61,6 +63,11 @@ class RankingRace extends AbstractRanking
         // 3rd games: more 3 is first
         if ($rankingA->getPlayedByResult(3) > $rankingB->getPlayedByResult(3)) return 1;
         if ($rankingA->getPlayedByResult(3) < $rankingB->getPlayedByResult(3)) return -1;
+
+        // then compare performances if declared
+        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        if ($perfRanking !== 0) return $perfRanking;
+
         // played games: less played is first
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;

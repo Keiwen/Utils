@@ -118,25 +118,70 @@ abstract class AbstractGame
     }
 
     /**
-     * @param int $idPlayer
-     * @param mixed $performance
+     * @param array $performances ID player => performances for this player
+     * @return bool true if set
      */
-    protected function setPlayerPerformance(int $idPlayer, $performance)
+    public function setAllPlayersPerformances(array $performances): bool
     {
-        $this->performances[$idPlayer] = $performance;
+        if ($this->isPlayed()) return false;
+        foreach ($performances as $idPlayer => $playerPerformances) {
+            if (!in_array($idPlayer, array_keys($this->players))) continue;
+            if (!is_array($playerPerformances)) continue;
+            $this->setPlayerPerformances($idPlayer, $playerPerformances);
+        }
+        return true;
+    }
+
+
+    /**
+     * @param int $idPlayer
+     * @param array $performances
+     * @return bool true if set
+     */
+    public function setPlayerPerformances(int $idPlayer, array $performances): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        $this->performances[$idPlayer] = $performances;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @param array $performances
+     * @return bool true if set
+     */
+    public function setPlayerPerformanceType(int $idPlayer, string $performanceType, $performance): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        if (empty($this->performances[$idPlayer])) $this->performances[$idPlayer] = array();
+        $this->performances[$idPlayer][$performanceType] = $performance;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @return array|null null if not found
+     */
+    public function getPlayerPerformances(int $idPlayer): ?array
+    {
+        return $this->performances[$idPlayer] ?? null;
     }
 
     /**
      * @param int $idPlayer
      * @return mixed|null null if not found
      */
-    public function getPlayerPerformance(int $idPlayer)
+    public function getPlayerPerformanceType(int $idPlayer, string $performanceType)
     {
-        return $this->performances[$idPlayer] ?? null;
+        $performances = $this->getPlayerPerformances($idPlayer);
+        if (empty($performances)) return null;
+        return $performances[$performanceType] ?? null;
     }
 
     /**
-     * @return array idPlayer => performance
+     * @return array idPlayer => performances
      */
     public function getPerformances(): array
     {

@@ -55,18 +55,19 @@ class GameRace extends AbstractGame
 
     /**
      * After game is played, save positions and performances
-     * @param array $playersAndPerformances idPlayer => performance
+     * @param array $playersAndPerformances idPlayer => performances
      * @return bool
      */
     public function setPositionAndPerformance(array $playersAndPerformances)
     {
         if ($this->isPlayed()) return false;
         $rank = 0;
-        foreach ($playersAndPerformances as $idPlayer => $performance) {
+        foreach ($playersAndPerformances as $idPlayer => $performances) {
             $rank++;
             if (!in_array($idPlayer, array_keys($this->players))) continue;
             $this->setPlayerResult($idPlayer, $rank);
-            $this->setPlayerPerformance($idPlayer, $performance);
+            if (!is_array($performances)) continue;
+            $this->setPlayerPerformances($idPlayer, $performances);
         }
         $this->played = true;
         if ($this->isAffected() && $this->affectedTo) {
