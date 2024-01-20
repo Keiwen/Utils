@@ -122,11 +122,12 @@ abstract class AbstractCompetition
     protected function orderRankings()
     {
         $this->orderedRankings = $this->rankings;
-        if (empty($this->orderedRankings)) return array();
-        $firstRanking = reset($this->orderedRankings);
-        $rankingClass = get_class($firstRanking);
-        usort($this->orderedRankings, array($rankingClass, 'orderRankings'));
-        $this->orderedRankings = array_reverse($this->orderedRankings);
+        if (!empty($this->orderedRankings)) {
+            $firstRanking = reset($this->orderedRankings);
+            $rankingClass = get_class($firstRanking);
+            usort($this->orderedRankings, array($rankingClass, 'orderRankings'));
+            $this->orderedRankings = array_reverse($this->orderedRankings);
+        }
     }
 
     abstract protected function updateRankingsForGame($game);
