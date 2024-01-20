@@ -78,6 +78,7 @@ class RankingDuel extends AbstractRanking
         if (!isset($this->performances[self::PERF_SCORE_AGAINST])) $this->performances[self::PERF_SCORE_AGAINST] = 0;
         if (!isset($this->performances[self::PERF_SCORE_DIFF])) $this->performances[self::PERF_SCORE_DIFF] = 0;
         $this->saveGameExpenses($game);
+        $this->saveGameBonusAndMalus($game);
 
         if ($isHome) {
             if ($game->hasHomeWon()) $this->gameByResult[GameDuel::RESULT_WON]++;

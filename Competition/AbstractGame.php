@@ -9,6 +9,8 @@ abstract class AbstractGame
     protected $results = array();
     protected $performances = array();
     protected $expenses = array();
+    protected $bonuses = array();
+    protected $maluses = array();
     protected $gameNumber = 0;
     protected $played = false;
     protected $affected = false;
@@ -257,11 +259,105 @@ abstract class AbstractGame
     }
 
     /**
-     * @return array idPlayer => epenses
+     * @return array idPlayer => expenses
      */
     public function getExpenses(): array
     {
         return $this->expenses;
+    }
+
+
+    /**
+     * @param array $bonuses ID player => bonus for this player
+     * @return bool true if set
+     */
+    public function setAllPlayersBonuses(array $bonuses): bool
+    {
+        if ($this->isPlayed()) return false;
+        foreach ($bonuses as $idPlayer => $bonus) {
+            if (!in_array($idPlayer, array_keys($this->players))) continue;
+            if (!is_int($bonus)) continue;
+            $this->setPlayerBonus($idPlayer, $bonus);
+        }
+        return true;
+    }
+
+
+    /**
+     * @param int $idPlayer
+     * @param int $bonus
+     * @return bool true if set
+     */
+    public function setPlayerBonus(int $idPlayer, int $bonus): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        $this->bonuses[$idPlayer] = $bonus;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @return int|null null if not found
+     */
+    public function getPlayerBonus(int $idPlayer): int
+    {
+        return $this->bonuses[$idPlayer] ?? 0;
+    }
+
+    /**
+     * @return array idPlayer => bonus
+     */
+    public function getBonuses(): array
+    {
+        return $this->bonuses;
+    }
+
+
+    /**
+     * @param array $maluses ID player => malus for this player
+     * @return bool true if set
+     */
+    public function setAllPlayersMaluses(array $maluses): bool
+    {
+        if ($this->isPlayed()) return false;
+        foreach ($maluses as $idPlayer => $malus) {
+            if (!in_array($idPlayer, array_keys($this->players))) continue;
+            if (!is_int($malus)) continue;
+            $this->setPlayerMalus($idPlayer, $malus);
+        }
+        return true;
+    }
+
+
+    /**
+     * @param int $idPlayer
+     * @param int $malus
+     * @return bool true if set
+     */
+    public function setPlayerMalus(int $idPlayer, int $malus): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        $this->maluses[$idPlayer] = $malus;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @return int|null null if not found
+     */
+    public function getPlayerMalus(int $idPlayer): int
+    {
+        return $this->maluses[$idPlayer] ?? 0;
+    }
+
+    /**
+     * @return array idPlayer => malus
+     */
+    public function getMaluses(): array
+    {
+        return $this->maluses;
     }
 
     public function isAffected(): bool

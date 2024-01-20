@@ -11,12 +11,16 @@ abstract class AbstractRanking
 
     protected $performances = array();
     protected $expenses = array();
+    protected $bonusCount = 0;
+    protected $malusCount = 0;
 
     protected static $performanceTypesToRank = array();
     protected static $expensesTypesToRank = array();
 
     protected static $pointByResult = array();
     protected static $startingCapitals = array();
+    protected static $pointByBonus = 1;
+    protected static $pointByMalus = 1;
 
     public function __construct(int $idPlayer)
     {
@@ -82,6 +86,32 @@ abstract class AbstractRanking
         return static::$startingCapitals[$expenseType] ?? 0;
     }
 
+    public static function setPointsByBonus(int $points)
+    {
+        static::$pointByBonus = $points;
+        return true;
+    }
+
+    public static function getPointsByBonus(): int
+    {
+        return static::$pointByBonus;
+    }
+
+    /**
+     * @param int $points set as positive value, these points will be substracted from total points
+     * @return bool
+     */
+    public static function setPointsByMalus(int $points)
+    {
+        static::$pointByMalus = $points;
+        return true;
+    }
+
+    public static function getPointsByMalus(): int
+    {
+        return static::$pointByMalus;
+    }
+
     public function getIdPlayer()
     {
         return $this->idPlayer;
@@ -102,13 +132,34 @@ abstract class AbstractRanking
     }
 
 
-    public function getPoints()
+    public function getPoints(): int
     {
         $points = 0;
         foreach (static::$pointByResult as $result => $resultPoints) {
             $points += $resultPoints * $this->getPlayedByResult($result);
         }
+        $points = $points + $this->getBonusPoints() - $this->getMalusPoints();
         return $points;
+    }
+
+    public function getBonusCount(): int
+    {
+        return $this->bonusCount;
+    }
+
+    public function getMalusCount(): int
+    {
+        return $this->malusCount;
+    }
+
+    public function getBonusPoints(): int
+    {
+        return $this->bonusCount * static::$pointByBonus;
+    }
+
+    public function getMalusPoints(): int
+    {
+        return $this->malusCount * static::$pointByMalus;
     }
 
     /**
@@ -187,6 +238,13 @@ abstract class AbstractRanking
             if (!isset($this->expenses[$type])) $this->expenses[$type] = 0;
             $this->expenses[$type] += $expense;
         }
+        return true;
+    }
+
+    protected function saveGameBonusAndMalus(AbstractGame $game): bool
+    {
+        $this->bonusCount += $game->getPlayerBonus($this->getIdPlayer());
+        $this->malusCount += $game->getPlayerMalus($this->getIdPlayer());
         return true;
     }
 
