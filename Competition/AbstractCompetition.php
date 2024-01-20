@@ -122,7 +122,10 @@ abstract class AbstractCompetition
     protected function orderRankings()
     {
         $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(AbstractRanking::class, 'orderRankings'));
+        if (empty($this->orderedRankings)) return array();
+        $firstRanking = reset($this->orderedRankings);
+        $rankingClass = get_class($firstRanking);
+        usort($this->orderedRankings, array($rankingClass, 'orderRankings'));
         $this->orderedRankings = array_reverse($this->orderedRankings);
     }
 
@@ -142,8 +145,17 @@ abstract class AbstractCompetition
     /**
      * @return AbstractRanking[] first to last
      */
-    public function getRankings()
+    public function getRankings(bool $byExpenses = false)
     {
+        if ($byExpenses) {
+            if (empty($this->rankings)) return array();
+            $rankingsByExpenses = $this->rankings;
+            $firstRanking = reset($rankingsByExpenses);
+            $rankingClass = get_class($firstRanking);
+            usort($rankingsByExpenses, array($rankingClass, 'orderRankingsByExpenses'));
+            $rankingsByExpenses = array_reverse($rankingsByExpenses);
+            return $rankingsByExpenses;
+        }
         return $this->orderedRankings;
     }
 

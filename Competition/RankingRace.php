@@ -36,6 +36,7 @@ class RankingRace extends AbstractRanking
         }
 
         $this->saveGamePerformances($game);
+        $this->saveGameExpenses($game);
 
         $position = $game->getPlayerPosition($this->getIdPlayer());
         if (empty($position)) return false;

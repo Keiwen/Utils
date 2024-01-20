@@ -280,14 +280,6 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     }
 
 
-    protected function orderRankings()
-    {
-        $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(RankingDuel::class, 'orderRankings'));
-        $this->orderedRankings = array_reverse($this->orderedRankings);
-    }
-
-
     public static function getMaxPointForAGame(): int
     {
         return RankingDuel::getPointsForWon();

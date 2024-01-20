@@ -8,6 +8,7 @@ abstract class AbstractGame
     protected $players = array();
     protected $results = array();
     protected $performances = array();
+    protected $expenses = array();
     protected $gameNumber = 0;
     protected $played = false;
     protected $affected = false;
@@ -148,7 +149,8 @@ abstract class AbstractGame
 
     /**
      * @param int $idPlayer
-     * @param array $performances
+     * @param string $performanceType
+     * @param mixed $performance
      * @return bool true if set
      */
     public function setPlayerPerformanceType(int $idPlayer, string $performanceType, $performance): bool
@@ -171,6 +173,7 @@ abstract class AbstractGame
 
     /**
      * @param int $idPlayer
+     * @param string $performanceType
      * @return mixed|null null if not found
      */
     public function getPlayerPerformanceType(int $idPlayer, string $performanceType)
@@ -186,6 +189,79 @@ abstract class AbstractGame
     public function getPerformances(): array
     {
         return $this->performances;
+    }
+
+    /**
+     * @param array $expenses ID player => expenses for this player
+     * @return bool true if set
+     */
+    public function setAllPlayersExpenses(array $expenses): bool
+    {
+        if ($this->isPlayed()) return false;
+        foreach ($expenses as $idPlayer => $playerExpenses) {
+            if (!in_array($idPlayer, array_keys($this->players))) continue;
+            if (!is_array($playerExpenses)) continue;
+            $this->setPlayerExpenses($idPlayer, $playerExpenses);
+        }
+        return true;
+    }
+
+
+    /**
+     * @param int $idPlayer
+     * @param array $expenses
+     * @return bool true if set
+     */
+    public function setPlayerExpenses(int $idPlayer, array $expenses): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        $this->expenses[$idPlayer] = $expenses;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @param string $expenseType
+     * @param mixed $expense
+     * @return bool true if set
+     */
+    public function setPlayerExpenseType(int $idPlayer, string $expenseType, $expense): bool
+    {
+        if ($this->isPlayed()) return false;
+        if (!in_array($idPlayer, array_keys($this->players))) return false;
+        if (empty($this->expenses[$idPlayer])) $this->expenses[$idPlayer] = array();
+        $this->expenses[$idPlayer][$expenseType] = $expense;
+        return true;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @return array|null null if not found
+     */
+    public function getPlayerExpenses(int $idPlayer): ?array
+    {
+        return $this->expenses[$idPlayer] ?? null;
+    }
+
+    /**
+     * @param int $idPlayer
+     * @param string $expenseType
+     * @return mixed|null null if not found
+     */
+    public function getPlayerExpenseType(int $idPlayer, string $expenseType)
+    {
+        $expenses = $this->getPlayerExpenses($idPlayer);
+        if (empty($expenses)) return null;
+        return $expenses[$expenseType] ?? null;
+    }
+
+    /**
+     * @return array idPlayer => epenses
+     */
+    public function getExpenses(): array
+    {
+        return $this->expenses;
     }
 
     public function isAffected(): bool

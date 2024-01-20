@@ -70,14 +70,6 @@ class CompetitionChampionshipRace extends AbstractCompetition
     }
 
 
-    protected function orderRankings()
-    {
-        $this->orderedRankings = $this->rankings;
-        usort($this->orderedRankings, array(RankingRace::class, 'orderRankings'));
-        $this->orderedRankings = array_reverse($this->orderedRankings);
-    }
-
-
     public static function getMaxPointForAGame(): int
     {
         return RankingRace::getPointsForResult(1);
