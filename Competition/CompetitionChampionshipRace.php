@@ -33,18 +33,25 @@ class CompetitionChampionshipRace extends AbstractCompetition
     }
 
 
-    protected function addGame()
+    /**
+     * @return GameRace
+     * @throws CompetitionException
+     */
+    protected function addGame(): AbstractGame
     {
         $race = new GameRace(range(1, $this->playerCount));
         $race->affectTo($this, count($this->gameRepository) + 1);
         $this->gameRepository[] = $race;
+        return $race;
     }
 
     /**
+     * @param string $name
+     * @throws CompetitionException
      */
-    public function addRace()
+    public function addRace(string $name = '')
     {
-        $this->addGame();
+        $this->addGame()->setName($name);
     }
 
 

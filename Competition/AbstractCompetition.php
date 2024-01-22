@@ -20,11 +20,16 @@ abstract class AbstractCompetition
 
     public function __construct(array $players)
     {
+        $this->initializePlayers($players);
+        // initialize rankings;
+        $this->initializeRanking();
+    }
+
+    protected function initializePlayers(array $players)
+    {
         $this->playerCount = count($players);
         $this->givenPlayers = $players;
         $this->players = array_keys($players);
-        // initialize rankings;
-        $this->initializeRanking();
     }
 
     abstract protected function initializeRanking();
@@ -42,6 +47,30 @@ abstract class AbstractCompetition
     public function getGameCountByPlayer()
     {
         return count($this->gameRepository);
+    }
+
+    public function getGames()
+    {
+        return $this->gameRepository;
+    }
+
+    /**
+     * @param bool $ranked
+     * @return array
+     */
+    public function getFullPlayers(bool $ranked = false)
+    {
+        if (!$ranked) return $this->givenPlayers;
+
+        $rankedList = array();
+        $rankings = $this->getRankings();
+        foreach ($rankings as $ranking) {
+            $nextPlayerId = $ranking->getIdPlayer();
+            $nextPlayer = $this->givenPlayers[$nextPlayerId] ?? null;
+            if (!empty($nextPlayer)) $rankedList[] = $nextPlayer;
+        }
+
+        return $rankedList;
     }
 
     /**
@@ -141,7 +170,7 @@ abstract class AbstractCompetition
     }
 
 
-    abstract protected function addGame();
+    abstract protected function addGame(): AbstractGame;
 
     /**
      * @return AbstractRanking[] first to last
@@ -215,5 +244,32 @@ abstract class AbstractCompetition
 
     abstract public static function getMaxPointForAGame(): int;
     abstract public static function getMinPointForAGame(): int;
+
+
+    /**
+     * @param AbstractCompetition $competition
+     * @param bool $ranked
+     * @return static
+     */
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false)
+    {
+        return new static($competition->getFullPlayers($ranked));
+    }
+
+    public function copyGamesFromCompetition(AbstractCompetition $competition)
+    {
+        if ($this->nextGameNumber != 1) {
+            throw new CompetitionException('Cannot copy players as competition has started');
+        }
+
+        $this->gameRepository = array();
+        $previousGames = $this->getGames();
+        foreach ($previousGames as $game) {
+            $newGame = $this->addGame();
+            $newGame->setName($game->getName());
+        }
+    }
+
+
 
 }

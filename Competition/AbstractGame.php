@@ -5,6 +5,7 @@ namespace Keiwen\Utils\Competition;
 abstract class AbstractGame
 {
 
+    protected $name = '';
     protected $players = array();
     protected $results = array();
     protected $performances = array();
@@ -16,6 +17,15 @@ abstract class AbstractGame
     protected $affected = false;
     protected $affectedTo = null;
 
+    public function setName(string $name)
+    {
+        $this->name = $name;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     protected function setPlayers(array $idPlayersOrd)
     {

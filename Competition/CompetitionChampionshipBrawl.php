@@ -33,18 +33,25 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     }
 
 
-    protected function addGame()
+    /**
+     * @return GameBrawl
+     * @throws CompetitionException
+     */
+    protected function addGame(): AbstractGame
     {
-        $race = new GameBrawl(range(1, $this->playerCount));
-        $race->affectTo($this, count($this->gameRepository) + 1);
-        $this->gameRepository[] = $race;
+        $brawl = new GameBrawl(range(1, $this->playerCount));
+        $brawl->affectTo($this, count($this->gameRepository) + 1);
+        $this->gameRepository[] = $brawl;
+        return $brawl;
     }
 
     /**
+     * @param string $name
+     * @throws CompetitionException
      */
-    public function addBrawl()
+    public function addBrawl(string $name = '')
     {
-        $this->addGame();
+        $this->addGame()->setName($name);
     }
 
     /**

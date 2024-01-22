@@ -260,9 +260,18 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         return $nextRound;
     }
 
-    protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1)
+    /**
+     * @param int $ordHome
+     * @param int $ordAway
+     * @param int $round
+     * @return GameDuel
+     * @throws CompetitionException
+     */
+    protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1): AbstractGame
     {
-        $this->calendar[$round][] = new GameDuel($ordHome, $ordAway);
+        $gameDuel = new GameDuel($ordHome, $ordAway);
+        $this->calendar[$round][] = $gameDuel;
+        return $gameDuel;
     }
 
 
@@ -289,6 +298,16 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     public static function getMinPointForAGame(): int
     {
         return RankingDuel::getPointsForLoss();
+    }
+
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, int $serieCount = 1, bool $shuffleCalendar = false)
+    {
+        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $serieCount, $shuffleCalendar);
+    }
+
+    public function copyGamesFromCompetition(AbstractCompetition $competition)
+    {
+        throw new CompetitionException('Cannot copy games for Championship duels, calendar is re-generated');
     }
 
 
