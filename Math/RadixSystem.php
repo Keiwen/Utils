@@ -59,8 +59,10 @@ class RadixSystem {
 
     /**
      * @param int|string $decimalNumber
+     * @param array $radixDigits reference, array with each digits (highest power first)
+     * @return string
      */
-    public function fromDecimal($decimalNumber)
+    public function fromDecimal($decimalNumber, array &$radixDigits = array())
     {
         $decimalNumber = (int) $decimalNumber;
         $radixDigits = array();

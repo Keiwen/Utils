@@ -101,4 +101,27 @@ class Divisibility {
     }
 
 
+    /**
+     * For given number, get the highest power founds in this number decomposition
+     * Example for number 15 and power 2, if you decompose by power of 2:
+     * 15 = (1 * 2^3) + (1 * 2^2) + (1 * 2^1)
+     * the 'highest power' found is 3
+     * remainder is 7 (15 - 1 * 2^3 = 15 - 8 = 7),
+     * number 16 for power 2 will give 'highest power' of 4
+     * @param int $number
+     * @param int $power
+     * @param int $remainder reference
+     * @return int
+     */
+    public static function getHighestPowerOf(int $number, int $power, int &$remainder = 0)
+    {
+        $radix = new RadixSystem($power);
+        $radixDigits = array();
+        $radix->fromDecimal($number, $radixDigits);
+        $maxPower = count($radixDigits) - 1;
+        if ($maxPower < 0) $maxPower = 0;
+        $remainder = $number - (pow($power, $maxPower));
+        return $maxPower;
+    }
+
 }
