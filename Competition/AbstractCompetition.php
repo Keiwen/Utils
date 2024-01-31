@@ -23,6 +23,7 @@ abstract class AbstractCompetition
         $this->initializePlayers($players);
         // initialize rankings;
         $this->initializeRanking();
+        $this->orderRankings();
     }
 
     protected function initializePlayers(array $players)
