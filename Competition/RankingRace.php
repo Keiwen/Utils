@@ -78,4 +78,9 @@ class RankingRace extends AbstractRanking
         return -1;
     }
 
+
+    public static function resetPointAttribution()
+    {
+        static::$pointByResult = array();
+    }
 }
