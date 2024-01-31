@@ -202,6 +202,13 @@ abstract class AbstractRanking
         static::$performanceTypesToRank[] = $performanceType;
     }
 
+    /**
+     * @return array
+     */
+    public static function getPerformanceTypesToRank(): array
+    {
+        return static::$performanceTypesToRank;
+    }
 
     /**
      * add an expense type that should be taken into account when ranking.
