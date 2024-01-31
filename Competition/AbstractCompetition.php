@@ -174,6 +174,14 @@ abstract class AbstractCompetition
     abstract protected function addGame(): AbstractGame;
 
     /**
+     * @return bool
+     */
+    public function canGameBeAdded(): bool
+    {
+        return true;
+    }
+
+    /**
      * @return AbstractRanking[] first to last
      */
     public function getRankings(bool $byExpenses = false)

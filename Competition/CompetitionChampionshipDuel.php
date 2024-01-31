@@ -274,6 +274,15 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         return $gameDuel;
     }
 
+    /**
+     * @return bool
+     */
+    public function canGameBeAdded(): bool
+    {
+        return false;
+    }
+
+
 
     /**
      * @param GameDuel $game
