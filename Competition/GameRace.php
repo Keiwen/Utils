@@ -59,7 +59,9 @@ class GameRace extends AbstractGame
      */
     public function getPlayerPosition(int $idPlayer): int
     {
-        return $this->getPlayerResult($idPlayer);
+        $position = $this->getPlayerResult($idPlayer);
+        if ($position === null) return 0;
+        return $position;
     }
 
     /**
