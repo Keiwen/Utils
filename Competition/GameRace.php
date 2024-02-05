@@ -70,5 +70,10 @@ class GameRace extends AbstractGame
         return $this->results;
     }
 
+    public function hasPlayerWon(int $idPlayer): bool
+    {
+        return $this->getPlayerPosition($idPlayer) == 1;
+    }
+
 
 }

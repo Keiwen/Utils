@@ -426,5 +426,23 @@ abstract class AbstractGame
     }
 
 
+    /**
+     * @param int $idPlayer
+     * @return bool
+     */
+    abstract public function hasPlayerWon(int $idPlayer): bool;
+
+
+    /**
+     * @return int|null null if no winner
+     */
+    public function getWinnerId(): ?int
+    {
+        foreach ($this->getPlayers() as $idPlayer) {
+            if ($this->hasPlayerWon($idPlayer)) return $idPlayer;
+        }
+        return null;
+    }
+
 
 }

@@ -121,4 +121,10 @@ class GameDuel extends AbstractGame
         return $this->getPlayerResult($this->getIdHome()) == self::RESULT_DRAWN;
     }
 
+    public function hasPlayerWon(int $idPlayer): bool
+    {
+        return $this->getPlayerResult($idPlayer) == self::RESULT_WON;
+    }
+
+
 }

@@ -38,10 +38,6 @@ class GameBrawl extends AbstractGame
         return true;
     }
 
-    /**
-     * @param int $idPlayer
-     * @return bool
-     */
     public function hasPlayerWon(int $idPlayer): bool
     {
         return $this->getPlayerResult($idPlayer) == self::RESULT_WON;
