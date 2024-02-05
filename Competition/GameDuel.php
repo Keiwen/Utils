@@ -5,9 +5,6 @@ namespace Keiwen\Utils\Competition;
 class GameDuel extends AbstractGame
 {
 
-    /** @var CompetitionChampionshipDuel $affectedChampionship */
-    protected $affectedTo = null;
-
     const RESULT_WON = 'W';
     const RESULT_DRAWN = 'D';
     const RESULT_LOSS = 'L';
@@ -71,24 +68,6 @@ class GameDuel extends AbstractGame
     }
 
     /**
-     * @param CompetitionChampionshipDuel $competition
-     * @param int $gameNumber
-     * @return bool true if affected
-     */
-    public function affectTo($competition, int $gameNumber): bool
-    {
-        if (!$competition instanceof CompetitionChampionshipDuel) {
-            throw new CompetitionException(sprintf('Duel require %s as affectation, %s given', CompetitionChampionshipDuel::class, get_class($competition)));
-        }
-        return parent::affectTo($competition, $gameNumber);
-    }
-
-    public function getChampionship(): ?CompetitionChampionshipDuel
-    {
-        return parent::getAffectation();
-    }
-
-    /**
      * After game is played, save scores
      * @param int $scoreHome
      * @param int $scoreAway
@@ -111,7 +90,7 @@ class GameDuel extends AbstractGame
             $this->setPlayerResult($this->getIdAway(), self::RESULT_DRAWN);
         }
         $this->played = true;
-        if ($this->isAffected() && $this->affectedTo) {
+        if ($this->isAffected()) {
             $this->affectedTo->updateGamesPlayed();
         }
         return true;

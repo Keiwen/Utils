@@ -5,32 +5,9 @@ namespace Keiwen\Utils\Competition;
 class GameRace extends AbstractGame
 {
 
-    /** @var CompetitionChampionshipRace $affectedChampionship */
-    protected $affectedTo = null;
-
-
     public function __construct(array $idPlayers)
     {
         parent::setPlayers($idPlayers);
-    }
-
-
-    /**
-     * @param CompetitionChampionshipRace $competition
-     * @param int $gameNumber
-     * @return bool true if affected
-     */
-    public function affectTo($competition, int $gameNumber): bool
-    {
-        if (!$competition instanceof CompetitionChampionshipRace) {
-            throw new CompetitionException(sprintf('Race require %s as affectation, %s given', CompetitionChampionshipRace::class, get_class($competition)));
-        }
-        return parent::affectTo($competition, $gameNumber);
-    }
-
-    public function getChampionship(): ?CompetitionChampionshipRace
-    {
-        return parent::getAffectation();
     }
 
     /**
@@ -47,7 +24,7 @@ class GameRace extends AbstractGame
             $this->setPlayerResult($idPlayer, $index + 1);
         }
         $this->played = true;
-        if ($this->isAffected() && $this->affectedTo) {
+        if ($this->isAffected()) {
             $this->affectedTo->updateGamesPlayed();
         }
         return true;
@@ -70,7 +47,7 @@ class GameRace extends AbstractGame
             $this->setPlayerPerformances($idPlayer, $performances);
         }
         $this->played = true;
-        if ($this->isAffected() && $this->affectedTo) {
+        if ($this->isAffected()) {
             $this->affectedTo->updateGamesPlayed();
         }
         return true;

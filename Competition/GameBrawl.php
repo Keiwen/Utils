@@ -16,25 +16,6 @@ class GameBrawl extends AbstractGame
         parent::setPlayers($idPlayers);
     }
 
-
-    /**
-     * @param CompetitionChampionshipBrawl $competition
-     * @param int $gameNumber
-     * @return bool true if affected
-     */
-    public function affectTo($competition, int $gameNumber): bool
-    {
-        if (!$competition instanceof CompetitionChampionshipBrawl) {
-            throw new CompetitionException(sprintf('Brawl require %s as affectation, %s given', CompetitionChampionshipBrawl::class, get_class($competition)));
-        }
-        return parent::affectTo($competition, $gameNumber);
-    }
-
-    public function getChampionship(): ?CompetitionChampionshipBrawl
-    {
-        return parent::getAffectation();
-    }
-
     /**
      * After game is played, save winner
      * @param int $idPlayer
@@ -51,7 +32,7 @@ class GameBrawl extends AbstractGame
             }
         }
         $this->played = true;
-        if ($this->isAffected() && $this->affectedTo) {
+        if ($this->isAffected()) {
             $this->affectedTo->updateGamesPlayed();
         }
         return true;

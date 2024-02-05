@@ -15,7 +15,7 @@ abstract class AbstractGame
     protected $gameNumber = 0;
     protected $competitionRound = 1;
     protected $played = false;
-    protected $affected = false;
+    /** @var AbstractCompetition $affectedTo */
     protected $affectedTo = null;
 
     public function setName(string $name)
@@ -93,7 +93,6 @@ abstract class AbstractGame
         $playersIds = $this->getPlayers();
         if (!$this->isAffected()) return $playersIds;
         $affectedCompetition = $this->getAffectation();
-        if (!$affectedCompetition instanceof AbstractCompetition) return $playersIds;
         $players = array();
         foreach ($playersIds as $startingOrd => $playerId) {
             $players[$startingOrd] = $affectedCompetition->getFullPlayer($playerId);
@@ -137,16 +136,15 @@ abstract class AbstractGame
     }
 
     /**
-     * @param mixed $competition
+     * @param AbstractCompetition $competition
      * @param int $gameNumber
      * @return bool true if affected
      */
-    public function affectTo($competition, int $gameNumber): bool
+    public function affectTo(AbstractCompetition $competition, int $gameNumber): bool
     {
         if ($this->isAffected()) return false;
         $this->affectedTo = $competition;
         $this->gameNumber = $gameNumber;
-        $this->affected = true;
         return true;
     }
 
@@ -398,10 +396,13 @@ abstract class AbstractGame
 
     public function isAffected(): bool
     {
-        return $this->affected;
+        return !empty($this->affectedTo);
     }
 
-    public function getAffectation()
+    /**
+     * @return AbstractCompetition|null
+     */
+    public function getAffectation(): ?AbstractCompetition
     {
         return $this->affectedTo;
     }
