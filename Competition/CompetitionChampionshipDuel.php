@@ -8,7 +8,6 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 {
     protected $serieCount;
     protected $calendar;
-    protected $calendarRoundCount;
 
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
@@ -31,11 +30,6 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
             $this->rankings[$playerOrd] = new RankingDuel($playerOrd);
         }
-    }
-
-    public function getRoundCount()
-    {
-        return $this->calendarRoundCount;
     }
 
     public function getSerieCount()
@@ -86,9 +80,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 
     protected function generateBaseCalendarEven(): void
     {
-        $this->calendarRoundCount = $this->playerCount - 1;
+        $this->roundCount = $this->playerCount - 1;
         // for each round, first player will encounter all other in ascending order
-        for ($round = 1; $round <= $this->calendarRoundCount; $round++) {
+        for ($round = 1; $round <= $this->roundCount; $round++) {
             $this->addGame(1, $round + 1, $round);
         }
         // init round when match next player
@@ -113,7 +107,7 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 
     protected function generateBaseCalendarOdd(): void
     {
-        $this->calendarRoundCount = $this->playerCount;
+        $this->roundCount = $this->playerCount;
         // for each round, one player is out. We decided to go descendant order
         // the last player will not play on first round, the first will not play on last round
 
@@ -140,7 +134,7 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     {
         if ($this->serieCount == 1) return;
         // more than 1 serie, repeat base calendar for each other series
-        $round = $this->calendarRoundCount + 1;
+        $round = $this->roundCount + 1;
         // copy current calendar as a base
         $baseCalendar = $this->calendar;
         // for each serie
@@ -169,9 +163,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         }
 
         // after this, also switch home/away for first serie only if total series are even
-        // here calendarRoundCount is still equal to first serie rounds
+        // here roundCount is still equal to first serie rounds
         if (Divisibility::isNumberEven($this->serieCount)) {
-            for ($round = 1; $round <= $this->calendarRoundCount; $round++) {
+            for ($round = 1; $round <= $this->roundCount; $round++) {
                 if (Divisibility::isNumberEven($round)) {
                     foreach ($this->calendar[$round] as $firstSerieGame) {
                         /** @var GameDuel $firstSerieGame */
@@ -181,7 +175,7 @@ class CompetitionChampionshipDuel extends AbstractCompetition
             }
         }
 
-        $this->calendarRoundCount = $this->calendarRoundCount * $this->serieCount;
+        $this->roundCount = $this->roundCount * $this->serieCount;
     }
 
     protected function consolidateCalendar()
@@ -259,8 +253,8 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     protected function roundGapInCalendar(int $currentRound, int $roundGap): int
     {
         $nextRound = $currentRound + $roundGap;
-        if ($nextRound > $this->calendarRoundCount) $nextRound -= $this->calendarRoundCount;
-        if ($nextRound < 1) $nextRound += $this->calendarRoundCount;
+        if ($nextRound > $this->roundCount) $nextRound -= $this->roundCount;
+        if ($nextRound < 1) $nextRound += $this->roundCount;
         return $nextRound;
     }
 

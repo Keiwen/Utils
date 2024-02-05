@@ -7,6 +7,7 @@ abstract class AbstractCompetition
     protected $givenPlayers;
     protected $players;
     protected $playerCount;
+    protected $roundCount = 1;
 
     /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
@@ -53,6 +54,11 @@ abstract class AbstractCompetition
     public function getGames()
     {
         return $this->gameRepository;
+    }
+
+    public function getRoundCount(): int
+    {
+        return $this->roundCount;
     }
 
     /**
