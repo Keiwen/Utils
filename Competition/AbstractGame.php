@@ -77,6 +77,31 @@ abstract class AbstractGame
 
 
     /**
+     * @return array starting ord => idPlayer
+     */
+    public function getPlayers()
+    {
+        return array_flip($this->players);
+    }
+
+
+    /**
+     * @return array starting ord => player
+     */
+    public function getFullPlayers()
+    {
+        $playersIds = $this->getPlayers();
+        if (!$this->isAffected()) return $playersIds;
+        $affectedCompetition = $this->getAffectation();
+        if (!$affectedCompetition instanceof AbstractCompetition) return $playersIds;
+        $players = array();
+        foreach ($playersIds as $startingOrd => $playerId) {
+            $players[$startingOrd] = $affectedCompetition->getFullPlayer($playerId);
+        }
+        return $players;
+    }
+
+    /**
      * @param int $idPlayer
      * @param mixed $result
      */
