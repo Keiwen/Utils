@@ -13,6 +13,7 @@ abstract class AbstractGame
     protected $bonuses = array();
     protected $maluses = array();
     protected $gameNumber = 0;
+    protected $competitionRound = 1;
     protected $played = false;
     protected $affected = false;
     protected $affectedTo = null;
@@ -379,5 +380,25 @@ abstract class AbstractGame
     {
         return $this->affectedTo;
     }
+
+    /**
+     * @return int
+     */
+    public function getCompetitionRound(): int
+    {
+        return $this->competitionRound;
+    }
+
+    /**
+     * @param int $competitionRound
+     * @return $this
+     */
+    public function setCompetitionRound(int $competitionRound): self
+    {
+        $this->competitionRound = $competitionRound;
+        return $this;
+    }
+
+
 
 }

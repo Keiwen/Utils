@@ -69,9 +69,13 @@ class CompetitionChampionshipDuel extends AbstractCompetition
                 //get calendar of current serie
                 $calendarRandom = array_slice($calendarCopy, ($i - 1) * $roundInASerie, $roundInASerie);
                 shuffle($calendarRandom);
-                //shuffle and distirbute again in actual calendar
-                foreach ($calendarRandom as $randomRound => $games) {
+                //shuffle and distribute again in actual calendar
+                foreach ($calendarRandom as $randomRound => $oldRoundGames) {
                     $this->calendar[$round] = $calendarRandom[$randomRound];
+                    foreach ($this->calendar[$round] as $newRoundGames) {
+                        /** @var AbstractGame $newRoundGames */
+                        $newRoundGames->setCompetitionRound($round);
+                    }
                     $round++;
                 }
             }
@@ -270,6 +274,7 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1): AbstractGame
     {
         $gameDuel = new GameDuel($ordHome, $ordAway);
+        $gameDuel->setCompetitionRound($round);
         $this->calendar[$round][] = $gameDuel;
         return $gameDuel;
     }
