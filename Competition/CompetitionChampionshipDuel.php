@@ -228,6 +228,16 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         return $this->calendar[$round][$index] ?? null;
     }
 
+    public function getGames()
+    {
+        $games = array();
+        for ($i = 1; $i <= $this->getGameCount(); $i++) {
+            $games[] = $this->getGameByNumber($i);
+        }
+        return $games;
+    }
+
+
     /**
      * @param int $gameNumber
      * @return int|null round number if found
