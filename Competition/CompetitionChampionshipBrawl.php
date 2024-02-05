@@ -40,8 +40,11 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     protected function addGame(): AbstractGame
     {
         $brawl = new GameBrawl(range(1, $this->playerCount));
-        $brawl->affectTo($this, count($this->gameRepository) + 1);
+        $gameNumber = count($this->gameRepository) + 1;
+        $brawl->affectTo($this, $gameNumber);
         $this->gameRepository[] = $brawl;
+        // if competition was considered as done, this new game became the next
+        if ($this->nextGameNumber == -1) $this->setNextGame($gameNumber);
         return $brawl;
     }
 
