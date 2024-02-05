@@ -18,6 +18,31 @@ class GameDuel extends AbstractGame
         parent::setPlayers(array($idHome, $idAway));
     }
 
+    public function getName(): string
+    {
+        if (!empty($this->name)) return $this->name;
+        return $this->getNameWithPlayers();
+    }
+
+    /**
+     * @return string
+     */
+    public function getNameWithPlayers(): string
+    {
+        $players = $this->getFullPlayers();
+        $playersNames = array();
+        foreach ($players as $player) {
+            // set with direct string or numeric
+            if (is_string($player) || is_numeric($player)) $playersNames[] = $player;
+            // if object, try to get names method
+            elseif (is_object($player)) {
+                if (method_exists($player, 'getName')) $playersNames[] = $player->getName();
+            }
+        }
+        return join(" - ", $playersNames);
+    }
+
+
     /**
      * @return int
      */
