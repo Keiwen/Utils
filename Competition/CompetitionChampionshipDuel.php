@@ -153,9 +153,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
                         $reverse = Divisibility::isNumberEven($serie);
                     }
                     if ($reverse) {
-                        $this->addGame($game->getIdAway(), $game->getIdHome(), $round);
+                        $this->addGame($game->getOrdAway(), $game->getOrdHome(), $round);
                     } else {
-                        $this->addGame($game->getIdHome(), $game->getIdAway(), $round);
+                        $this->addGame($game->getOrdHome(), $game->getOrdAway(), $round);
                     }
                 }
                 $round++;
@@ -298,11 +298,11 @@ class CompetitionChampionshipDuel extends AbstractCompetition
      */
     protected function updateRankingsForGame($game)
     {
-        if (isset($this->rankings[$game->getIdHome()])) {
-            ($this->rankings[$game->getIdHome()])->saveGame($game);
+        if (isset($this->rankings[$game->getOrdHome()])) {
+            ($this->rankings[$game->getOrdHome()])->saveGame($game);
         }
-        if (isset($this->rankings[$game->getIdAway()])) {
-            ($this->rankings[$game->getIdAway()])->saveGame($game);
+        if (isset($this->rankings[$game->getOrdAway()])) {
+            ($this->rankings[$game->getOrdAway()])->saveGame($game);
         }
     }
 

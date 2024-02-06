@@ -28,10 +28,10 @@ abstract class AbstractGame
         return $this->name;
     }
 
-    protected function setPlayers(array $idPlayersOrd)
+    protected function setPlayers(array $playersOrdList)
     {
-        $inputCount = count($idPlayersOrd);
-        $players = array_flip(array_combine(range(1, count($idPlayersOrd)), array_values($idPlayersOrd)));
+        $inputCount = count($playersOrdList);
+        $players = array_flip(array_combine(range(1, count($playersOrdList)), array_values($playersOrdList)));
         if ($inputCount != count($players)) {
             throw new CompetitionException('Unable to find unique players on start order, check for duplicates');
         }
@@ -48,18 +48,18 @@ abstract class AbstractGame
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return int 0 if not found
      */
-    public function getPlayerStartingOrd(int $idPlayer)
+    public function getPlayerStartingOrd(int $playerOrd)
     {
-        return $this->players[$idPlayer] ?? 0;
+        return $this->players[$playerOrd] ?? 0;
     }
 
 
     /**
      * @param int $ord
-     * @return int id player or 0 if not found
+     * @return int player ord or 0 if not found
      */
     public function getPlayerThatStartedAt(int $ord)
     {
@@ -68,7 +68,7 @@ abstract class AbstractGame
     }
 
     /**
-     * @return array idPlayer => starting ord
+     * @return array Player ord => starting ord
      */
     public function getStartingOrd()
     {
@@ -77,7 +77,7 @@ abstract class AbstractGame
 
 
     /**
-     * @return array starting ord => idPlayer
+     * @return array starting ord => Player ord
      */
     public function getPlayers()
     {
@@ -90,36 +90,36 @@ abstract class AbstractGame
      */
     public function getFullPlayers()
     {
-        $playersIds = $this->getPlayers();
-        if (!$this->isAffected()) return $playersIds;
+        $playerOrdList = $this->getPlayers();
+        if (!$this->isAffected()) return $playerOrdList;
         $affectedCompetition = $this->getAffectation();
         $players = array();
-        foreach ($playersIds as $startingOrd => $playerId) {
-            $players[$startingOrd] = $affectedCompetition->getFullPlayer($playerId);
+        foreach ($playerOrdList as $startingOrd => $playerOrd) {
+            $players[$startingOrd] = $affectedCompetition->getFullPlayer($playerOrd);
         }
         return $players;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param mixed $result
      */
-    protected function setPlayerResult(int $idPlayer, $result)
+    protected function setPlayerResult(int $playerOrd, $result)
     {
-        $this->results[$idPlayer] = $result;
+        $this->results[$playerOrd] = $result;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return mixed|null null if not found
      */
-    public function getPlayerResult(int $idPlayer)
+    public function getPlayerResult(int $playerOrd)
     {
-        return $this->results[$idPlayer] ?? null;
+        return $this->results[$playerOrd] ?? null;
     }
 
     /**
-     * @return array idPlayer => result
+     * @return array Player ord => result
      */
     public function getResults(): array
     {
@@ -155,72 +155,72 @@ abstract class AbstractGame
     }
 
     /**
-     * @param array $performances ID player => performances for this player
+     * @param array $performances player ord => performances for this player
      * @return bool true if set
      */
     public function setAllPlayersPerformances(array $performances): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($performances as $idPlayer => $playerPerformances) {
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
+        foreach ($performances as $playerOrd => $playerPerformances) {
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
             if (!is_array($playerPerformances)) continue;
-            $this->setPlayerPerformances($idPlayer, $playerPerformances);
+            $this->setPlayerPerformances($playerOrd, $playerPerformances);
         }
         return true;
     }
 
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param array $performances
      * @return bool true if set
      */
-    public function setPlayerPerformances(int $idPlayer, array $performances): bool
+    public function setPlayerPerformances(int $playerOrd, array $performances): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        $this->performances[$idPlayer] = $performances;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        $this->performances[$playerOrd] = $performances;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param string $performanceType
      * @param mixed $performance
      * @return bool true if set
      */
-    public function setPlayerPerformanceType(int $idPlayer, string $performanceType, $performance): bool
+    public function setPlayerPerformanceType(int $playerOrd, string $performanceType, $performance): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        if (empty($this->performances[$idPlayer])) $this->performances[$idPlayer] = array();
-        $this->performances[$idPlayer][$performanceType] = $performance;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        if (empty($this->performances[$playerOrd])) $this->performances[$playerOrd] = array();
+        $this->performances[$playerOrd][$performanceType] = $performance;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return array|null null if not found
      */
-    public function getPlayerPerformances(int $idPlayer): ?array
+    public function getPlayerPerformances(int $playerOrd): ?array
     {
-        return $this->performances[$idPlayer] ?? null;
+        return $this->performances[$playerOrd] ?? null;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param string $performanceType
      * @return mixed|null null if not found
      */
-    public function getPlayerPerformanceType(int $idPlayer, string $performanceType)
+    public function getPlayerPerformanceType(int $playerOrd, string $performanceType)
     {
-        $performances = $this->getPlayerPerformances($idPlayer);
+        $performances = $this->getPlayerPerformances($playerOrd);
         if (empty($performances)) return null;
         return $performances[$performanceType] ?? null;
     }
 
     /**
-     * @return array idPlayer => performances
+     * @return array Player ord => performances
      */
     public function getPerformances(): array
     {
@@ -228,72 +228,72 @@ abstract class AbstractGame
     }
 
     /**
-     * @param array $expenses ID player => expenses for this player
+     * @param array $expenses player ord => expenses for this player
      * @return bool true if set
      */
     public function setAllPlayersExpenses(array $expenses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($expenses as $idPlayer => $playerExpenses) {
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
+        foreach ($expenses as $playerOrd => $playerExpenses) {
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
             if (!is_array($playerExpenses)) continue;
-            $this->setPlayerExpenses($idPlayer, $playerExpenses);
+            $this->setPlayerExpenses($playerOrd, $playerExpenses);
         }
         return true;
     }
 
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param array $expenses
      * @return bool true if set
      */
-    public function setPlayerExpenses(int $idPlayer, array $expenses): bool
+    public function setPlayerExpenses(int $playerOrd, array $expenses): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        $this->expenses[$idPlayer] = $expenses;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        $this->expenses[$playerOrd] = $expenses;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param string $expenseType
      * @param mixed $expense
      * @return bool true if set
      */
-    public function setPlayerExpenseType(int $idPlayer, string $expenseType, $expense): bool
+    public function setPlayerExpenseType(int $playerOrd, string $expenseType, $expense): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        if (empty($this->expenses[$idPlayer])) $this->expenses[$idPlayer] = array();
-        $this->expenses[$idPlayer][$expenseType] = $expense;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        if (empty($this->expenses[$playerOrd])) $this->expenses[$playerOrd] = array();
+        $this->expenses[$playerOrd][$expenseType] = $expense;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return array|null null if not found
      */
-    public function getPlayerExpenses(int $idPlayer): ?array
+    public function getPlayerExpenses(int $playerOrd): ?array
     {
-        return $this->expenses[$idPlayer] ?? null;
+        return $this->expenses[$playerOrd] ?? null;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param string $expenseType
      * @return mixed|null null if not found
      */
-    public function getPlayerExpenseType(int $idPlayer, string $expenseType)
+    public function getPlayerExpenseType(int $playerOrd, string $expenseType)
     {
-        $expenses = $this->getPlayerExpenses($idPlayer);
+        $expenses = $this->getPlayerExpenses($playerOrd);
         if (empty($expenses)) return null;
         return $expenses[$expenseType] ?? null;
     }
 
     /**
-     * @return array idPlayer => expenses
+     * @return array Player ord => expenses
      */
     public function getExpenses(): array
     {
@@ -302,45 +302,45 @@ abstract class AbstractGame
 
 
     /**
-     * @param array $bonuses ID player => bonus for this player
+     * @param array $bonuses player ord => bonus for this player
      * @return bool true if set
      */
     public function setAllPlayersBonuses(array $bonuses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($bonuses as $idPlayer => $bonus) {
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
+        foreach ($bonuses as $playerOrd => $bonus) {
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
             if (!is_int($bonus)) continue;
-            $this->setPlayerBonus($idPlayer, $bonus);
+            $this->setPlayerBonus($playerOrd, $bonus);
         }
         return true;
     }
 
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param int $bonus
      * @return bool true if set
      */
-    public function setPlayerBonus(int $idPlayer, int $bonus): bool
+    public function setPlayerBonus(int $playerOrd, int $bonus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        $this->bonuses[$idPlayer] = $bonus;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        $this->bonuses[$playerOrd] = $bonus;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return int|null null if not found
      */
-    public function getPlayerBonus(int $idPlayer): int
+    public function getPlayerBonus(int $playerOrd): int
     {
-        return $this->bonuses[$idPlayer] ?? 0;
+        return $this->bonuses[$playerOrd] ?? 0;
     }
 
     /**
-     * @return array idPlayer => bonus
+     * @return array Player ord => bonus
      */
     public function getBonuses(): array
     {
@@ -349,45 +349,45 @@ abstract class AbstractGame
 
 
     /**
-     * @param array $maluses ID player => malus for this player
+     * @param array $maluses player ord => malus for this player
      * @return bool true if set
      */
     public function setAllPlayersMaluses(array $maluses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($maluses as $idPlayer => $malus) {
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
+        foreach ($maluses as $playerOrd => $malus) {
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
             if (!is_int($malus)) continue;
-            $this->setPlayerMalus($idPlayer, $malus);
+            $this->setPlayerMalus($playerOrd, $malus);
         }
         return true;
     }
 
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @param int $malus
      * @return bool true if set
      */
-    public function setPlayerMalus(int $idPlayer, int $malus): bool
+    public function setPlayerMalus(int $playerOrd, int $malus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($idPlayer, array_keys($this->players))) return false;
-        $this->maluses[$idPlayer] = $malus;
+        if (!in_array($playerOrd, array_keys($this->players))) return false;
+        $this->maluses[$playerOrd] = $malus;
         return true;
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return int|null null if not found
      */
-    public function getPlayerMalus(int $idPlayer): int
+    public function getPlayerMalus(int $playerOrd): int
     {
-        return $this->maluses[$idPlayer] ?? 0;
+        return $this->maluses[$playerOrd] ?? 0;
     }
 
     /**
-     * @return array idPlayer => malus
+     * @return array Player ord => malus
      */
     public function getMaluses(): array
     {
@@ -427,19 +427,19 @@ abstract class AbstractGame
 
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return bool
      */
-    abstract public function hasPlayerWon(int $idPlayer): bool;
+    abstract public function hasPlayerWon(int $playerOrd): bool;
 
 
     /**
      * @return int|null null if no winner
      */
-    public function getWinnerId(): ?int
+    public function getWinnerOrd(): ?int
     {
-        foreach ($this->getPlayers() as $idPlayer) {
-            if ($this->hasPlayerWon($idPlayer)) return $idPlayer;
+        foreach ($this->getPlayers() as $playerOrd) {
+            if ($this->hasPlayerWon($playerOrd)) return $playerOrd;
         }
         return null;
     }

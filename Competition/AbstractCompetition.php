@@ -72,8 +72,8 @@ abstract class AbstractCompetition
         $rankedList = array();
         $rankings = $this->getRankings();
         foreach ($rankings as $ranking) {
-            $nextPlayerId = $ranking->getIdPlayer();
-            $nextPlayer = $this->givenPlayers[$nextPlayerId] ?? null;
+            $nextPlayerOrd = $ranking->getPlayerOrd();
+            $nextPlayer = $this->givenPlayers[$nextPlayerOrd] ?? null;
             if (!empty($nextPlayer)) $rankedList[] = $nextPlayer;
         }
 

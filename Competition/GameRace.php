@@ -5,23 +5,23 @@ namespace Keiwen\Utils\Competition;
 class GameRace extends AbstractGame
 {
 
-    public function __construct(array $idPlayers)
+    public function __construct(array $playerOrdList)
     {
-        parent::setPlayers($idPlayers);
+        parent::setPlayers($playerOrdList);
     }
 
     /**
      * After game is played, save positions
-     * @param int[] $idPlayersOrdered
+     * @param int[] $playerOrdOrdered
      * @return bool
      */
-    public function setPosition(array $idPlayersOrdered)
+    public function setPosition(array $playerOrdOrdered)
     {
         if ($this->isPlayed()) return false;
-        $idPlayersOrdered = array_values($idPlayersOrdered);
-        foreach ($idPlayersOrdered as $index => $idPlayer) {
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
-            $this->setPlayerResult($idPlayer, $index + 1);
+        $playerOrdOrdered = array_values($playerOrdOrdered);
+        foreach ($playerOrdOrdered as $index => $playerOrd) {
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
+            $this->setPlayerResult($playerOrd, $index + 1);
         }
         $this->played = true;
         if ($this->isAffected()) {
@@ -32,19 +32,19 @@ class GameRace extends AbstractGame
 
     /**
      * After game is played, save positions and performances
-     * @param array $playersAndPerformances idPlayer => performances
+     * @param array $playersAndPerformances player ord => performances
      * @return bool
      */
     public function setPositionAndPerformance(array $playersAndPerformances)
     {
         if ($this->isPlayed()) return false;
         $rank = 0;
-        foreach ($playersAndPerformances as $idPlayer => $performances) {
+        foreach ($playersAndPerformances as $playerOrd => $performances) {
             $rank++;
-            if (!in_array($idPlayer, array_keys($this->players))) continue;
-            $this->setPlayerResult($idPlayer, $rank);
+            if (!in_array($playerOrd, array_keys($this->players))) continue;
+            $this->setPlayerResult($playerOrd, $rank);
             if (!is_array($performances)) continue;
-            $this->setPlayerPerformances($idPlayer, $performances);
+            $this->setPlayerPerformances($playerOrd, $performances);
         }
         $this->played = true;
         if ($this->isAffected()) {
@@ -54,27 +54,27 @@ class GameRace extends AbstractGame
     }
 
     /**
-     * @param int $idPlayer
+     * @param int $playerOrd
      * @return int 0 if player not found
      */
-    public function getPlayerPosition(int $idPlayer): int
+    public function getPlayerPosition(int $playerOrd): int
     {
-        $position = $this->getPlayerResult($idPlayer);
+        $position = $this->getPlayerResult($playerOrd);
         if ($position === null) return 0;
         return $position;
     }
 
     /**
-     * @return array position (starting at 1) => idPlayer
+     * @return array position (starting at 1) => Player ord
      */
     public function getPositions(): array
     {
         return $this->results;
     }
 
-    public function hasPlayerWon(int $idPlayer): bool
+    public function hasPlayerWon(int $playerOrd): bool
     {
-        return $this->getPlayerPosition($idPlayer) == 1;
+        return $this->getPlayerPosition($playerOrd) == 1;
     }
 
 
