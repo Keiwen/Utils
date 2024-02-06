@@ -9,7 +9,7 @@ class RankingDuel extends AbstractRanking
     const PERF_SCORE_AGAINST = 'scoreAgainst';
     const PERF_SCORE_DIFF = 'scoreDiff';
 
-    protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR);
+    protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
 
     protected static $pointByResult = array(
         GameDuel::RESULT_WON => 3,
