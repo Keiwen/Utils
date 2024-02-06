@@ -221,6 +221,14 @@ abstract class AbstractRanking
         static::$expensesTypesToRank[] = $expenseType;
     }
 
+    /**
+     * @return array
+     */
+    public static function getExpenseTypesToRank(): array
+    {
+        return static::$expensesTypesToRank;
+    }
+
 
     abstract public function saveGame(AbstractGame $game): bool;
 
