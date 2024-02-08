@@ -5,9 +5,6 @@ namespace Keiwen\Utils\Competition;
 class GameBrawl extends AbstractGame
 {
 
-    /** @var CompetitionChampionshipBrawl $affectedChampionship */
-    protected $affectedTo = null;
-
     const RESULT_WON = 'W';
     const RESULT_LOSS = 'L';
 
