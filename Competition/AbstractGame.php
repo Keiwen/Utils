@@ -435,14 +435,15 @@ abstract class AbstractGame
 
 
     /**
-     * @return int|null null if no winner
+     * @return int[] seeds of all winners
      */
-    public function getWinnerSeed(): ?int
+    public function getWinnerSeeds(): array
     {
+        $winners = array();
         foreach ($this->getPlayers() as $playerSeed) {
-            if ($this->hasPlayerWon($playerSeed)) return $playerSeed;
+            if ($this->hasPlayerWon($playerSeed)) $winners[] = $playerSeed;
         }
-        return null;
+        return $winners;
     }
 
     /**
