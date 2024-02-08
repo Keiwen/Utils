@@ -71,9 +71,9 @@ class GameDuel extends AbstractGame
      * After game is played, save scores
      * @param int $scoreHome
      * @param int $scoreAway
-     * @return bool
+     * @return bool true if set
      */
-    public function setScores(int $scoreHome, int $scoreAway)
+    public function setScores(int $scoreHome, int $scoreAway): bool
     {
         if ($this->isPlayed()) return false;
         $this->setPlayerPerformanceType($this->getSeedHome(), 'score', $scoreHome);

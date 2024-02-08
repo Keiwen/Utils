@@ -16,9 +16,9 @@ class GameBrawl extends AbstractGame
     /**
      * After game is played, save winner
      * @param int $winnerSeed
-     * @return bool
+     * @return bool true if set
      */
-    public function setWinner(int $winnerSeed)
+    public function setWinner(int $winnerSeed): bool
     {
         if ($this->isPlayed()) return false;
         foreach ($this->players as $playerSeed => $startingOrder) {

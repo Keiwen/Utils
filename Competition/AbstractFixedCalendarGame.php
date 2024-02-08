@@ -17,7 +17,7 @@ abstract class AbstractFixedCalendarGame extends AbstractCompetition
         $this->consolidateCalendar();
     }
 
-    abstract protected function generateCalendar(bool $shuffle = false): void;
+    abstract protected function generateCalendar(bool $shuffle = false);
 
 
     protected function consolidateCalendar()

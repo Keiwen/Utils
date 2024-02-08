@@ -418,12 +418,10 @@ abstract class AbstractGame
 
     /**
      * @param int $competitionRound
-     * @return $this
      */
-    public function setCompetitionRound(int $competitionRound): self
+    public function setCompetitionRound(int $competitionRound)
     {
         $this->competitionRound = $competitionRound;
-        return $this;
     }
 
 

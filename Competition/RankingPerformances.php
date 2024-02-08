@@ -46,12 +46,12 @@ class RankingPerformances extends AbstractRanking
     }
 
 
-    public static function setPointsAttribution(array $points)
+    public static function setPointsAttribution(array $points): bool
     {
         return false;
     }
 
-    public static function setPointsAttributionForResult($result, int $points)
+    public static function setPointsAttributionForResult($result, int $points): bool
     {
         return false;
     }
@@ -61,7 +61,7 @@ class RankingPerformances extends AbstractRanking
         return 0;
     }
 
-    public static function setPointsByBonus(int $points)
+    public static function setPointsByBonus(int $points): bool
     {
         return false;
     }
@@ -71,7 +71,7 @@ class RankingPerformances extends AbstractRanking
         return 0;
     }
 
-    public static function setPointsByMalus(int $points)
+    public static function setPointsByMalus(int $points): bool
     {
         return false;
     }
@@ -150,7 +150,7 @@ class RankingPerformances extends AbstractRanking
     /**
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB)
+    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
     {
         static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points (depending on rank method): more points is first

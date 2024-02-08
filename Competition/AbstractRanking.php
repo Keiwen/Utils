@@ -30,7 +30,12 @@ abstract class AbstractRanking
     }
 
 
-    public static function setPointsAttributionForResult($result, int $points)
+    /**
+     * @param mixed $result
+     * @param int $points
+     * @return bool true if set
+     */
+    public static function setPointsAttributionForResult($result, int $points): bool
     {
         static::$pointByResult[$result] = $points;
         return true;
@@ -38,9 +43,9 @@ abstract class AbstractRanking
 
     /**
      * @param array $points
-     * @return bool
+     * @return bool true if set
      */
-    public static function setPointsAttribution(array $points)
+    public static function setPointsAttribution(array $points): bool
     {
         if (count($points) != count(static::$pointByResult)) return false;
         $loopIndex = 0;
@@ -58,7 +63,12 @@ abstract class AbstractRanking
         return static::$pointByResult[$result] ?? 0;
     }
 
-    public static function setStartingCapitalForExpense(string $expenseType, int $startingCapital)
+    /**
+     * @param string $expenseType
+     * @param int $startingCapital
+     * @return bool true if set
+     */
+    public static function setStartingCapitalForExpense(string $expenseType, int $startingCapital): bool
     {
         static::$startingCapitals[$expenseType] = $startingCapital;
         return true;
@@ -66,9 +76,9 @@ abstract class AbstractRanking
 
     /**
      * @param array $capitals
-     * @return bool
+     * @return bool true if set
      */
-    public static function setStartingCapitals(array $capitals)
+    public static function setStartingCapitals(array $capitals): bool
     {
         if (count($capitals) != count(static::$startingCapitals)) return false;
         $loopIndex = 0;
@@ -86,7 +96,11 @@ abstract class AbstractRanking
         return static::$startingCapitals[$expenseType] ?? 0;
     }
 
-    public static function setPointsByBonus(int $points)
+    /**
+     * @param int $points
+     * @return bool true if set
+     */
+    public static function setPointsByBonus(int $points): bool
     {
         static::$pointByBonus = $points;
         return true;
@@ -99,9 +113,9 @@ abstract class AbstractRanking
 
     /**
      * @param int $points set as positive value, these points will be substracted from total points
-     * @return bool
+     * @return bool true if set
      */
-    public static function setPointsByMalus(int $points)
+    public static function setPointsByMalus(int $points): bool
     {
         static::$pointByMalus = $points;
         return true;
@@ -112,7 +126,7 @@ abstract class AbstractRanking
         return static::$pointByMalus;
     }
 
-    public function getPlayerSeed()
+    public function getPlayerSeed(): int
     {
         return $this->playerSeed;
     }
@@ -230,6 +244,10 @@ abstract class AbstractRanking
     }
 
 
+    /**
+     * @param AbstractGame $game
+     * @return bool true if saved
+     */
     abstract public function saveGame(AbstractGame $game): bool;
 
     /**
@@ -271,7 +289,7 @@ abstract class AbstractRanking
     /**
      * @return int
      */
-    public static function orderRankings(self $rankingA, self $rankingB)
+    public static function orderRankings(self $rankingA, self $rankingB): int
     {
         static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
@@ -296,7 +314,7 @@ abstract class AbstractRanking
     /**
      * @return int
      */
-    protected static function orderRankingsByPerformances(self $rankingA, self $rankingB)
+    protected static function orderRankingsByPerformances(self $rankingA, self $rankingB): int
     {
         foreach (static::$performanceTypesToRank as $performanceType) {
             if (strpos($performanceType, '-') === 0) {
@@ -318,7 +336,7 @@ abstract class AbstractRanking
     /**
      * @return int
      */
-    protected static function orderRankingsByExpenses(self $rankingA, self $rankingB)
+    protected static function orderRankingsByExpenses(self $rankingA, self $rankingB): int
     {
         foreach (static::$expensesTypesToRank as $expenseType) {
             if (strpos($expenseType, '-') === 0) {

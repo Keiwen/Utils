@@ -26,12 +26,12 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         }
     }
 
-    public function getSerieCount()
+    public function getSerieCount(): int
     {
         return $this->serieCount;
     }
 
-    public function getGameCountByPlayer()
+    public function getGameCountByPlayer(): int
     {
         return ($this->playerCount - 1) * $this->serieCount;
     }
@@ -70,7 +70,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         }
     }
 
-    protected function generateBaseCalendarEven(): void
+    protected function generateBaseCalendarEven()
     {
         $this->roundCount = $this->playerCount - 1;
         // for each round, first player will encounter all other in ascending order
@@ -97,7 +97,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         }
     }
 
-    protected function generateBaseCalendarOdd(): void
+    protected function generateBaseCalendarOdd()
     {
         $this->roundCount = $this->playerCount;
         // for each round, one player is out. We decided to go descendant order
@@ -239,7 +239,15 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         return RankingDuel::getPointsForLoss();
     }
 
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, bool $shuffleCalendar = false, int $serieCount = 1)
+    /**
+     * @param CompetitionChampionshipDuel $competition
+     * @param bool $ranked
+     * @param bool $shuffleCalendar
+     * @param int $serieCount
+     * @return CompetitionChampionshipDuel
+     * @throws CompetitionException
+     */
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, bool $shuffleCalendar = false, int $serieCount = 1): AbstractCompetition
     {
         return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $shuffleCalendar, $serieCount);
     }

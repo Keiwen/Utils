@@ -13,9 +13,9 @@ class GameRace extends AbstractGame
     /**
      * After game is played, save positions
      * @param int[] $playerSeedsOrdered
-     * @return bool
+     * @return bool true if set
      */
-    public function setPosition(array $playerSeedsOrdered)
+    public function setPosition(array $playerSeedsOrdered): bool
     {
         if ($this->isPlayed()) return false;
         $playerSeedsOrdered = array_values($playerSeedsOrdered);
@@ -33,9 +33,9 @@ class GameRace extends AbstractGame
     /**
      * After game is played, save positions and performances
      * @param array $playersAndPerformances player seed => performances
-     * @return bool
+     * @return bool true if set
      */
-    public function setPositionAndPerformance(array $playersAndPerformances)
+    public function setPositionAndPerformance(array $playersAndPerformances): bool
     {
         if ($this->isPlayed()) return false;
         $rank = 0;

@@ -17,9 +17,9 @@ class GamePerformances extends AbstractGame
 
     /**
      * After game is played, if performances was set one by one, mark game as ended
-     * @return bool
+     * @return bool true if set
      */
-    public function setEndOfGame()
+    public function setEndOfGame(): bool
     {
         if ($this->isPlayed()) return false;
         $maxPerf = 0;
@@ -83,7 +83,7 @@ class GamePerformances extends AbstractGame
      * @param int $playerSeed
      * @return int sum of all performance if integer values
      */
-    public function getPlayerPerformancesSum(int $playerSeed)
+    public function getPlayerPerformancesSum(int $playerSeed): int
     {
         $sum = 0;
         if (!$this->hasPlayerPerformed($playerSeed)) return $sum;

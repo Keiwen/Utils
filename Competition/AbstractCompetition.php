@@ -36,22 +36,25 @@ abstract class AbstractCompetition
 
     abstract protected function initializeRanking();
 
-    public function getPlayerCount()
+    public function getPlayerCount(): int
     {
         return $this->playerCount;
     }
 
-    public function getGameCount()
+    public function getGameCount(): int
     {
         return count($this->gameRepository);
     }
 
-    public function getGameCountByPlayer()
+    public function getGameCountByPlayer(): int
     {
         return count($this->gameRepository);
     }
 
-    public function getGames()
+    /**
+     * @return AbstractGame[]
+     */
+    public function getGames(): array
     {
         return $this->gameRepository;
     }
@@ -65,7 +68,7 @@ abstract class AbstractCompetition
      * @param bool $ranked
      * @return array
      */
-    public function getFullPlayers(bool $ranked = false)
+    public function getFullPlayers(bool $ranked = false): array
     {
         if (!$ranked) return $this->givenPlayers;
 
@@ -190,7 +193,7 @@ abstract class AbstractCompetition
     /**
      * @return AbstractRanking[] first to last
      */
-    public function getRankings(bool $byExpenses = false)
+    public function getRankings(bool $byExpenses = false): array
     {
         if ($byExpenses) {
             if (empty($this->rankings)) return array();
@@ -208,7 +211,7 @@ abstract class AbstractCompetition
      * @param int $playerSeed
      * @return bool
      */
-    public function canPlayerWin(int $playerSeed)
+    public function canPlayerWin(int $playerSeed): bool
     {
         return $this->canPlayerReachRank($playerSeed, 1);
     }
@@ -218,7 +221,7 @@ abstract class AbstractCompetition
      * @param int $rank
      * @return bool
      */
-    public function canPlayerReachRank(int $playerSeed, int $rank)
+    public function canPlayerReachRank(int $playerSeed, int $rank): bool
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
         $playerRanking = $this->rankings[$playerSeed] ?? null;
@@ -236,7 +239,7 @@ abstract class AbstractCompetition
      * @param int $rank
      * @return bool
      */
-    public function canPlayerDropToRank(int $playerSeed, int $rank)
+    public function canPlayerDropToRank(int $playerSeed, int $rank): bool
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
         $playerRanking = $this->rankings[$playerSeed] ?? null;
@@ -253,7 +256,7 @@ abstract class AbstractCompetition
      * @param int $playerSeed
      * @return bool
      */
-    public function canPlayerLoose(int $playerSeed)
+    public function canPlayerLoose(int $playerSeed): bool
     {
         return $this->canPlayerDropToRank($playerSeed, 2);
     }
@@ -297,7 +300,7 @@ abstract class AbstractCompetition
      * @param bool $ranked
      * @return static
      */
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false)
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
         return new static($competition->getFullPlayers($ranked));
     }

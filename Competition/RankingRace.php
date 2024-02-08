@@ -50,7 +50,7 @@ class RankingRace extends AbstractRanking
     /**
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB)
+    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
     {
         static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
