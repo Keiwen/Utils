@@ -20,7 +20,7 @@ class GameRace extends AbstractGame
         if ($this->isPlayed()) return false;
         $playerSeedsOrdered = array_values($playerSeedsOrdered);
         foreach ($playerSeedsOrdered as $index => $playerSeed) {
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             $this->setPlayerResult($playerSeed, $index + 1);
         }
         $this->played = true;
@@ -41,7 +41,7 @@ class GameRace extends AbstractGame
         $rank = 0;
         foreach ($playersAndPerformances as $playerSeed => $performances) {
             $rank++;
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             $this->setPlayerResult($playerSeed, $rank);
             if (!is_array($performances)) continue;
             $this->setPlayerPerformances($playerSeed, $performances);

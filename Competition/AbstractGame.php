@@ -163,7 +163,7 @@ abstract class AbstractGame
     {
         if ($this->isPlayed()) return false;
         foreach ($performances as $playerSeed => $playerPerformances) {
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             if (!is_array($playerPerformances)) continue;
             $this->setPlayerPerformances($playerSeed, $playerPerformances);
         }
@@ -179,7 +179,7 @@ abstract class AbstractGame
     public function setPlayerPerformances(int $playerSeed, array $performances): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         $this->performances[$playerSeed] = $performances;
         return true;
     }
@@ -193,7 +193,7 @@ abstract class AbstractGame
     public function setPlayerPerformanceType(int $playerSeed, string $performanceType, $performance): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         if (empty($this->performances[$playerSeed])) $this->performances[$playerSeed] = array();
         $this->performances[$playerSeed][$performanceType] = $performance;
         return true;
@@ -236,7 +236,7 @@ abstract class AbstractGame
     {
         if ($this->isPlayed()) return false;
         foreach ($expenses as $playerSeed => $playerExpenses) {
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             if (!is_array($playerExpenses)) continue;
             $this->setPlayerExpenses($playerSeed, $playerExpenses);
         }
@@ -252,7 +252,7 @@ abstract class AbstractGame
     public function setPlayerExpenses(int $playerSeed, array $expenses): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         $this->expenses[$playerSeed] = $expenses;
         return true;
     }
@@ -266,7 +266,7 @@ abstract class AbstractGame
     public function setPlayerExpenseType(int $playerSeed, string $expenseType, $expense): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         if (empty($this->expenses[$playerSeed])) $this->expenses[$playerSeed] = array();
         $this->expenses[$playerSeed][$expenseType] = $expense;
         return true;
@@ -310,7 +310,7 @@ abstract class AbstractGame
     {
         if ($this->isPlayed()) return false;
         foreach ($bonuses as $playerSeed => $bonus) {
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             if (!is_int($bonus)) continue;
             $this->setPlayerBonus($playerSeed, $bonus);
         }
@@ -326,7 +326,7 @@ abstract class AbstractGame
     public function setPlayerBonus(int $playerSeed, int $bonus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         $this->bonuses[$playerSeed] = $bonus;
         return true;
     }
@@ -357,7 +357,7 @@ abstract class AbstractGame
     {
         if ($this->isPlayed()) return false;
         foreach ($maluses as $playerSeed => $malus) {
-            if (!in_array($playerSeed, array_keys($this->players))) continue;
+            if (!$this->isPlayerInGame($playerSeed)) continue;
             if (!is_int($malus)) continue;
             $this->setPlayerMalus($playerSeed, $malus);
         }
@@ -373,7 +373,7 @@ abstract class AbstractGame
     public function setPlayerMalus(int $playerSeed, int $malus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!in_array($playerSeed, array_keys($this->players))) return false;
+        if (!$this->isPlayerInGame($playerSeed)) return false;
         $this->maluses[$playerSeed] = $malus;
         return true;
     }
@@ -445,5 +445,13 @@ abstract class AbstractGame
         return null;
     }
 
+    /**
+     * @param int $playerSeed
+     * @return bool
+     */
+    public function isPlayerInGame(int $playerSeed): bool
+    {
+        return in_array($playerSeed, array_keys($this->players));
+    }
 
 }
