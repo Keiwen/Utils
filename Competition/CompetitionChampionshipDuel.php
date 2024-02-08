@@ -323,10 +323,4 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $serieCount, $shuffleCalendar);
     }
 
-    public function copyGamesFromCompetition(AbstractCompetition $competition)
-    {
-        throw new CompetitionException('Cannot copy games for Championship duels, calendar is re-generated');
-    }
-
-
 }

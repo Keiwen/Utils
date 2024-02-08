@@ -274,20 +274,5 @@ abstract class AbstractCompetition
         return new static($competition->getFullPlayers($ranked));
     }
 
-    public function copyGamesFromCompetition(AbstractCompetition $competition)
-    {
-        if ($this->nextGameNumber != 1) {
-            throw new CompetitionException('Cannot copy players as competition has started');
-        }
-
-        $this->gameRepository = array();
-        $previousGames = $this->getGames();
-        foreach ($previousGames as $game) {
-            $newGame = $this->addGame();
-            $newGame->setName($game->getName());
-        }
-    }
-
-
 
 }
