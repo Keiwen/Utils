@@ -265,6 +265,34 @@ abstract class AbstractCompetition
 
 
     /**
+     * @return bool
+     */
+    public function isCompleted(): bool
+    {
+        if ($this->nextGameNumber != -1) return false;
+        return $this->getGameCount() != 0;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGamesCompletedCount(): int
+    {
+        if ($this->isCompleted()) return $this->getGameCount();
+        if (empty($this->getGameCount())) return 0;
+        return $this->nextGameNumber - 1;
+    }
+
+    /**
+     * @return int
+     */
+    public function getGamesToPlayCount(): int
+    {
+        if (empty($this->getGameCount())) return 0;
+        return $this->getGameCount() - $this->getGamesCompletedCount();
+    }
+
+    /**
      * @param AbstractCompetition $competition
      * @param bool $ranked
      * @return static
