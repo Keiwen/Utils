@@ -7,16 +7,18 @@ use Keiwen\Utils\Math\Divisibility;
 class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 {
     protected $serieCount;
+    protected $shuffleCalendar;
 
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
 
-    public function __construct(array $players, bool $shuffleCalendar = false, int $serieCount = 1)
+    public function __construct(array $players, int $serieCount = 1, bool $shuffleCalendar = false)
     {
         if (count($players) < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
         if ($serieCount < 1) $serieCount = 1;
         $this->serieCount = $serieCount;
-        parent::__construct($players, $shuffleCalendar);
+        $this->shuffleCalendar = $shuffleCalendar;
+        parent::__construct($players);
     }
 
     protected function initializeRanking()
@@ -36,7 +38,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         return ($this->playerCount - 1) * $this->serieCount;
     }
 
-    protected function generateCalendar(bool $shuffle = false): void
+    protected function generateCalendar(): void
     {
         if (Divisibility::isNumberEven($this->playerCount)) {
             $this->generateBaseCalendarEven();
@@ -47,7 +49,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         $roundInASerie = $this->getRoundCount();
         $this->generateFullCalendar();
 
-        if ($shuffle) {
+        if ($this->shuffleCalendar) {
             // shuffle each serie individually instead of full calendar
             $calendarCopy = array_values($this->calendar);
             $this->calendar = array();
@@ -242,14 +244,14 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
     /**
      * @param CompetitionChampionshipDuel $competition
      * @param bool $ranked
-     * @param bool $shuffleCalendar
      * @param int $serieCount
+     * @param bool $shuffleCalendar
      * @return CompetitionChampionshipDuel
      * @throws CompetitionException
      */
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, bool $shuffleCalendar = false, int $serieCount = 1): AbstractCompetition
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, int $serieCount = 1, bool $shuffleCalendar = false): AbstractCompetition
     {
-        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $shuffleCalendar, $serieCount);
+        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $serieCount, $shuffleCalendar);
     }
 
 }

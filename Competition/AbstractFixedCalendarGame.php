@@ -10,14 +10,14 @@ abstract class AbstractFixedCalendarGame extends AbstractCompetition
     protected $nextRoundNumber = 1;
 
 
-    public function __construct(array $players, bool $shuffleCalendar = false)
+    public function __construct(array $players)
     {
         parent::__construct($players);
-        $this->generateCalendar($shuffleCalendar);
+        $this->generateCalendar();
         $this->consolidateCalendar();
     }
 
-    abstract protected function generateCalendar(bool $shuffle = false);
+    abstract protected function generateCalendar();
 
 
     protected function consolidateCalendar()
