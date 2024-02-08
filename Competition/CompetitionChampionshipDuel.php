@@ -4,25 +4,19 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipDuel extends AbstractCompetition
+class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 {
     protected $serieCount;
-    protected $calendar;
 
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
 
-    protected $nextRoundNumber = 1;
-
-
-    public function __construct(array $players, int $serieCount = 1, bool $shuffleCalendar = false)
+    public function __construct(array $players, bool $shuffleCalendar = false, int $serieCount = 1)
     {
         if (count($players) < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
-        parent::__construct($players);
-
         if ($serieCount < 1) $serieCount = 1;
         $this->serieCount = $serieCount;
-        $this->generateCalendar($shuffleCalendar);
+        parent::__construct($players, $shuffleCalendar);
     }
 
     protected function initializeRanking()
@@ -74,8 +68,6 @@ class CompetitionChampionshipDuel extends AbstractCompetition
                 }
             }
         }
-
-        $this->consolidateCalendar();
     }
 
     protected function generateBaseCalendarEven(): void
@@ -178,39 +170,14 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         $this->roundCount = $this->roundCount * $this->serieCount;
     }
 
-    protected function consolidateCalendar()
-    {
-        $gameNumber = 1;
-        foreach ($this->calendar as $round => $gamesOfTheRound) {
-            foreach ($gamesOfTheRound as $index => $game) {
-                // for each game, give a number to order it
-                /** @var GameDuel $game */
-                $game->affectTo($this, $gameNumber);
-                $this->gameRepository[$gameNumber] = array(
-                    'round' => $round,
-                    'index' => $index,
-                );
-                $gameNumber++;
-            }
-        }
-    }
-
-    /**
-     * @return array round => [games]
-     */
-    public function getCalendar(): array
-    {
-        return $this->calendar;
-    }
-
     /**
      * get games for given round
      * @param int $round
-     * @return GameDuel[]] games of the round
+     * @return GameDuel[] games of the round
      */
     public function getGamesByRound(int $round): array
     {
-        return $this->calendar[$round] ?? array();
+        return parent::getGamesByRound($round);
     }
 
     /**
@@ -220,53 +187,17 @@ class CompetitionChampionshipDuel extends AbstractCompetition
      */
     public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
-        if (!isset($this->gameRepository[$gameNumber])) return null;
-        $round = $this->gameRepository[$gameNumber]['round'] ?? 0;
-        $index = $this->gameRepository[$gameNumber]['index'] ?? 0;
-        if (empty($round)) return null;
-        if (!isset($this->calendar[$round])) return null;
-        return $this->calendar[$round][$index] ?? null;
+        return parent::getGameByNumber($gameNumber);
     }
-
-    public function getGames()
-    {
-        $games = array();
-        for ($i = 1; $i <= $this->getGameCount(); $i++) {
-            $games[] = $this->getGameByNumber($i);
-        }
-        return $games;
-    }
-
 
     /**
-     * @param int $gameNumber
-     * @return int|null round number if found
+     * @return GameDuel[]
      */
-    public function getGameRound(int $gameNumber): ?int
+    public function getGames(): array
     {
-        if (!isset($this->gameRepository[$gameNumber])) return null;
-        return $this->gameRepository[$gameNumber]['round'] ?? null;
+        return parent::getGames();
     }
 
-
-    /**
-     * @param int $gameNumber
-     */
-    protected function setNextGame(int $gameNumber)
-    {
-        parent::setNextGame($gameNumber);
-        $this->nextRoundNumber = $this->getGameRound($gameNumber);
-        if (empty($this->nextRoundNumber)) $this->nextRoundNumber = -1;
-    }
-
-
-    protected function roundGapInCalendar(int $currentRound, int $roundGap): int
-    {
-        $nextRound = $currentRound + $roundGap;
-        if ($nextRound > $this->roundCount) $nextRound -= $this->roundCount;
-        if ($nextRound < 1) $nextRound += $this->roundCount;
-        return $nextRound;
-    }
 
     /**
      * @param int $seedHome
@@ -282,16 +213,6 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         $this->calendar[$round][] = $gameDuel;
         return $gameDuel;
     }
-
-    /**
-     * @return bool
-     */
-    public function canGameBeAdded(): bool
-    {
-        return false;
-    }
-
-
 
     /**
      * @param GameDuel $game
@@ -318,9 +239,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         return RankingDuel::getPointsForLoss();
     }
 
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, int $serieCount = 1, bool $shuffleCalendar = false)
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, bool $shuffleCalendar = false, int $serieCount = 1)
     {
-        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $serieCount, $shuffleCalendar);
+        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $shuffleCalendar, $serieCount);
     }
 
 }
