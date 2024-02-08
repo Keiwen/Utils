@@ -39,7 +39,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
      */
     protected function addGame(): AbstractGame
     {
-        $brawl = new GameBrawl(range(1, $this->playerCount));
+        $brawl = new GameBrawl($this->players);
         $gameNumber = count($this->gameRepository) + 1;
         $brawl->affectTo($this, $gameNumber);
         $this->gameRepository[] = $brawl;

@@ -39,7 +39,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
      */
     protected function addGame(): AbstractGame
     {
-        $race = new GameRace(range(1, $this->playerCount));
+        $race = new GameRace($this->players);
         $gameNumber = count($this->gameRepository) + 1;
         $race->affectTo($this, $gameNumber);
         $this->gameRepository[] = $race;
