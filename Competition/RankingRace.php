@@ -39,7 +39,7 @@ class RankingRace extends AbstractRanking
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
 
-        $position = $game->getPlayerPosition($this->getPlayerOrd());
+        $position = $game->getPlayerPosition($this->getPlayerSeed());
         if (empty($position)) return false;
 
         if (!isset($this->gameByResult[$position])) $this->gameByResult[$position] = 0;
@@ -74,7 +74,7 @@ class RankingRace extends AbstractRanking
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
         // last case, first registered player is first
-        if ($rankingA->getPlayerOrd() < $rankingB->getPlayerOrd()) return 1;
+        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
         return -1;
     }
 

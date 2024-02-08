@@ -16,8 +16,8 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     protected function initializeRanking()
     {
-        for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
-            $this->rankings[$playerOrd] = new RankingBrawl($playerOrd);
+        for ($playerSeed = 1; $playerSeed <= $this->playerCount; $playerSeed++) {
+            $this->rankings[$playerSeed] = new RankingBrawl($playerSeed);
         }
     }
 
@@ -73,8 +73,8 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     protected function updateRankingsForGame($game)
     {
         $results = $game->getResults();
-        foreach ($results as $playerOrd => $result)  {
-            ($this->rankings[$playerOrd])->saveGame($game);
+        foreach ($results as $playerSeed => $result)  {
+            ($this->rankings[$playerSeed])->saveGame($game);
         }
     }
 

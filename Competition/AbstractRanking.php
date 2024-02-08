@@ -5,7 +5,7 @@ namespace Keiwen\Utils\Competition;
 abstract class AbstractRanking
 {
 
-    protected $playerOrd;
+    protected $playerSeed;
 
     protected $gameByResult = array();
 
@@ -22,9 +22,9 @@ abstract class AbstractRanking
     protected static $pointByBonus = 1;
     protected static $pointByMalus = 1;
 
-    public function __construct(int $playerOrd)
+    public function __construct(int $playerSeed)
     {
-        $this->playerOrd = $playerOrd;
+        $this->playerSeed = $playerSeed;
         // initialize game by result
         $this->gameByResult = array_fill_keys(array_keys(static::$pointByResult), 0);
     }
@@ -112,9 +112,9 @@ abstract class AbstractRanking
         return static::$pointByMalus;
     }
 
-    public function getPlayerOrd()
+    public function getPlayerSeed()
     {
-        return $this->playerOrd;
+        return $this->playerSeed;
     }
 
     public function getPlayed(): int
@@ -234,7 +234,7 @@ abstract class AbstractRanking
 
     protected function saveGamePerformances(AbstractGame $game): bool
     {
-        $playerPerformances = $game->getPlayerPerformances($this->getPlayerOrd());
+        $playerPerformances = $game->getPlayerPerformances($this->getPlayerSeed());
         if (empty($playerPerformances)) return false;
         foreach ($playerPerformances as $type => $performance) {
             if (empty($performance) || !is_numeric($performance)) $performance = 0;
@@ -246,7 +246,7 @@ abstract class AbstractRanking
 
     protected function saveGameExpenses(AbstractGame $game): bool
     {
-        $playerExpenses = $game->getPlayerExpenses($this->getPlayerOrd());
+        $playerExpenses = $game->getPlayerExpenses($this->getPlayerSeed());
         if (empty($playerExpenses)) return false;
         foreach ($playerExpenses as $type => $expense) {
             if (empty($expense) || !is_numeric($expense)) $expense = 0;
@@ -258,8 +258,8 @@ abstract class AbstractRanking
 
     protected function saveGameBonusAndMalus(AbstractGame $game): bool
     {
-        $this->bonusCount += $game->getPlayerBonus($this->getPlayerOrd());
-        $this->malusCount += $game->getPlayerMalus($this->getPlayerOrd());
+        $this->bonusCount += $game->getPlayerBonus($this->getPlayerSeed());
+        $this->malusCount += $game->getPlayerMalus($this->getPlayerSeed());
         return true;
     }
 
@@ -284,7 +284,7 @@ abstract class AbstractRanking
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
         // last case, first registered player is first
-        if ($rankingA->getPlayerOrd() < $rankingB->getPlayerOrd()) return 1;
+        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
         return -1;
     }
 

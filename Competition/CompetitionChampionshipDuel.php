@@ -27,8 +27,8 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 
     protected function initializeRanking()
     {
-        for ($playerOrd = 1; $playerOrd <= $this->playerCount; $playerOrd++) {
-            $this->rankings[$playerOrd] = new RankingDuel($playerOrd);
+        for ($playerSeed = 1; $playerSeed <= $this->playerCount; $playerSeed++) {
+            $this->rankings[$playerSeed] = new RankingDuel($playerSeed);
         }
     }
 
@@ -88,19 +88,19 @@ class CompetitionChampionshipDuel extends AbstractCompetition
         // init round when match next player
         $roundWhenMatchNextPlayer = 1;
         // starting next player, until we reach the penultimate (< instead of <= in loop)
-        for ($ordHome = 2; $ordHome < $this->playerCount; $ordHome++) {
+        for ($seedHome = 2; $seedHome < $this->playerCount; $seedHome++) {
             // first match is on round following the round when this player matched previous player
             $round = $this->roundGapInCalendar($roundWhenMatchNextPlayer, 1);
             // first match is with the last one
-            $this->addGame($ordHome, $this->playerCount, $round);
+            $this->addGame($seedHome, $this->playerCount, $round);
 
             // then match in ascending order with all others, starting with next player
             // stop before the last one, as already matched just before (< instead of <= in loop condition)
             // also store the round when we will match next player (so next of this one) to handle next player
             $roundWhenMatchNextPlayer = $this->roundGapInCalendar($round, 1);
-            for ($ordAway = $ordHome + 1; $ordAway < $this->playerCount; $ordAway++) {
+            for ($seedAway = $seedHome + 1; $seedAway < $this->playerCount; $seedAway++) {
                 $round = $this->roundGapInCalendar($round, 1);
-                $this->addGame($ordHome, $ordAway, $round);
+                $this->addGame($seedHome, $seedAway, $round);
             }
         }
     }
@@ -113,17 +113,17 @@ class CompetitionChampionshipDuel extends AbstractCompetition
 
         $round = 1;
         // for each player
-        for ($ordHome = 1; $ordHome <= $this->playerCount; $ordHome++) {
-            // initialize ordAway
-            $ordAway = $ordHome;
+        for ($seedHome = 1; $seedHome <= $this->playerCount; $seedHome++) {
+            // initialize $seedAway
+            $seedAway = $seedHome;
             // one game per other player
             for ($i = 1; $i <= ($this->playerCount - 1); $i++) {
-                // get ord - 2 for each game.
-                $ordAway = $this->ordGapInPlayers($ordAway, -2);
-                // If opponent ord is lower, means that this match should be already done
+                // get seed - 2 for each game.
+                $seedAway = $this->seedGapInPlayers($seedAway, -2);
+                // If opponent seed is lower, means that this match should be already done
                 // in that case, advance to next step (next round next opponent)
-                if ($ordHome < $ordAway) {
-                    $this->addGame($ordHome, $ordAway, $round);
+                if ($seedHome < $seedAway) {
+                    $this->addGame($seedHome, $seedAway, $round);
                 }
                 $round = $this->roundGapInCalendar($round, 1);
             }
@@ -153,9 +153,9 @@ class CompetitionChampionshipDuel extends AbstractCompetition
                         $reverse = Divisibility::isNumberEven($serie);
                     }
                     if ($reverse) {
-                        $this->addGame($game->getOrdAway(), $game->getOrdHome(), $round);
+                        $this->addGame($game->getSeedAway(), $game->getSeedHome(), $round);
                     } else {
-                        $this->addGame($game->getOrdHome(), $game->getOrdAway(), $round);
+                        $this->addGame($game->getSeedHome(), $game->getSeedAway(), $round);
                     }
                 }
                 $round++;
@@ -269,15 +269,15 @@ class CompetitionChampionshipDuel extends AbstractCompetition
     }
 
     /**
-     * @param int $ordHome
-     * @param int $ordAway
+     * @param int $seedHome
+     * @param int $seedAway
      * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame(int $ordHome = 1, int $ordAway = 2, int $round = 1): AbstractGame
+    protected function addGame(int $seedHome = 1, int $seedAway = 2, int $round = 1): AbstractGame
     {
-        $gameDuel = new GameDuel($ordHome, $ordAway);
+        $gameDuel = new GameDuel($seedHome, $seedAway);
         $gameDuel->setCompetitionRound($round);
         $this->calendar[$round][] = $gameDuel;
         return $gameDuel;
@@ -298,11 +298,11 @@ class CompetitionChampionshipDuel extends AbstractCompetition
      */
     protected function updateRankingsForGame($game)
     {
-        if (isset($this->rankings[$game->getOrdHome()])) {
-            ($this->rankings[$game->getOrdHome()])->saveGame($game);
+        if (isset($this->rankings[$game->getSeedHome()])) {
+            ($this->rankings[$game->getSeedHome()])->saveGame($game);
         }
-        if (isset($this->rankings[$game->getOrdAway()])) {
-            ($this->rankings[$game->getOrdAway()])->saveGame($game);
+        if (isset($this->rankings[$game->getSeedAway()])) {
+            ($this->rankings[$game->getSeedAway()])->saveGame($game);
         }
     }
 

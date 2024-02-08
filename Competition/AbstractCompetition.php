@@ -72,8 +72,8 @@ abstract class AbstractCompetition
         $rankedList = array();
         $rankings = $this->getRankings();
         foreach ($rankings as $ranking) {
-            $nextPlayerOrd = $ranking->getPlayerOrd();
-            $nextPlayer = $this->givenPlayers[$nextPlayerOrd] ?? null;
+            $nextPlayerSeed = $ranking->getPlayerSeed();
+            $nextPlayer = $this->givenPlayers[$nextPlayerSeed] ?? null;
             if (!empty($nextPlayer)) $rankedList[] = $nextPlayer;
         }
 
@@ -81,12 +81,12 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerOrd
+     * @param int $playerSeed
      * @return mixed|null if found, full player data passed in constructor
      */
-    public function getFullPlayer(int $playerOrd)
+    public function getFullPlayer(int $playerSeed)
     {
-        return $this->givenPlayers[$playerOrd - 1] ?? null;
+        return $this->givenPlayers[$playerSeed - 1] ?? null;
     }
 
     /**
@@ -168,12 +168,12 @@ abstract class AbstractCompetition
 
     abstract protected function updateRankingsForGame($game);
 
-    protected function ordGapInPlayers(int $currentOrd, int $ordGap): int
+    protected function seedGapInPlayers(int $currentSeed, int $seedGap): int
     {
-        $nextOrd = $currentOrd + $ordGap;
-        if ($nextOrd > $this->playerCount) $nextOrd -= $this->playerCount;
-        if ($nextOrd < 1) $nextOrd += $this->playerCount;
-        return $nextOrd;
+        $nextSeed = $currentSeed + $seedGap;
+        if ($nextSeed > $this->playerCount) $nextSeed -= $this->playerCount;
+        if ($nextSeed < 1) $nextSeed += $this->playerCount;
+        return $nextSeed;
     }
 
 
@@ -205,23 +205,23 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerOrd
+     * @param int $playerSeed
      * @return bool
      */
-    public function canPlayerWin(int $playerOrd)
+    public function canPlayerWin(int $playerSeed)
     {
-        return $this->canPlayerReachRank($playerOrd, 1);
+        return $this->canPlayerReachRank($playerSeed, 1);
     }
 
     /**
-     * @param int $playerOrd
+     * @param int $playerSeed
      * @param int $rank
      * @return bool
      */
-    public function canPlayerReachRank(int $playerOrd, int $rank)
+    public function canPlayerReachRank(int $playerSeed, int $rank)
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerOrd] ?? null;
+        $playerRanking = $this->rankings[$playerSeed] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
         $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMinPointForAGame();
@@ -231,14 +231,14 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerOrd
+     * @param int $playerSeed
      * @param int $rank
      * @return bool
      */
-    public function canPlayerDropToRank(int $playerOrd, int $rank)
+    public function canPlayerDropToRank(int $playerSeed, int $rank)
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerOrd] ?? null;
+        $playerRanking = $this->rankings[$playerSeed] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
         $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMaxPointForAGame();
@@ -248,12 +248,12 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerOrd
+     * @param int $playerSeed
      * @return bool
      */
-    public function canPlayerLoose(int $playerOrd)
+    public function canPlayerLoose(int $playerSeed)
     {
-        return $this->canPlayerDropToRank($playerOrd, 2);
+        return $this->canPlayerDropToRank($playerSeed, 2);
     }
 
 
