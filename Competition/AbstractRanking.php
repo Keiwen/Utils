@@ -232,12 +232,17 @@ abstract class AbstractRanking
 
     abstract public function saveGame(AbstractGame $game): bool;
 
+    /**
+     * Only performances as integer values are stored for rankings
+     * @param AbstractGame $game
+     * @return bool
+     */
     protected function saveGamePerformances(AbstractGame $game): bool
     {
         $playerPerformances = $game->getPlayerPerformances($this->getPlayerSeed());
         if (empty($playerPerformances)) return false;
         foreach ($playerPerformances as $type => $performance) {
-            if (empty($performance) || !is_numeric($performance)) $performance = 0;
+            if (empty($performance) || !is_int($performance)) $performance = 0;
             if (!isset($this->performances[$type])) $this->performances[$type] = 0;
             $this->performances[$type] += $performance;
         }
