@@ -9,10 +9,17 @@ class GamePerformances extends AbstractGame
     const RESULT_LOSS = 'L';
 
     protected $gameRanks = array();
+    protected $playerCanSkipGame = true;
 
-    public function __construct(array $playersSeedList)
+    public function __construct(array $playersSeedList, bool $playerCanSkipGame = true)
     {
         parent::setPlayers($playersSeedList);
+        $this->playerCanSkipGame = $playerCanSkipGame;
+    }
+
+    public function hasPlayerCanSkipGame(): bool
+    {
+        return $this->playerCanSkipGame;
     }
 
     /**
@@ -26,7 +33,7 @@ class GamePerformances extends AbstractGame
         $playerSeedsWithMax = array();
         $this->gameRanks = array();
         foreach ($this->players as $playerSeed => $startingOrder) {
-            if (!$this->hasPlayerPerformed($playerSeed)) continue;
+            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerSeed)) continue;
             $gamePerf = $this->getPlayerPerformancesSum($playerSeed);
             $this->gameRanks[$playerSeed] = $gamePerf;
             if ($gamePerf >= $maxPerf) {
@@ -38,7 +45,7 @@ class GamePerformances extends AbstractGame
             }
         }
         foreach ($this->players as $playerSeed) {
-            if (!$this->hasPlayerPerformed($playerSeed)) continue;
+            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerSeed)) continue;
             if (in_array($playerSeed, $playerSeedsWithMax)) {
                 $this->setPlayerResult($playerSeed, self::RESULT_WON);
             } else {

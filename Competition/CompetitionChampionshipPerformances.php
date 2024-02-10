@@ -34,12 +34,12 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 
 
     /**
+     * @param bool $playerCanSkipGame
      * @return GamePerformances
-     * @throws CompetitionException
      */
-    protected function addGame(): AbstractGame
+    protected function addGame(bool $playerCanSkipGame = true): AbstractGame
     {
-        $game = new GamePerformances($this->players);
+        $game = new GamePerformances($this->players, $playerCanSkipGame);
         $gameNumber = count($this->gameRepository) + 1;
         $game->affectTo($this, $gameNumber);
         $this->gameRepository[] = $game;
@@ -50,11 +50,11 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 
     /**
      * @param string $name
-     * @throws CompetitionException
+     * @param bool $playerCanSkipGame
      */
-    public function addPerformancesGame(string $name = '')
+    public function addPerformancesGame(string $name = '', bool $playerCanSkipGame = true)
     {
-        $this->addGame()->setName($name);
+        $this->addGame()->setName($name, $playerCanSkipGame);
     }
 
 
