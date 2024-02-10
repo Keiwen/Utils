@@ -7,6 +7,9 @@ class RankingPerformances extends AbstractRanking
     const RANK_METHOD_SUM = 'sum';
     const RANK_METHOD_AVERAGE = 'average';
     const RANK_METHOD_WON = 'won';
+    const RANK_METHOD_LAST_ROUND_RANK = 'last_round_rank';
+
+    protected $lastRoundPoints = 0;
 
     protected static $pointByResult = array(
         GamePerformances::RESULT_WON => 0,
@@ -42,6 +45,7 @@ class RankingPerformances extends AbstractRanking
             self::RANK_METHOD_SUM,
             self::RANK_METHOD_AVERAGE,
             self::RANK_METHOD_WON,
+            self::RANK_METHOD_LAST_ROUND_RANK,
         );
     }
 
@@ -89,6 +93,9 @@ class RankingPerformances extends AbstractRanking
                 break;
             case self::RANK_METHOD_AVERAGE:
                 return $this->getAveragePerformance();
+                break;
+            case self::RANK_METHOD_LAST_ROUND_RANK:
+                return $this->getLastRoundPoints();
                 break;
             case self::RANK_METHOD_SUM:
             default:
@@ -138,6 +145,7 @@ class RankingPerformances extends AbstractRanking
         $this->saveGamePerformances($game);
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
+        $this->saveLastRoundPoints($game);
 
         if ($game->hasPlayerWon($this->getPlayerSeed())) {
             $this->gameByResult[GamePerformances::RESULT_WON]++;
@@ -145,6 +153,26 @@ class RankingPerformances extends AbstractRanking
             $this->gameByResult[GamePerformances::RESULT_LOSS]++;
         }
         return true;
+    }
+
+
+    /**
+     * @param GamePerformances $game
+     * @return bool
+     */
+    protected function saveLastRoundPoints(AbstractGame $game): bool
+    {
+        $playerRank = $game->getPlayerGameRank($this->getPlayerSeed());
+        if ($playerRank === 0) return false;
+        $competition = $game->getAffectation();
+        $playersInCompetition = empty($competition) ? count($game->getPlayers()) : $competition->getPlayerCount();
+        $this->lastRoundPoints = $playersInCompetition - $playerRank + $game->getCompetitionRound();
+        return true;
+    }
+
+    public function getLastRoundPoints(): int
+    {
+        return $this->lastRoundPoints;
     }
 
     /**
