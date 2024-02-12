@@ -7,8 +7,10 @@ class RankingPerformances extends AbstractRanking
     const RANK_METHOD_SUM = 'sum';
     const RANK_METHOD_AVERAGE = 'average';
     const RANK_METHOD_WON = 'won';
+    const RANK_METHOD_MAX = 'max';
     const RANK_METHOD_LAST_ROUND_RANK = 'last_round_rank';
 
+    protected $maxPerformance = 0;
     protected $lastRoundPoints = 0;
 
     protected static $pointByResult = array(
@@ -45,6 +47,7 @@ class RankingPerformances extends AbstractRanking
             self::RANK_METHOD_SUM,
             self::RANK_METHOD_AVERAGE,
             self::RANK_METHOD_WON,
+            self::RANK_METHOD_MAX,
             self::RANK_METHOD_LAST_ROUND_RANK,
         );
     }
@@ -93,6 +96,9 @@ class RankingPerformances extends AbstractRanking
                 break;
             case self::RANK_METHOD_AVERAGE:
                 return $this->getAveragePerformance();
+                break;
+            case self::RANK_METHOD_MAX:
+                return $this->getMaxPerformance();
                 break;
             case self::RANK_METHOD_LAST_ROUND_RANK:
                 return $this->getLastRoundPoints();
@@ -145,6 +151,7 @@ class RankingPerformances extends AbstractRanking
         $this->saveGamePerformances($game);
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
+        $this->saveMaxPerformance($game);
         $this->saveLastRoundPoints($game);
 
         if ($game->hasPlayerWon($this->getPlayerSeed())) {
@@ -153,6 +160,28 @@ class RankingPerformances extends AbstractRanking
             $this->gameByResult[GamePerformances::RESULT_LOSS]++;
         }
         return true;
+    }
+
+    /**
+     * @param GamePerformances $game
+     * @return bool
+     */
+    protected function saveMaxPerformance(AbstractGame $game): bool
+    {
+        $playerPerformances = $game->getPlayerPerformances($this->getPlayerSeed());
+        if (empty($playerPerformances)) return false;
+        $sumPerf = 0;
+        foreach ($playerPerformances as $type => $performance) {
+            if (empty($performance) || !is_int($performance)) $performance = 0;
+            $sumPerf += $performance;
+        }
+        if ($sumPerf > $this->maxPerformance) $this->maxPerformance = $sumPerf;
+        return true;
+    }
+
+    public function getMaxPerformance(): int
+    {
+        return $this->maxPerformance;
     }
 
 
