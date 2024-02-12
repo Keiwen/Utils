@@ -17,6 +17,12 @@ class GamePerformances extends AbstractGame
         $this->playerCanSkipGame = $playerCanSkipGame;
     }
 
+    public function getName(): string
+    {
+        if (!empty($this->name)) return $this->name;
+        return $this->getGameNumber();
+    }
+
     public function hasPlayerCanSkipGame(): bool
     {
         return $this->playerCanSkipGame;
