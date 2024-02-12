@@ -5,7 +5,8 @@ namespace Keiwen\Utils\Competition;
 abstract class AbstractRanking
 {
 
-    protected $playerSeed;
+    protected $playerKey;
+    protected $playerSeed = 0;
 
     protected $gameByResult = array();
 
@@ -22,8 +23,9 @@ abstract class AbstractRanking
     protected static $pointByBonus = 1;
     protected static $pointByMalus = 1;
 
-    public function __construct(int $playerSeed)
+    public function __construct($playerKey, int $playerSeed = 0)
     {
+        $this->playerKey = $playerKey;
         $this->playerSeed = $playerSeed;
         // initialize game by result
         $this->gameByResult = array_fill_keys(array_keys(static::$pointByResult), 0);
@@ -129,6 +131,14 @@ abstract class AbstractRanking
     public function getPlayerSeed(): int
     {
         return $this->playerSeed;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getPlayerKey()
+    {
+        return $this->playerKey;
     }
 
     public function getPlayed(): int
@@ -257,7 +267,7 @@ abstract class AbstractRanking
      */
     protected function saveGamePerformances(AbstractGame $game): bool
     {
-        $playerPerformances = $game->getPlayerPerformances($this->getPlayerSeed());
+        $playerPerformances = $game->getPlayerPerformances($this->getPlayerKey());
         if (empty($playerPerformances)) return false;
         foreach ($playerPerformances as $type => $performance) {
             if (empty($performance) || !is_int($performance)) $performance = 0;
@@ -269,7 +279,7 @@ abstract class AbstractRanking
 
     protected function saveGameExpenses(AbstractGame $game): bool
     {
-        $playerExpenses = $game->getPlayerExpenses($this->getPlayerSeed());
+        $playerExpenses = $game->getPlayerExpenses($this->getPlayerKey());
         if (empty($playerExpenses)) return false;
         foreach ($playerExpenses as $type => $expense) {
             if (empty($expense) || !is_numeric($expense)) $expense = 0;
@@ -281,8 +291,8 @@ abstract class AbstractRanking
 
     protected function saveGameBonusAndMalus(AbstractGame $game): bool
     {
-        $this->bonusCount += $game->getPlayerBonus($this->getPlayerSeed());
-        $this->malusCount += $game->getPlayerMalus($this->getPlayerSeed());
+        $this->bonusCount += $game->getPlayerBonus($this->getPlayerKey());
+        $this->malusCount += $game->getPlayerMalus($this->getPlayerKey());
         return true;
     }
 

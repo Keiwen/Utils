@@ -23,8 +23,8 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 
     protected function initializeRanking()
     {
-        for ($playerSeed = 1; $playerSeed <= $this->playerCount; $playerSeed++) {
-            $this->rankings[$playerSeed] = new RankingDuel($playerSeed);
+        foreach ($this->playersSeeds as $key => $seed) {
+            $this->rankings[$key] = new RankingDuel($key, $seed);
         }
     }
 
@@ -77,7 +77,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         $this->roundCount = $this->playerCount - 1;
         // for each round, first player will encounter all other in ascending order
         for ($round = 1; $round <= $this->roundCount; $round++) {
-            $this->addGame(1, $round + 1, $round);
+            $this->addGame($this->getPlayerKeyOnSeed(1), $this->getPlayerKeyOnSeed($round + 1), $round);
         }
         // init round when match next player
         $roundWhenMatchNextPlayer = 1;
@@ -86,7 +86,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
             // first match is on round following the round when this player matched previous player
             $round = $this->roundGapInCalendar($roundWhenMatchNextPlayer, 1);
             // first match is with the last one
-            $this->addGame($seedHome, $this->playerCount, $round);
+            $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($this->playerCount), $round);
 
             // then match in ascending order with all others, starting with next player
             // stop before the last one, as already matched just before (< instead of <= in loop condition)
@@ -94,7 +94,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
             $roundWhenMatchNextPlayer = $this->roundGapInCalendar($round, 1);
             for ($seedAway = $seedHome + 1; $seedAway < $this->playerCount; $seedAway++) {
                 $round = $this->roundGapInCalendar($round, 1);
-                $this->addGame($seedHome, $seedAway, $round);
+                $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway), $round);
             }
         }
     }
@@ -117,7 +117,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
                 // If opponent seed is lower, means that this match should be already done
                 // in that case, advance to next step (next round next opponent)
                 if ($seedHome < $seedAway) {
-                    $this->addGame($seedHome, $seedAway, $round);
+                    $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway), $round);
                 }
                 $round = $this->roundGapInCalendar($round, 1);
             }
@@ -147,9 +147,9 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
                         $reverse = Divisibility::isNumberEven($serie);
                     }
                     if ($reverse) {
-                        $this->addGame($game->getSeedAway(), $game->getSeedHome(), $round);
+                        $this->addGame($game->getKeyAway(), $game->getKeyHome(), $round);
                     } else {
-                        $this->addGame($game->getSeedHome(), $game->getSeedAway(), $round);
+                        $this->addGame($game->getKeyHome(), $game->getKeyAway(), $round);
                     }
                 }
                 $round++;
@@ -202,13 +202,13 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 
 
     /**
-     * @param int $seedHome
-     * @param int $seedAway
+     * @param int|string $keyHome
+     * @param int|string $keyAway
      * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame(int $seedHome = 1, int $seedAway = 2, int $round = 1): AbstractGame
+    protected function addGame($seedHome = 1, $seedAway = 2, int $round = 1): AbstractGame
     {
         $gameDuel = new GameDuel($seedHome, $seedAway);
         $gameDuel->setCompetitionRound($round);
@@ -221,11 +221,11 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
      */
     protected function updateRankingsForGame($game)
     {
-        if (isset($this->rankings[$game->getSeedHome()])) {
-            ($this->rankings[$game->getSeedHome()])->saveGame($game);
+        if (isset($this->rankings[$game->getKeyHome()])) {
+            ($this->rankings[$game->getKeyHome()])->saveGame($game);
         }
-        if (isset($this->rankings[$game->getSeedAway()])) {
-            ($this->rankings[$game->getSeedAway()])->saveGame($game);
+        if (isset($this->rankings[$game->getKeyAway()])) {
+            ($this->rankings[$game->getKeyAway()])->saveGame($game);
         }
     }
 
@@ -251,7 +251,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, int $serieCount = 1, bool $shuffleCalendar = false): AbstractCompetition
     {
-        return new CompetitionChampionshipDuel($competition->getFullPlayers($ranked), $serieCount, $shuffleCalendar);
+        return new CompetitionChampionshipDuel($competition->getPlayers($ranked), $serieCount, $shuffleCalendar);
     }
 
 }

@@ -9,10 +9,10 @@ class GameDuel extends AbstractGame
     const RESULT_DRAWN = 'D';
     const RESULT_LOSS = 'L';
 
-    public function __construct(int $seedHome, int $seedAway)
+    public function __construct($keyHome, $keyAway)
     {
-        if ($seedHome == $seedAway) throw new CompetitionException(sprintf('Cannot create duel for similar player (seed %d)', $seedHome));
-        parent::setPlayers(array($seedHome, $seedAway));
+        if ($keyHome == $keyAway) throw new CompetitionException(sprintf('Cannot create duel for similar player (key %d)', $keyHome));
+        parent::setPlayers(array($keyHome, $keyAway));
     }
 
     public function getName(): string
@@ -26,14 +26,19 @@ class GameDuel extends AbstractGame
      */
     public function getNameWithPlayers(): string
     {
-        $players = $this->getFullPlayers();
+        $players = $this->getPlayers();
         $playersNames = array();
-        foreach ($players as $player) {
+        foreach ($players as $startingOrder => $player) {
             // set with direct string or numeric
-            if (is_string($player) || is_numeric($player)) $playersNames[] = $player;
+            if (is_string($player) || is_numeric($player)) {
+                $playersNames[] = $player;
+            }
             // if object, try to get names method
             elseif (is_object($player)) {
                 if (method_exists($player, 'getName')) $playersNames[] = $player->getName();
+            // set with keys
+            } else {
+                $playersNames[] = $this->getPlayerKeyThatStartedAt($startingOrder);
             }
         }
         return join(" - ", $playersNames);
@@ -41,19 +46,19 @@ class GameDuel extends AbstractGame
 
 
     /**
-     * @return int
+     * @return int|string
      */
-    public function getSeedHome(): int
+    public function getKeyHome()
     {
-        return $this->getPlayerThatStartedAt(1);
+        return $this->getPlayerKeyThatStartedAt(1);
     }
 
     /**
-     * @return int
+     * @return int|string
      */
-    public function getSeedAway(): int
+    public function getKeyAway()
     {
-        return $this->getPlayerThatStartedAt(2);
+        return $this->getPlayerKeyThatStartedAt(2);
     }
 
     /**
@@ -62,8 +67,8 @@ class GameDuel extends AbstractGame
     public function reverseHomeAway(): bool
     {
         if ($this->isPlayed()) return false;
-        $playerSeedList = array_keys($this->players);
-        $this->players = array_combine(array_reverse($playerSeedList), range(1, count($this->players)));
+        $playerKeyList = array_keys($this->playersStartingOrder);
+        $this->setPlayers(array_reverse($playerKeyList));
         return true;
     }
 
@@ -76,18 +81,18 @@ class GameDuel extends AbstractGame
     public function setScores(int $scoreHome, int $scoreAway): bool
     {
         if ($this->isPlayed()) return false;
-        $this->setPlayerPerformanceType($this->getSeedHome(), 'score', $scoreHome);
-        $this->setPlayerPerformanceType($this->getSeedAway(), 'score', $scoreAway);
+        $this->setPlayerPerformanceType($this->getKeyHome(), 'score', $scoreHome);
+        $this->setPlayerPerformanceType($this->getKeyAway(), 'score', $scoreAway);
 
         if($scoreHome > $scoreAway) {
-            $this->setPlayerResult($this->getSeedHome(), self::RESULT_WON);
-            $this->setPlayerResult($this->getSeedAway(), self::RESULT_LOSS);
+            $this->setPlayerResult($this->getKeyHome(), self::RESULT_WON);
+            $this->setPlayerResult($this->getKeyAway(), self::RESULT_LOSS);
         } else if ($scoreHome < $scoreAway) {
-            $this->setPlayerResult($this->getSeedHome(), self::RESULT_LOSS);
-            $this->setPlayerResult($this->getSeedAway(), self::RESULT_WON);
+            $this->setPlayerResult($this->getKeyHome(), self::RESULT_LOSS);
+            $this->setPlayerResult($this->getKeyAway(), self::RESULT_WON);
         } else {
-            $this->setPlayerResult($this->getSeedHome(), self::RESULT_DRAWN);
-            $this->setPlayerResult($this->getSeedAway(), self::RESULT_DRAWN);
+            $this->setPlayerResult($this->getKeyHome(), self::RESULT_DRAWN);
+            $this->setPlayerResult($this->getKeyAway(), self::RESULT_DRAWN);
         }
         $this->played = true;
         if ($this->isAffected()) {
@@ -98,32 +103,32 @@ class GameDuel extends AbstractGame
 
     public function getScoreHome(): int
     {
-        return $this->getPlayerPerformanceType($this->getSeedHome(), 'score');
+        return $this->getPlayerPerformanceType($this->getKeyHome(), 'score');
     }
 
     public function getScoreAway(): int
     {
-        return $this->getPlayerPerformanceType($this->getSeedAway(), 'score');
+        return $this->getPlayerPerformanceType($this->getKeyAway(), 'score');
     }
 
     public function hasHomeWon(): bool
     {
-        return $this->getPlayerResult($this->getSeedHome()) == self::RESULT_WON;
+        return $this->getPlayerResult($this->getKeyHome()) == self::RESULT_WON;
     }
 
     public function hasAwayWon(): bool
     {
-        return $this->getPlayerResult($this->getSeedAway()) == self::RESULT_WON;
+        return $this->getPlayerResult($this->getKeyAway()) == self::RESULT_WON;
     }
 
     public function isDraw(): bool
     {
-        return $this->getPlayerResult($this->getSeedHome()) == self::RESULT_DRAWN;
+        return $this->getPlayerResult($this->getKeyHome()) == self::RESULT_DRAWN;
     }
 
-    public function hasPlayerWon(int $playerSeed): bool
+    public function hasPlayerWon($playerKey): bool
     {
-        return $this->getPlayerResult($playerSeed) == self::RESULT_WON;
+        return $this->getPlayerResult($playerKey) == self::RESULT_WON;
     }
 
 

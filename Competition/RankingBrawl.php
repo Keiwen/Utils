@@ -81,7 +81,7 @@ class RankingBrawl extends AbstractRanking
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
 
-        if ($game->hasPlayerWon($this->getPlayerSeed())) {
+        if ($game->hasPlayerWon($this->getPlayerKey())) {
             $this->gameByResult[GameBrawl::RESULT_WON]++;
             $this->performances[self::PERF_TOTAL_BRAWL_COUNT_WON] += $game->getPlayerCount();
         } else {

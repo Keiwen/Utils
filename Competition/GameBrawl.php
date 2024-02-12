@@ -8,24 +8,24 @@ class GameBrawl extends AbstractGame
     const RESULT_WON = 'W';
     const RESULT_LOSS = 'L';
 
-    public function __construct(array $playersSeedList)
+    public function __construct(array $playersKeyList)
     {
-        parent::setPlayers($playersSeedList);
+        parent::setPlayers($playersKeyList);
     }
 
     /**
      * After game is played, save winner
-     * @param int $winnerSeed
+     * @param int|string $winnerKey
      * @return bool true if set
      */
-    public function setWinner(int $winnerSeed): bool
+    public function setWinner(int $winnerKey): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($this->players as $playerSeed => $startingOrder) {
-            if ($playerSeed == $winnerSeed) {
-                $this->setPlayerResult($playerSeed, self::RESULT_WON);
+        foreach ($this->getPlayersKeys() as $startingOrder => $playerKey) {
+            if ($playerKey == $winnerKey) {
+                $this->setPlayerResult($playerKey, self::RESULT_WON);
             } else {
-                $this->setPlayerResult($playerSeed, self::RESULT_LOSS);
+                $this->setPlayerResult($playerKey, self::RESULT_LOSS);
             }
         }
         $this->played = true;
@@ -35,9 +35,9 @@ class GameBrawl extends AbstractGame
         return true;
     }
 
-    public function hasPlayerWon(int $playerSeed): bool
+    public function hasPlayerWon($playerKey): bool
     {
-        return $this->getPlayerResult($playerSeed) == self::RESULT_WON;
+        return $this->getPlayerResult($playerKey) == self::RESULT_WON;
     }
 
 }

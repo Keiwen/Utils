@@ -4,7 +4,9 @@ namespace Keiwen\Utils\Competition;
 
 abstract class AbstractCompetition
 {
-    protected $givenPlayers;
+    /** @var array $playersSeeds key => seed */
+    protected $playersSeeds;
+    /** @var array $players key => player */
     protected $players;
     protected $playerCount;
     protected $roundCount = 1;
@@ -30,8 +32,8 @@ abstract class AbstractCompetition
     protected function initializePlayers(array $players)
     {
         $this->playerCount = count($players);
-        $this->givenPlayers = $players;
-        $this->players = array_keys($players);
+        $this->players = $players;
+        $this->playersSeeds = array_combine(array_keys($players), range(1, count($players)));
     }
 
     abstract protected function initializeRanking();
@@ -65,31 +67,59 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param int|string $playerKey
+     * @return int 0 if not found
+     */
+    public function getPlayerSeed($playerKey): int
+    {
+        return $this->playersSeeds[$playerKey] ?? 0;
+    }
+
+    /**
+     * @param int $playerSeed
+     * @return int|string|null null if not found
+     */
+    public function getPlayerKeyOnSeed(int $playerSeed)
+    {
+        $keysBySeed = array_flip($this->playersSeeds);
+        return $keysBySeed[$playerSeed] ?? null;
+    }
+
+    /**
+     * @param int $playerSeed
+     * @return mixed|null null if not found
+     */
+    public function getPlayerOnSeed(int $playerSeed)
+    {
+        return $this->getPlayer($this->getPlayerKeyOnSeed($playerSeed));
+    }
+
+    /**
      * @param bool $ranked
      * @return array
      */
-    public function getFullPlayers(bool $ranked = false): array
+    public function getPlayers(bool $ranked = false): array
     {
-        if (!$ranked) return $this->givenPlayers;
+        if (!$ranked) return $this->players;
 
         $rankedList = array();
         $rankings = $this->getRankings();
         foreach ($rankings as $ranking) {
-            $nextPlayerSeed = $ranking->getPlayerSeed();
-            $nextPlayer = $this->givenPlayers[$nextPlayerSeed] ?? null;
-            if (!empty($nextPlayer)) $rankedList[] = $nextPlayer;
+            $nextPlayerKey = $ranking->getPlayerKey();
+            $nextPlayer = $this->getPlayer($nextPlayerKey);
+            if ($nextPlayer !== null) $rankedList[] = $nextPlayer;
         }
 
         return $rankedList;
     }
 
     /**
-     * @param int $playerSeed
-     * @return mixed|null if found, full player data passed in constructor
+     * @param int|string $playerKey
+     * @return mixed|null if found, player data
      */
-    public function getFullPlayer(int $playerSeed)
+    public function getPlayer($playerKey)
     {
-        return $this->givenPlayers[$playerSeed - 1] ?? null;
+        return $this->players[$playerKey] ?? null;
     }
 
     /**
@@ -160,7 +190,7 @@ abstract class AbstractCompetition
 
     protected function orderRankings()
     {
-        $this->orderedRankings = $this->rankings;
+        $this->orderedRankings = array_values($this->rankings);
         if (!empty($this->orderedRankings)) {
             $firstRanking = reset($this->orderedRankings);
             $rankingClass = get_class($firstRanking);
@@ -208,23 +238,23 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return bool
      */
-    public function canPlayerWin(int $playerSeed): bool
+    public function canPlayerWin($playerKey): bool
     {
-        return $this->canPlayerReachRank($playerSeed, 1);
+        return $this->canPlayerReachRank($playerKey, 1);
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param int $rank
      * @return bool
      */
-    public function canPlayerReachRank(int $playerSeed, int $rank): bool
+    public function canPlayerReachRank($playerKey, int $rank): bool
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerSeed] ?? null;
+        $playerRanking = $this->rankings[$playerKey] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         if (static::getMaxPointForAGame() === -1) return true;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
@@ -235,14 +265,14 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param int $rank
      * @return bool
      */
-    public function canPlayerDropToRank(int $playerSeed, int $rank): bool
+    public function canPlayerDropToRank($playerKey, int $rank): bool
     {
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerSeed] ?? null;
+        $playerRanking = $this->rankings[$playerKey] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
         if (static::getMaxPointForAGame() === -1) return true;
         $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
@@ -253,12 +283,12 @@ abstract class AbstractCompetition
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return bool
      */
-    public function canPlayerLoose(int $playerSeed): bool
+    public function canPlayerLoose($playerKey): bool
     {
-        return $this->canPlayerDropToRank($playerSeed, 2);
+        return $this->canPlayerDropToRank($playerKey, 2);
     }
 
 
@@ -302,7 +332,7 @@ abstract class AbstractCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new static($competition->getFullPlayers($ranked));
+        return new static($competition->getPlayers($ranked));
     }
 
 

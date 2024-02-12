@@ -39,7 +39,7 @@ class RankingRace extends AbstractRanking
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
 
-        $position = $game->getPlayerPosition($this->getPlayerSeed());
+        $position = $game->getPlayerPosition($this->getPlayerKey());
         if (empty($position)) return false;
 
         if (!isset($this->gameByResult[$position])) $this->gameByResult[$position] = 0;

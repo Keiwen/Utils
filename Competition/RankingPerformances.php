@@ -95,7 +95,7 @@ class RankingPerformances extends AbstractRanking
                 return $this->getWon();
                 break;
             case self::RANK_METHOD_AVERAGE:
-                return $this->getAveragePerformance();
+                return round($this->getAveragePerformance());
                 break;
             case self::RANK_METHOD_MAX:
                 return $this->getMaxPerformance();
@@ -154,7 +154,7 @@ class RankingPerformances extends AbstractRanking
         $this->saveMaxPerformance($game);
         $this->saveLastRoundPoints($game);
 
-        if ($game->hasPlayerWon($this->getPlayerSeed())) {
+        if ($game->hasPlayerWon($this->getPlayerKey())) {
             $this->gameByResult[GamePerformances::RESULT_WON]++;
         } else {
             $this->gameByResult[GamePerformances::RESULT_LOSS]++;
@@ -168,7 +168,7 @@ class RankingPerformances extends AbstractRanking
      */
     protected function saveMaxPerformance(AbstractGame $game): bool
     {
-        $playerPerformances = $game->getPlayerPerformances($this->getPlayerSeed());
+        $playerPerformances = $game->getPlayerPerformances($this->getPlayerKey());
         if (empty($playerPerformances)) return false;
         $sumPerf = 0;
         foreach ($playerPerformances as $type => $performance) {
@@ -191,7 +191,7 @@ class RankingPerformances extends AbstractRanking
      */
     protected function saveLastRoundPoints(AbstractGame $game): bool
     {
-        $playerRank = $game->getPlayerGameRank($this->getPlayerSeed());
+        $playerRank = $game->getPlayerGameRank($this->getPlayerKey());
         if ($playerRank === 0) return false;
         $competition = $game->getAffectation();
         $playersInCompetition = empty($competition) ? count($game->getPlayers()) : $competition->getPlayerCount();

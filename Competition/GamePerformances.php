@@ -11,9 +11,9 @@ class GamePerformances extends AbstractGame
     protected $gameRanks = array();
     protected $playerCanSkipGame = true;
 
-    public function __construct(array $playersSeedList, bool $playerCanSkipGame = true)
+    public function __construct(array $playersKeyList, bool $playerCanSkipGame = true)
     {
-        parent::setPlayers($playersSeedList);
+        parent::setPlayers($playersKeyList);
         $this->playerCanSkipGame = $playerCanSkipGame;
     }
 
@@ -30,26 +30,26 @@ class GamePerformances extends AbstractGame
     {
         if ($this->isPlayed()) return false;
         $maxPerf = 0;
-        $playerSeedsWithMax = array();
+        $playerKeysWithMax = array();
         $this->gameRanks = array();
-        foreach ($this->players as $playerSeed => $startingOrder) {
-            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerSeed)) continue;
-            $gamePerf = $this->getPlayerPerformancesSum($playerSeed);
-            $this->gameRanks[$playerSeed] = $gamePerf;
+        foreach ($this->playersStartingOrder as $playerKey => $startingOrder) {
+            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerKey)) continue;
+            $gamePerf = $this->getPlayerPerformancesSum($playerKey);
+            $this->gameRanks[$playerKey] = $gamePerf;
             if ($gamePerf >= $maxPerf) {
                 if ($gamePerf > $maxPerf) {
                     $maxPerf = $gamePerf;
-                    $playerSeedsWithMax = array();
+                    $playerKeysWithMax = array();
                 }
-                $playerSeedsWithMax[] = $playerSeed;
+                $playerKeysWithMax[] = $playerKey;
             }
         }
-        foreach ($this->players as $playerSeed) {
-            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerSeed)) continue;
-            if (in_array($playerSeed, $playerSeedsWithMax)) {
-                $this->setPlayerResult($playerSeed, self::RESULT_WON);
+        foreach ($this->playersStartingOrder as $playerKey => $startingOrder) {
+            if ($this->playerCanSkipGame && !$this->hasPlayerPerformed($playerKey)) continue;
+            if (in_array($playerKey, $playerKeysWithMax)) {
+                $this->setPlayerResult($playerKey, self::RESULT_WON);
             } else {
-                $this->setPlayerResult($playerSeed, self::RESULT_LOSS);
+                $this->setPlayerResult($playerKey, self::RESULT_LOSS);
             }
         }
         arsort($this->gameRanks);
@@ -62,7 +62,7 @@ class GamePerformances extends AbstractGame
     }
 
     /**
-     * @return array Player seed => performance, sorted from highest to lowest perf
+     * @return array Player key => performance, sorted from highest to lowest perf
      */
     public function getGameRanks(): array
     {
@@ -70,15 +70,15 @@ class GamePerformances extends AbstractGame
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return int 0 if player not found
      */
-    public function getPlayerGameRank(int $playerSeed): int
+    public function getPlayerGameRank($playerKey): int
     {
-        if (!isset($this->gameRanks[$playerSeed])) return 0;
+        if (!isset($this->gameRanks[$playerKey])) return 0;
         $rank = 1;
-        foreach ($this->gameRanks as $rankSeed => $rankPerf) {
-            if ($rankSeed == $playerSeed) return $rank;
+        foreach ($this->gameRanks as $rankKey => $rankPerf) {
+            if ($rankKey == $playerKey) return $rank;
             $rank++;
         }
         return 0;
@@ -87,32 +87,32 @@ class GamePerformances extends AbstractGame
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return int sum of all performance if integer values
      */
-    public function getPlayerPerformancesSum(int $playerSeed): int
+    public function getPlayerPerformancesSum($playerKey): int
     {
         $sum = 0;
-        if (!$this->hasPlayerPerformed($playerSeed)) return $sum;
-        foreach ($this->getPlayerPerformances($playerSeed) as $performance) {
+        if (!$this->hasPlayerPerformed($playerKey)) return $sum;
+        foreach ($this->getPlayerPerformances($playerKey) as $performance) {
             if (is_int($performance)) $sum += $performance;
         }
         return $sum;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return bool
      */
-    public function hasPlayerPerformed(int $playerSeed): bool
+    public function hasPlayerPerformed($playerKey): bool
     {
-        return isset($this->performances[$playerSeed]);
+        return isset($this->performances[$playerKey]);
     }
 
 
-    public function hasPlayerWon(int $playerSeed): bool
+    public function hasPlayerWon($playerKey): bool
     {
-        return $this->getPlayerResult($playerSeed) == self::RESULT_WON;
+        return $this->getPlayerResult($playerKey) == self::RESULT_WON;
     }
 
 }

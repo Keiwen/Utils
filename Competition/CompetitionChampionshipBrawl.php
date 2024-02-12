@@ -16,8 +16,8 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     protected function initializeRanking()
     {
-        for ($playerSeed = 1; $playerSeed <= $this->playerCount; $playerSeed++) {
-            $this->rankings[$playerSeed] = new RankingBrawl($playerSeed);
+        foreach ($this->playersSeeds as $key => $seed) {
+            $this->rankings[$key] = new RankingBrawl($key, $seed);
         }
     }
 
@@ -39,7 +39,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
      */
     protected function addGame(): AbstractGame
     {
-        $brawl = new GameBrawl($this->players);
+        $brawl = new GameBrawl(array_keys($this->players));
         $gameNumber = count($this->gameRepository) + 1;
         $brawl->affectTo($this, $gameNumber);
         $this->gameRepository[] = $brawl;
@@ -73,8 +73,8 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     protected function updateRankingsForGame($game)
     {
         $results = $game->getResults();
-        foreach ($results as $playerSeed => $result)  {
-            ($this->rankings[$playerSeed])->saveGame($game);
+        foreach ($results as $playerKey => $result)  {
+            ($this->rankings[$playerKey])->saveGame($game);
         }
     }
 

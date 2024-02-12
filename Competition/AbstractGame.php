@@ -6,8 +6,8 @@ abstract class AbstractGame
 {
 
     protected $name = '';
-    /** @var array $players seed => starting order */
-    protected $players = array();
+    /** @var array $playersStartingOrder key => starting order */
+    protected $playersStartingOrder = array();
     protected $results = array();
     protected $performances = array();
     protected $expenses = array();
@@ -29,14 +29,10 @@ abstract class AbstractGame
         return $this->name;
     }
 
-    protected function setPlayers(array $playersSeedList)
+    protected function setPlayers(array $playersKeyList)
     {
-        $inputCount = count($playersSeedList);
-        $players = array_flip(array_combine(range(1, count($playersSeedList)), array_values($playersSeedList)));
-        if ($inputCount != count($players)) {
-            throw new CompetitionException('Unable to find unique players seeds, check for duplicates');
-        }
-        $this->players = $players;
+        $playersKeyList = array_unique($playersKeyList);
+        $this->playersStartingOrder = array_combine(array_values($playersKeyList), range(1, count($playersKeyList)));
     }
 
 
@@ -45,82 +41,74 @@ abstract class AbstractGame
      */
     public function getPlayerCount(): int
     {
-        return count($this->players);
+        return count($this->playersStartingOrder);
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return int 0 if not found
      */
-    public function getPlayerStartingOrder(int $playerSeed): int
+    public function getPlayerStartingOrder($playerKey): int
     {
-        return $this->players[$playerSeed] ?? 0;
+        return $this->playersStartingOrder[$playerKey] ?? 0;
     }
 
 
     /**
      * @param int $startingOrder
-     * @return int player seed or 0 if not found
+     * @return int|string|null player key or null if not found
      */
-    public function getPlayerThatStartedAt(int $startingOrder): int
+    public function getPlayerKeyThatStartedAt(int $startingOrder)
     {
-        $playersPositions = array_flip($this->players);
-        return $playersPositions[$startingOrder] ?? 0;
-    }
-
-    /**
-     * @return array Player seed => game starting order
-     */
-    public function getStartingOrder(): array
-    {
-        return $this->players;
+        $startingOrders = array_flip($this->playersStartingOrder);
+        return $startingOrders[$startingOrder] ?? null;
     }
 
 
     /**
-     * @return array game starting order => Player seed
+     * @return array game starting order => Player key
      */
-    public function getPlayers(): array
+    public function getPlayersKeys(): array
     {
-        return array_flip($this->players);
+        return array_flip($this->playersStartingOrder);
     }
 
 
     /**
      * @return array game starting order => player
      */
-    public function getFullPlayers(): array
+    public function getPlayers(): array
     {
-        $playerOrderList = $this->getPlayers();
-        if (!$this->isAffected()) return $playerOrderList;
+        $playersKeys = $this->getPlayersKeys();
+        if (!$this->isAffected()) return $playersKeys;
         $affectedCompetition = $this->getAffectation();
         $players = array();
-        foreach ($playerOrderList as $startingOrder => $playerSeed) {
-            $players[$startingOrder] = $affectedCompetition->getFullPlayer($playerSeed);
+        foreach ($playersKeys as $startingOrder => $playerKey) {
+            $players[$startingOrder] = $affectedCompetition->getPlayer($playerKey);
         }
         return $players;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param mixed $result
      */
-    protected function setPlayerResult(int $playerSeed, $result)
+    protected function setPlayerResult($playerKey, $result)
     {
-        $this->results[$playerSeed] = $result;
+        $this->results[$playerKey] = $result;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return mixed|null null if not found
      */
-    public function getPlayerResult(int $playerSeed)
+    public function getPlayerResult($playerKey)
     {
-        return $this->results[$playerSeed] ?? null;
+        return $this->results[$playerKey] ?? null;
     }
 
     /**
-     * @return array Player seed => result
+     * @return array Player key => result
      */
     public function getResults(): array
     {
@@ -156,72 +144,72 @@ abstract class AbstractGame
     }
 
     /**
-     * @param array $performances player seed => performances for this player
+     * @param array $performances player key => performances for this player
      * @return bool true if set
      */
     public function setAllPlayersPerformances(array $performances): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($performances as $playerSeed => $playerPerformances) {
-            if (!$this->isPlayerInGame($playerSeed)) continue;
+        foreach ($performances as $playerKey => $playerPerformances) {
+            if (!$this->isPlayerInGame($playerKey)) continue;
             if (!is_array($playerPerformances)) continue;
-            $this->setPlayerPerformances($playerSeed, $playerPerformances);
+            $this->setPlayerPerformances($playerKey, $playerPerformances);
         }
         return true;
     }
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param array $performances
      * @return bool true if set
      */
-    public function setPlayerPerformances(int $playerSeed, array $performances): bool
+    public function setPlayerPerformances($playerKey, array $performances): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        $this->performances[$playerSeed] = $performances;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        $this->performances[$playerKey] = $performances;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param string $performanceType
      * @param mixed $performance
      * @return bool true if set
      */
-    public function setPlayerPerformanceType(int $playerSeed, string $performanceType, $performance): bool
+    public function setPlayerPerformanceType($playerKey, string $performanceType, $performance): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        if (empty($this->performances[$playerSeed])) $this->performances[$playerSeed] = array();
-        $this->performances[$playerSeed][$performanceType] = $performance;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        if (empty($this->performances[$playerKey])) $this->performances[$playerKey] = array();
+        $this->performances[$playerKey][$performanceType] = $performance;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return array|null null if not found
      */
-    public function getPlayerPerformances(int $playerSeed): ?array
+    public function getPlayerPerformances($playerKey): ?array
     {
-        return $this->performances[$playerSeed] ?? null;
+        return $this->performances[$playerKey] ?? null;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param string $performanceType
      * @return mixed|null null if not found
      */
-    public function getPlayerPerformanceType(int $playerSeed, string $performanceType)
+    public function getPlayerPerformanceType($playerKey, string $performanceType)
     {
-        $performances = $this->getPlayerPerformances($playerSeed);
+        $performances = $this->getPlayerPerformances($playerKey);
         if (empty($performances)) return null;
         return $performances[$performanceType] ?? null;
     }
 
     /**
-     * @return array Player seed => performances
+     * @return array Player key => performances
      */
     public function getPerformances(): array
     {
@@ -229,72 +217,72 @@ abstract class AbstractGame
     }
 
     /**
-     * @param array $expenses player seed => expenses for this player
+     * @param array $expenses player key => expenses for this player
      * @return bool true if set
      */
     public function setAllPlayersExpenses(array $expenses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($expenses as $playerSeed => $playerExpenses) {
-            if (!$this->isPlayerInGame($playerSeed)) continue;
+        foreach ($expenses as $playerKey => $playerExpenses) {
+            if (!$this->isPlayerInGame($playerKey)) continue;
             if (!is_array($playerExpenses)) continue;
-            $this->setPlayerExpenses($playerSeed, $playerExpenses);
+            $this->setPlayerExpenses($playerKey, $playerExpenses);
         }
         return true;
     }
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param array $expenses
      * @return bool true if set
      */
-    public function setPlayerExpenses(int $playerSeed, array $expenses): bool
+    public function setPlayerExpenses($playerKey, array $expenses): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        $this->expenses[$playerSeed] = $expenses;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        $this->expenses[$playerKey] = $expenses;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param string $expenseType
      * @param mixed $expense
      * @return bool true if set
      */
-    public function setPlayerExpenseType(int $playerSeed, string $expenseType, $expense): bool
+    public function setPlayerExpenseType($playerKey, string $expenseType, $expense): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        if (empty($this->expenses[$playerSeed])) $this->expenses[$playerSeed] = array();
-        $this->expenses[$playerSeed][$expenseType] = $expense;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        if (empty($this->expenses[$playerKey])) $this->expenses[$playerKey] = array();
+        $this->expenses[$playerKey][$expenseType] = $expense;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return array|null null if not found
      */
-    public function getPlayerExpenses(int $playerSeed): ?array
+    public function getPlayerExpenses($playerKey): ?array
     {
-        return $this->expenses[$playerSeed] ?? null;
+        return $this->expenses[$playerKey] ?? null;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param string $expenseType
      * @return mixed|null null if not found
      */
-    public function getPlayerExpenseType(int $playerSeed, string $expenseType)
+    public function getPlayerExpenseType($playerKey, string $expenseType)
     {
-        $expenses = $this->getPlayerExpenses($playerSeed);
+        $expenses = $this->getPlayerExpenses($playerKey);
         if (empty($expenses)) return null;
         return $expenses[$expenseType] ?? null;
     }
 
     /**
-     * @return array Player seed => expenses
+     * @return array Player key => expenses
      */
     public function getExpenses(): array
     {
@@ -303,45 +291,45 @@ abstract class AbstractGame
 
 
     /**
-     * @param array $bonuses player seed => bonus for this player
+     * @param array $bonuses player key => bonus for this player
      * @return bool true if set
      */
     public function setAllPlayersBonuses(array $bonuses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($bonuses as $playerSeed => $bonus) {
-            if (!$this->isPlayerInGame($playerSeed)) continue;
+        foreach ($bonuses as $playerKey => $bonus) {
+            if (!$this->isPlayerInGame($playerKey)) continue;
             if (!is_int($bonus)) continue;
-            $this->setPlayerBonus($playerSeed, $bonus);
+            $this->setPlayerBonus($playerKey, $bonus);
         }
         return true;
     }
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param int $bonus
      * @return bool true if set
      */
-    public function setPlayerBonus(int $playerSeed, int $bonus): bool
+    public function setPlayerBonus($playerKey, int $bonus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        $this->bonuses[$playerSeed] = $bonus;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        $this->bonuses[$playerKey] = $bonus;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return int|null null if not found
      */
-    public function getPlayerBonus(int $playerSeed): int
+    public function getPlayerBonus($playerKey): int
     {
-        return $this->bonuses[$playerSeed] ?? 0;
+        return $this->bonuses[$playerKey] ?? 0;
     }
 
     /**
-     * @return array Player seed => bonus
+     * @return array Player key => bonus
      */
     public function getBonuses(): array
     {
@@ -350,45 +338,45 @@ abstract class AbstractGame
 
 
     /**
-     * @param array $maluses player seed => malus for this player
+     * @param array $maluses player key => malus for this player
      * @return bool true if set
      */
     public function setAllPlayersMaluses(array $maluses): bool
     {
         if ($this->isPlayed()) return false;
-        foreach ($maluses as $playerSeed => $malus) {
-            if (!$this->isPlayerInGame($playerSeed)) continue;
+        foreach ($maluses as $playerKey => $malus) {
+            if (!$this->isPlayerInGame($playerKey)) continue;
             if (!is_int($malus)) continue;
-            $this->setPlayerMalus($playerSeed, $malus);
+            $this->setPlayerMalus($playerKey, $malus);
         }
         return true;
     }
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @param int $malus
      * @return bool true if set
      */
-    public function setPlayerMalus(int $playerSeed, int $malus): bool
+    public function setPlayerMalus($playerKey, int $malus): bool
     {
         if ($this->isPlayed()) return false;
-        if (!$this->isPlayerInGame($playerSeed)) return false;
-        $this->maluses[$playerSeed] = $malus;
+        if (!$this->isPlayerInGame($playerKey)) return false;
+        $this->maluses[$playerKey] = $malus;
         return true;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return int|null null if not found
      */
-    public function getPlayerMalus(int $playerSeed): int
+    public function getPlayerMalus($playerKey): int
     {
-        return $this->maluses[$playerSeed] ?? 0;
+        return $this->maluses[$playerKey] ?? 0;
     }
 
     /**
-     * @return array Player seed => malus
+     * @return array Player key => malus
      */
     public function getMaluses(): array
     {
@@ -426,31 +414,31 @@ abstract class AbstractGame
 
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return bool
      */
-    abstract public function hasPlayerWon(int $playerSeed): bool;
+    abstract public function hasPlayerWon($playerKey): bool;
 
 
     /**
-     * @return int[] seeds of all winners
+     * @return array keys of all winners
      */
-    public function getWinnerSeeds(): array
+    public function getWinnerKeys(): array
     {
         $winners = array();
-        foreach ($this->getPlayers() as $playerSeed) {
-            if ($this->hasPlayerWon($playerSeed)) $winners[] = $playerSeed;
+        foreach ($this->getPlayers() as $playerKey) {
+            if ($this->hasPlayerWon($playerKey)) $winners[] = $playerKey;
         }
         return $winners;
     }
 
     /**
-     * @param int $playerSeed
+     * @param int|string $playerKey
      * @return bool
      */
-    public function isPlayerInGame(int $playerSeed): bool
+    public function isPlayerInGame($playerKey): bool
     {
-        return in_array($playerSeed, array_keys($this->players));
+        return in_array($playerKey, array_keys($this->playersStartingOrder));
     }
 
 }
