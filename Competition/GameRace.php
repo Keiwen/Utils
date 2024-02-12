@@ -15,7 +15,7 @@ class GameRace extends AbstractGame
      * @param int[]|string[] $playerKeysOrdered
      * @return bool true if set
      */
-    public function setPosition(array $playerKeysOrdered): bool
+    public function setPositions(array $playerKeysOrdered): bool
     {
         if ($this->isPlayed()) return false;
         $playerKeysOrdered = array_values($playerKeysOrdered);
@@ -35,7 +35,7 @@ class GameRace extends AbstractGame
      * @param array $playersAndPerformances player key => performances
      * @return bool true if set
      */
-    public function setPositionAndPerformance(array $playersAndPerformances): bool
+    public function setPositionsAndPerformance(array $playersAndPerformances): bool
     {
         if ($this->isPlayed()) return false;
         $rank = 0;

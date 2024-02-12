@@ -426,7 +426,7 @@ abstract class AbstractGame
     public function getWinnerKeys(): array
     {
         $winners = array();
-        foreach ($this->getPlayers() as $playerKey) {
+        foreach ($this->getPlayersKeys() as $playerKey) {
             if ($this->hasPlayerWon($playerKey)) $winners[] = $playerKey;
         }
         return $winners;
