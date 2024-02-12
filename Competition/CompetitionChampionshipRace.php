@@ -74,7 +74,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
     protected function updateRankingsForGame($game)
     {
         $positions = $game->getPositions();
-        foreach ($positions as $playerKey => $position)  {
+        foreach ($positions as $position => $playerKey)  {
             ($this->rankings[$playerKey])->saveGame($game);
         }
     }
