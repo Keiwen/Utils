@@ -252,14 +252,12 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
     /**
      * @param CompetitionChampionshipDuel $competition
      * @param bool $ranked
-     * @param int $serieCount
-     * @param bool $shuffleCalendar
      * @return CompetitionChampionshipDuel
      * @throws CompetitionException
      */
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, int $serieCount = 1, bool $shuffleCalendar = false): AbstractCompetition
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionChampionshipDuel($competition->getPlayers($ranked), $serieCount, $shuffleCalendar);
+        return new CompetitionChampionshipDuel($competition->getPlayers($ranked), $competition->getSerieCount(), $competition->shuffleCalendar);
     }
 
 }
