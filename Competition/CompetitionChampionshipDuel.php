@@ -41,6 +41,11 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         return $this->serieCount;
     }
 
+    public function getShuffleCalendar(): bool
+    {
+        return $this->shuffleCalendar;
+    }
+
     public function getGameCountByPlayer(): int
     {
         return ($this->playerCount - 1) * $this->serieCount;
@@ -257,7 +262,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionChampionshipDuel($competition->getPlayers($ranked), $competition->getSerieCount(), $competition->shuffleCalendar);
+        return new CompetitionChampionshipDuel($competition->getPlayers($ranked), $competition->getSerieCount(), $competition->getShuffleCalendar());
     }
 
 }
