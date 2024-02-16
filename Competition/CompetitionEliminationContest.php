@@ -22,18 +22,22 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
      */
     public function __construct(array $players, array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
     {
-        if (count($players) < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
         foreach ($playerPassingCount as $count) {
-            if (!is_int($count)) throw new CompetitionException('Cannot create championship with player passing count as non-integer value');
+            if (!is_int($count)) throw new CompetitionException('Cannot create competition with player passing count as non-integer value');
         }
         $this->playerPassingCount = $playerPassingCount;
         if (empty($playerPassingCount)) {
             if ($playerEliminatedPerRound < 1) {
-                throw new CompetitionException('Cannot create championship without player elimination');
+                throw new CompetitionException('Cannot create competition without player elimination');
             }
             $this->playerEliminatedPerRound = $playerEliminatedPerRound;
         }
         parent::__construct($players);
+    }
+
+    public static function getMinPlayerCount(): int
+    {
+        return 3;
     }
 
     public function getPlayerPassingCount(): array

@@ -23,6 +23,7 @@ abstract class AbstractCompetition
 
     public function __construct(array $players)
     {
+        if (count($players) < static::getMinPlayerCount()) throw new CompetitionException(sprintf('Cannot create competition with less than %d players', static::getMinPlayerCount()));
         $this->initializePlayers($players);
         // initialize rankings;
         $this->initializeRanking();
@@ -37,6 +38,8 @@ abstract class AbstractCompetition
     }
 
     abstract protected function initializeRanking();
+
+    abstract public static function getMinPlayerCount(): int;
 
     public function getPlayerCount(): int
     {

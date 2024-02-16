@@ -14,12 +14,17 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 
     public function __construct(array $players, int $serieCount = 1, bool $shuffleCalendar = false)
     {
-        if (count($players) < 3) throw new CompetitionException('Cannot create championship with less than 3 players');
         if ($serieCount < 1) $serieCount = 1;
         $this->serieCount = $serieCount;
         $this->shuffleCalendar = $shuffleCalendar;
         parent::__construct($players);
     }
+
+    public static function getMinPlayerCount(): int
+    {
+        return 3;
+    }
+
 
     protected function initializeRanking()
     {

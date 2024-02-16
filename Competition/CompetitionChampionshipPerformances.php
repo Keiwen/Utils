@@ -10,8 +10,12 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 
     public function __construct(array $players)
     {
-        if (count($players) < 2) throw new CompetitionException('Cannot create championship with less than 2 players');
         parent::__construct($players);
+    }
+
+    public static function getMinPlayerCount(): int
+    {
+        return 2;
     }
 
     protected function initializeRanking()
