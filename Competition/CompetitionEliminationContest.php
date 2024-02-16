@@ -60,12 +60,16 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
         return !empty($this->playerEliminatedPerRound);
     }
 
-    protected function initializeRanking()
+    /**
+     * @param int|string $playerKey
+     * @param int $playerSeed
+     * @return RankingPerformances
+     */
+    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
     {
-        foreach ($this->playersSeeds as $key => $seed) {
-            $this->rankings[$key] = new RankingPerformances($key, $seed);
-        }
+        return new RankingPerformances($playerKey, $playerSeed);
     }
+
 
     public function getGameCountByPlayer(): int
     {

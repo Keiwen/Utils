@@ -25,13 +25,16 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
         return 3;
     }
 
-
-    protected function initializeRanking()
+    /**
+     * @param int|string $playerKey
+     * @param int $playerSeed
+     * @return RankingDuel
+     */
+    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
     {
-        foreach ($this->playersSeeds as $key => $seed) {
-            $this->rankings[$key] = new RankingDuel($key, $seed);
-        }
+        return new RankingDuel($playerKey, $playerSeed);
     }
+
 
     public function getSerieCount(): int
     {

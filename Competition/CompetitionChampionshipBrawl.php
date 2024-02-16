@@ -18,11 +18,14 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
         return 3;
     }
 
-    protected function initializeRanking()
+    /**
+     * @param int|string $playerKey
+     * @param int $playerSeed
+     * @return RankingBrawl
+     */
+    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
     {
-        foreach ($this->playersSeeds as $key => $seed) {
-            $this->rankings[$key] = new RankingBrawl($key, $seed);
-        }
+        return new RankingBrawl($playerKey, $playerSeed);
     }
 
 

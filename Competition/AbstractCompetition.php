@@ -37,7 +37,14 @@ abstract class AbstractCompetition
         $this->playersSeeds = array_combine(array_keys($players), range(1, count($players)));
     }
 
-    abstract protected function initializeRanking();
+    protected function initializeRanking()
+    {
+        foreach ($this->playersSeeds as $key => $seed) {
+            $this->rankings[$key] = $this->initializePlayerRanking($key, $seed);
+        }
+    }
+
+    abstract protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking;
 
     abstract public static function getMinPlayerCount(): int;
 
