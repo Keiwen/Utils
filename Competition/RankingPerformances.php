@@ -11,6 +11,7 @@ class RankingPerformances extends AbstractRanking
     const RANK_METHOD_LAST_ROUND_RANK = 'last_round_rank';
 
     protected $maxPerformance = 0;
+    protected $sumPerformance = 0;
     protected $lastRoundPoints = 0;
 
     protected static $pointByResult = array(
@@ -111,17 +112,12 @@ class RankingPerformances extends AbstractRanking
     }
 
     /**
-     * Sum all performances if values are integer
+     * Sum of all performances if values are integer
      * @return int
      */
     public function getPerformancesSum(): int
     {
-        $sum = 0;
-        foreach (static::getPerformanceTypesToRank() as $type) {
-            $typeSum = $this->getPerformanceTotal($type);
-            if (is_int($typeSum)) $sum += $typeSum;
-        }
-        return $sum;
+        return $this->sumPerformance;
     }
 
 
@@ -151,7 +147,7 @@ class RankingPerformances extends AbstractRanking
         $this->saveGamePerformances($game);
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
-        $this->saveMaxPerformance($game);
+        $this->saveSumPerformance($game);
         $this->saveLastRoundPoints($game);
 
         if ($game->hasPlayerWon($this->getPlayerKey())) {
@@ -166,16 +162,11 @@ class RankingPerformances extends AbstractRanking
      * @param GamePerformances $game
      * @return bool
      */
-    protected function saveMaxPerformance(AbstractGame $game): bool
+    protected function saveSumPerformance(AbstractGame $game): bool
     {
-        $playerPerformances = $game->getPlayerPerformances($this->getPlayerKey());
-        if (empty($playerPerformances)) return false;
-        $sumPerf = 0;
-        foreach ($playerPerformances as $type => $performance) {
-            if (empty($performance) || !is_int($performance)) $performance = 0;
-            $sumPerf += $performance;
-        }
-        if ($sumPerf > $this->maxPerformance) $this->maxPerformance = $sumPerf;
+        $gamePerf = $game->getPlayerPerformancesSum($this->getPlayerKey());
+        if ($gamePerf > $this->maxPerformance) $this->maxPerformance = $gamePerf;
+        $this->sumPerformance += $gamePerf;
         return true;
     }
 

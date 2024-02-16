@@ -8,13 +8,15 @@ class GamePerformances extends AbstractGame
     const RESULT_WON = 'W';
     const RESULT_LOSS = 'L';
 
+    protected $performanceTypesToSum = array();
     protected $gameRanks = array();
     protected $playerCanSkipGame = true;
 
-    public function __construct(array $playersKeyList, bool $playerCanSkipGame = true)
+    public function __construct(array $playersKeyList, array $performanceTypesToSum, bool $playerCanSkipGame = true)
     {
         parent::setPlayers($playersKeyList);
         $this->playerCanSkipGame = $playerCanSkipGame;
+        $this->performanceTypesToSum = $performanceTypesToSum;
     }
 
     public function getName(): string
@@ -27,6 +29,15 @@ class GamePerformances extends AbstractGame
     {
         return $this->playerCanSkipGame;
     }
+
+    /**
+     * @return array
+     */
+    public function getPerformanceTypesToSum(): array
+    {
+        return $this->performanceTypesToSum;
+    }
+
 
     /**
      * After game is played, if performances was set one by one, mark game as ended
@@ -100,8 +111,10 @@ class GamePerformances extends AbstractGame
     {
         $sum = 0;
         if (!$this->hasPlayerPerformed($playerKey)) return $sum;
-        foreach ($this->getPlayerPerformances($playerKey) as $performance) {
-            if (is_int($performance)) $sum += $performance;
+        foreach ($this->getPerformanceTypesToSum() as $type) {
+            $performance = $this->getPlayerPerformanceType($playerKey, $type);
+            if (empty($performance) || !is_int($performance)) $performance = 0;
+            $sum += $performance;
         }
         return $sum;
     }
@@ -119,6 +132,35 @@ class GamePerformances extends AbstractGame
     public function hasPlayerWon($playerKey): bool
     {
         return $this->getPlayerResult($playerKey) == self::RESULT_WON;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $performanceSum
+     * @return bool
+     */
+    public function hasPlayerReachedPerformance($playerKey, int $performanceSum): bool
+    {
+        return in_array($playerKey, $this->getPlayersKeysThatReachedPerformance($performanceSum));
+    }
+
+    /**
+     * return keys of all players that reached a minimum performance
+     * @param int $performanceSum
+     * @return array
+     */
+    public function getPlayersKeysThatReachedPerformance(int $performanceSum): array
+    {
+        $playersRanked = $this->getGameRanks();
+        $playersKeys = array();
+        foreach ($playersRanked as $playerKey => $playerPerf) {
+            if ($playerPerf >= $performanceSum) {
+                $playersKeys[] = $playerKey;
+            } else {
+                break;
+            }
+        }
+        return $playersKeys;
     }
 
 }

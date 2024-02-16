@@ -13,15 +13,21 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
 
     protected $playerPassingCount;
     protected $playerEliminatedPerRound = 0;
+    protected $performanceTypesToSum = array();
 
     /**
      * @param array $players
+     * @param string[] $performanceTypesToSum performance type to consider on sum. Leave it empty to take all performance from rankings
      * @param int[] $playerPassingCount for each round, number of players to keep for next round
      * @param int $playerEliminatedPerRound after each round, number of player to eliminate
      * @throws CompetitionException
      */
-    public function __construct(array $players, array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
+    public function __construct(array $players, array $performanceTypesToSum = array(), array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
     {
+        if (empty($performanceTypesToSum)) $performanceTypesToSum = RankingPerformances::getPerformanceTypesToRank();
+        if (empty($performanceTypesToSum)) throw new CompetitionException('Cannot create competition without performance to sum');
+        $this->performanceTypesToSum = $performanceTypesToSum;
+
         foreach ($playerPassingCount as $count) {
             if (!is_int($count)) throw new CompetitionException('Cannot create competition with player passing count as non-integer value');
         }
@@ -58,6 +64,11 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
     public function usePlayerEliminatedPerRound(): bool
     {
         return !empty($this->playerEliminatedPerRound);
+    }
+
+    public function getPerformanceTypesToSum(): array
+    {
+        return $this->performanceTypesToSum;
     }
 
     /**
@@ -122,7 +133,7 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
      */
     protected function addGame(array $playerKeys = array(), int $round = 1): AbstractGame
     {
-        $gamePerf = new GamePerformances($playerKeys, false);
+        $gamePerf = new GamePerformances($playerKeys, $this->getPerformanceTypesToSum(), false);
         $gamePerf->setCompetitionRound($round);
         $this->calendar[$round][] = $gamePerf;
         $gameNumber = $round;
@@ -208,14 +219,12 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
     /**
      * @param CompetitionEliminationContest $competition
      * @param bool $ranked
-     * @param array $playerPassingCount
-     * @param int $playerEliminatedPerRound
      * @return CompetitionEliminationContest
      * @throws CompetitionException
      */
-    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false, array $playerPassingCount = array(), int $playerEliminatedPerRound = 0): AbstractCompetition
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionEliminationContest($competition->getPlayers($ranked), $playerPassingCount, $playerEliminatedPerRound);
+        return new CompetitionEliminationContest($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getPlayerPassingCount(), $competition->getPlayerEliminatedPerRound());
     }
 
 }

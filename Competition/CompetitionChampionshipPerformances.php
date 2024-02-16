@@ -6,10 +6,14 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 {
     /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();
+    protected $performanceTypesToSum = array();
 
 
-    public function __construct(array $players)
+    public function __construct(array $players, array $performanceTypesToSum = array())
     {
+        if (empty($performanceTypesToSum)) $performanceTypesToSum = RankingPerformances::getPerformanceTypesToRank();
+        $this->performanceTypesToSum = $performanceTypesToSum;
+
         parent::__construct($players);
     }
 
@@ -29,6 +33,11 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
     }
 
 
+    public function getPerformanceTypesToSum(): array
+    {
+        return $this->performanceTypesToSum;
+    }
+
 
     /**
      * get game with a given number
@@ -47,7 +56,7 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
      */
     protected function addGame(bool $playerCanSkipGame = true): AbstractGame
     {
-        $game = new GamePerformances(array_keys($this->players), $playerCanSkipGame);
+        $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), $playerCanSkipGame);
         $gameNumber = count($this->gameRepository) + 1;
         $game->affectTo($this, $gameNumber);
         $this->gameRepository[] = $game;
@@ -62,7 +71,7 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
      */
     public function addPerformancesGame(string $name = '', bool $playerCanSkipGame = true)
     {
-        $this->addGame()->setName($name, $playerCanSkipGame);
+        $this->addGame($playerCanSkipGame)->setName($name);
     }
 
 
@@ -99,6 +108,16 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
         return 0;
     }
 
+    /**
+     * @param CompetitionChampionshipPerformances $competition
+     * @param bool $ranked
+     * @return CompetitionChampionshipPerformances
+     * @throws CompetitionException
+     */
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
+    {
+        return new CompetitionChampionshipPerformances($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum());
+    }
 
 
 }
