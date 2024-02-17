@@ -124,6 +124,17 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @return int[]|string[] seed => key, ordered by seed
+     */
+    public function getPlayerKeysSeeded(): array
+    {
+        $keysBySeed = array_flip($this->playersSeeds);
+        ksort($keysBySeed);
+        return $keysBySeed;
+    }
+
+
+    /**
      * @param int|string $playerKey
      * @return mixed|null if found, player data
      */
