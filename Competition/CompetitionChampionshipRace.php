@@ -49,6 +49,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
         $race = new GameRace(array_keys($this->players));
         $gameNumber = count($this->gameRepository) + 1;
         $race->affectTo($this, $gameNumber);
+        $race->setCompetitionRound($gameNumber);
         $this->roundCount = $gameNumber;
         $this->gameRepository[] = $race;
         // if competition was considered as done, this new game became the next

@@ -59,6 +59,7 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
         $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), $playerCanSkipGame);
         $gameNumber = count($this->gameRepository) + 1;
         $game->affectTo($this, $gameNumber);
+        $game->setCompetitionRound($gameNumber);
         $this->roundCount = $gameNumber;
         $this->gameRepository[] = $game;
         // if competition was considered as done, this new game became the next

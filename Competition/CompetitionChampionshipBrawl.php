@@ -49,6 +49,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
         $brawl = new GameBrawl(array_keys($this->players));
         $gameNumber = count($this->gameRepository) + 1;
         $brawl->affectTo($this, $gameNumber);
+        $brawl->setCompetitionRound($gameNumber);
         $this->roundCount = $gameNumber;
         $this->gameRepository[] = $brawl;
         // if competition was considered as done, this new game became the next
