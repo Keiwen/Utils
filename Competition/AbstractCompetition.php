@@ -319,6 +319,61 @@ abstract class AbstractCompetition
         return $this->canPlayerDropToRank($playerKey, 2);
     }
 
+    /**
+     * @param int|string $playerKey
+     * @return bool
+     */
+    public function canPlayerBeLast($playerKey): bool
+    {
+        return $this->canPlayerDropToRank($playerKey, $this->getPlayerCount());
+    }
+
+
+    /**
+     * @param int|string $playerKey
+     * @return int 0 if not found
+     */
+    public function getPlayerRank($playerKey): int
+    {
+        $rank = 0;
+        foreach ($this->orderedRankings as $ranking) {
+            $rank++;
+            if ($ranking->getPlayerKey() === $playerKey) return $rank;
+        }
+        return 0;
+    }
+
+
+    /**
+     * @param int|string $playerKey
+     * @return int 0 if not found
+     */
+    public function getPlayerMaxReachableRank($playerKey): int
+    {
+        if ($this->canPlayerWin($playerKey)) return 1;
+        $playerRank = $this->getPlayerRank($playerKey);
+        if (empty($playerRank)) return 0;
+        for ($rank = $playerRank - 1; $rank > 1; $rank--) {
+            if (!$this->canPlayerReachRank($playerKey, $rank)) return ($rank + 1);
+        }
+        return $rank + 1;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @return int 0 if not found
+     */
+    public function getPlayerMaxDroppableRank($playerKey): int
+    {
+        if ($this->canPlayerBeLast($playerKey)) return $this->getPlayerCount();
+        $playerRank = $this->getPlayerRank($playerKey);
+        if (empty($playerRank)) return 0;
+        for ($rank = $playerRank + 1; $rank < $this->getPlayerCount(); $rank++) {
+            if (!$this->canPlayerDropToRank($playerKey, $rank)) return ($rank - 1);
+        }
+        return $rank - 1;
+    }
+
 
     /** @return int -1 if no max defined */
     abstract public static function getMaxPointForAGame(): int;
