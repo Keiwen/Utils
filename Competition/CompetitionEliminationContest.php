@@ -171,6 +171,8 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
             // if no player expected, it's done!
             if ($playerCountExpected == 0) return;
 
+            $this->currentRound++;
+
             $lastGame = $this->getGameByNumber($this->lastGameNumberAdded);
             $keysRanked = array_keys($lastGame->getGameRanks());
             $nextRoundKeys = array_slice($keysRanked, 0, $playerCountExpected);

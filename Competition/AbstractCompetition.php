@@ -10,6 +10,7 @@ abstract class AbstractCompetition
     protected $players;
     protected $playerCount;
     protected $roundCount = 1;
+    protected $currentRound = 0;
 
     /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
@@ -74,6 +75,11 @@ abstract class AbstractCompetition
     public function getRoundCount(): int
     {
         return $this->roundCount;
+    }
+
+    public function getCurrentRound(): int
+    {
+        return $this->currentRound;
     }
 
     /**
@@ -174,6 +180,7 @@ abstract class AbstractCompetition
             if ($game && $game->isPlayed()) {
                 $nextGamePlayed = true;
                 $gameNumber++;
+                $this->currentRound = $game->getCompetitionRound();
             }
         } while ($nextGamePlayed);
 

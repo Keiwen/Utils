@@ -10,8 +10,6 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
 
-    protected $currentRound = 0;
-
     /**
      * @param array $players
      * @param int $roundCount leave empty to use default round count
@@ -110,11 +108,6 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
     public function getGames(): array
     {
         return parent::getGames();
-    }
-
-    public function getCurrentRound(): int
-    {
-        return $this->currentRound;
     }
 
 

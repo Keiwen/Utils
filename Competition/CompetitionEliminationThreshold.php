@@ -154,6 +154,7 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarGame
 
             // else we need another round
             $this->roundCount++;
+            $this->currentRound++;
 
             $lastGame = $this->getGameByNumber($this->lastGameNumberAdded);
             $qualified = $lastGame->getPlayersKeysThatReachedPerformance($this->getMinPerformanceForRound($this->lastGameNumberAdded));
