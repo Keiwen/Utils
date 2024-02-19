@@ -71,6 +71,18 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
         $this->currentRound++;
         // first player is left aside on odd round
         $startFromSeed = Divisibility::isNumberOdd($this->currentRound) ? 2 : 1;
+
+        /*
+         * NOTE HERE when first player or last player are left aside, 2 possibilities
+         * FIRST ignore player: it will not play and will not register any result and related points
+         * => choice made for bubble
+         * SECOND give player a bye: it will register a win and related points
+         * => we do not need it in bubble case
+         * Just in case (game number will be computed automatically)
+         *      $byeGame = $this->addGame($this->getPlayerKeyOnSeed(1), null, $this->currentRound);
+         *      $byeGame->setEndOfBye();
+         */
+
         // each seed will duel vs following seed
         // note that last seed is left aside one on two rounds (depend on player count odd/even)
         for ($homeSeed = $startFromSeed; $homeSeed <= ($this->playerCount - 1); $homeSeed += 2) {
