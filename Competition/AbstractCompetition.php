@@ -166,7 +166,12 @@ abstract class AbstractCompetition
      */
     public function getNextGame(): ?AbstractGame
     {
-        return $this->getGameByNumber($this->nextGameNumber);
+        $nextGame = $this->getGameByNumber($this->nextGameNumber);
+        if ($nextGame && $nextGame->isPlayed()) {
+            $this->nextGameNumber++;
+            return $this->getNextGame();
+        }
+        return $nextGame;
     }
 
     public function updateGamesPlayed()
