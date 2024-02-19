@@ -95,7 +95,7 @@ abstract class AbstractGame
      */
     protected function setPlayerResult($playerKey, $result)
     {
-        $this->results[$playerKey] = $result;
+        if ($playerKey !== null) $this->results[$playerKey] = $result;
     }
 
     /**
