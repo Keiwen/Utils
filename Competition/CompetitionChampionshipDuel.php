@@ -221,9 +221,9 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame($seedHome = 1, $seedAway = 2, int $round = 1): AbstractGame
+    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
     {
-        $gameDuel = new GameDuel($seedHome, $seedAway);
+        $gameDuel = new GameDuel($keyHome, $keyAway);
         $gameDuel->setCompetitionRound($round);
         $this->calendar[$round][] = $gameDuel;
         return $gameDuel;
