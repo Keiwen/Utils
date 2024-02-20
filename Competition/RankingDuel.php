@@ -12,6 +12,7 @@ class RankingDuel extends AbstractRanking
     protected $wonByForfeit = 0;
     protected $lossByForfeit = 0;
     protected $wonBye = 0;
+    protected $opponentKeys = array();
 
     protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
 
@@ -113,6 +114,7 @@ class RankingDuel extends AbstractRanking
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreHome();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreHome() - $game->getScoreAway());
+            if (!$game->isByeGame()) $this->opponentKeys[] = $game->getKeyAway();
         } else {
             if ($game->hasHomeWon()) {
                 $this->gameByResult[GameDuel::RESULT_LOSS]++;
@@ -126,9 +128,24 @@ class RankingDuel extends AbstractRanking
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreHome();
             $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreAway() - $game->getScoreHome());
+            $this->opponentKeys[] = $game->getKeyHome();
         }
 
         return true;
+    }
+
+    public function getOpponentKeys(): array
+    {
+        return $this->opponentKeys;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @return bool
+     */
+    public function hasOpponent($playerKey): bool
+    {
+        return in_array($playerKey, $this->opponentKeys);
     }
 
     /**
