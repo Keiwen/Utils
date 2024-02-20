@@ -168,6 +168,7 @@ abstract class AbstractCompetition
     {
         $nextGame = $this->getGameByNumber($this->nextGameNumber);
         if ($nextGame && $nextGame->isPlayed()) {
+            $this->updateRankings($this->nextGameNumber, $this->nextGameNumber);
             $this->nextGameNumber++;
             return $this->getNextGame();
         }
