@@ -14,6 +14,10 @@ class RankingDuel extends AbstractRanking
     protected $wonBye = 0;
     protected $opponentKeys = array();
 
+    /** @var AbstractCompetition $affectedTo */
+    protected $affectedTo = null;
+
+
     protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
 
     protected static $pointByResult = array(
@@ -21,6 +25,111 @@ class RankingDuel extends AbstractRanking
         GameDuel::RESULT_DRAWN => 1,
         GameDuel::RESULT_LOSS => 0,
     );
+
+
+    public function isAffected(): bool
+    {
+        return !empty($this->affectedTo);
+    }
+
+    /**
+     * @return AbstractCompetition|null
+     */
+    public function getAffectation(): ?AbstractCompetition
+    {
+        return $this->affectedTo;
+    }
+
+    /**
+     * @param AbstractCompetition $competition
+     * @return bool true if affected
+     */
+    public function affectTo(AbstractCompetition $competition): bool
+    {
+        if ($this->isAffected()) return false;
+        $this->affectedTo = $competition;
+        return true;
+    }
+
+    /**
+     * @return RankingDuel[]
+     */
+    public function getOpponentRankings(): array
+    {
+        if (!$this->isAffected()) return array();
+        $competitionRankings = $this->getAffectation()->getRankings();
+        $opponentRankings = array();
+        foreach ($competitionRankings as $index => $ranking) {
+            if (in_array($ranking->getEntityKey(), $this->opponentKeys)) {
+                $opponentRankings[$index + 1] = $ranking;
+            }
+        }
+        return $opponentRankings;
+    }
+
+    /**
+     * @param int $extremeExclusion exclude the first X and last X element
+     * @return int
+     */
+    public function getSumOfOpponentScores(int $extremeExclusion = 0): int
+    {
+        // NOTE: this method could take some time to compute
+        // we cannot store some kind of result easily because it depends on other object
+        // try to NOT call this by default, only on demand
+
+        $sum = 0;
+        // count how many we need with exclusion
+        $totalToSum = count($this->opponentKeys) - $extremeExclusion * 2;
+        // if none left, return 0
+        if ($totalToSum < 1) return 0;
+        $firstExcluded = 0;
+        foreach ($this->getOpponentRankings() as $rank => $ranking) {
+            if ($firstExcluded < $extremeExclusion) {
+                // count exclusion for first ranks, and ignore these rankings
+                $firstExcluded++;
+                continue;
+            }
+            // if wa already have all ranks needed, break the loop
+            if ($totalToSum <= 0) break;
+            $sum += $ranking->getPoints();
+            // after we added a ranking, decrement total needed
+            $totalToSum--;
+        }
+        return $sum;
+    }
+
+    /**
+     * Returns player points + sum of opponent scores
+     * @return int
+     */
+    public function getPointsSolkoffSystem(): int
+    {
+        return $this->getPoints() + $this->getSumOfOpponentScores();
+    }
+
+    /**
+     * Returns player points * sum of opponent scores
+     * @return int
+     */
+    public function getPointsBuchholzSystem(): int
+    {
+        return $this->getPoints() * $this->getSumOfOpponentScores();
+    }
+
+
+    /**
+     * Returns player points + sum of opponent scores
+     * This ignore the first X and last X opponents, with X = harkness rank given
+     * @param int $harknessRank
+     * @return int
+     */
+    public function getPointsHarknessSystem(int $harknessRank): int
+    {
+        if ($harknessRank < 0) $harknessRank = 0;
+        return $this->getPoints() + $this->getSumOfOpponentScores($harknessRank);
+    }
+
+
 
     public function getWon(): int
     {

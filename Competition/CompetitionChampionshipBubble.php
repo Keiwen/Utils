@@ -52,7 +52,9 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
      */
     protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
     {
-        return new RankingDuel($playerKey, $playerSeed);
+        $ranking = new RankingDuel($playerKey, $playerSeed);
+        $ranking->affectTo($this);
+        return $ranking;
     }
 
     public function getGameCountByPlayer(): int
