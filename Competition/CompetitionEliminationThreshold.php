@@ -213,7 +213,9 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionEliminationThreshold($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getMinPerformanceFirstRound(), $competition->getMinPerformanceRoundStep());
+        $newCompetition = new CompetitionEliminationThreshold($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getMinPerformanceFirstRound(), $competition->getMinPerformanceRoundStep());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 }

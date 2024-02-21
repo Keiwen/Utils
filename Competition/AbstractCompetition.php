@@ -11,6 +11,8 @@ abstract class AbstractCompetition
     protected $playerCount;
     protected $roundCount = 1;
     protected $currentRound = 0;
+    /** @var array $teamComp team key => array of player keys */
+    protected $teamComp = array();
 
     /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
@@ -20,6 +22,8 @@ abstract class AbstractCompetition
     protected $rankings = array();
     /** @var AbstractRanking[] $orderedRankings */
     protected $orderedRankings = array();
+    /** @var AbstractRanking[] $teamRankings */
+    protected $teamRankings = array();
 
 
     public function __construct(array $players)
@@ -29,6 +33,7 @@ abstract class AbstractCompetition
         // initialize rankings;
         $this->initializeRanking();
         $this->orderedRankings = $this->orderRankings($this->rankings);
+        $this->teamRankings = $this->computeTeamRankings();
     }
 
     protected function initializePlayers(array $players)
@@ -52,6 +57,28 @@ abstract class AbstractCompetition
     public function getPlayerCount(): int
     {
         return $this->playerCount;
+    }
+
+    public function getTeamCount(): int
+    {
+        return count($this->teamComp);
+    }
+
+    /**
+     * @param array $teamComp team key => players keys
+     */
+    public function setTeamComposition(array $teamComp)
+    {
+        $this->teamComp = $teamComp;
+        $this->teamRankings = $this->computeTeamRankings();
+    }
+
+    /**
+     * @return array team key => players keys
+     */
+    public function getTeamComposition(): array
+    {
+        return $this->teamComp;
     }
 
     public function getGameCount(): int
@@ -92,6 +119,20 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param int|string $teamKey
+     * @return int 0 if not found
+     */
+    public function getTeamSeed($teamKey): int
+    {
+        if (!isset($this->teamComp[$teamKey])) return 0;
+        $teams = array_keys($this->teamComp);
+        // now have index => team key
+        $teams = array_flip($teams);
+        // now have team key => index
+        return $teams[$teamKey] + 1;
+    }
+
+    /**
      * @param int $playerSeed
      * @return int|string|null null if not found
      */
@@ -102,12 +143,32 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param int $teamSeed
+     * @return int|string|null null if not found
+     */
+    public function getTeamKeyOnSeed(int $teamSeed)
+    {
+        $teams = array_keys($this->teamComp);
+        // now have index => team key
+        return $teams[$teamSeed - 1] ?? null;
+    }
+
+    /**
      * @param int $playerSeed
      * @return mixed|null null if not found
      */
     public function getPlayerOnSeed(int $playerSeed)
     {
         return $this->getPlayer($this->getPlayerKeyOnSeed($playerSeed));
+    }
+
+    /**
+     * @param int|string $teamKey
+     * @return array list of player keys
+     */
+    public function getPlayerKeysInTeam($teamKey): array
+    {
+        return $this->teamComp[$teamKey] ?? array();
     }
 
     /**
@@ -139,6 +200,13 @@ abstract class AbstractCompetition
         return $keysBySeed;
     }
 
+    /**
+     * @return array
+     */
+    public function getTeamKeys(): array
+    {
+        return array_keys($this->teamComp);
+    }
 
     /**
      * @param int|string $playerKey
@@ -220,6 +288,7 @@ abstract class AbstractCompetition
             $this->updateRankingsForGame($game);
         }
         $this->orderedRankings = $this->orderRankings($this->rankings);
+        $this->teamRankings = $this->computeTeamRankings();
     }
 
     /**
@@ -273,17 +342,28 @@ abstract class AbstractCompetition
         return $this->orderedRankings;
     }
 
-
     /**
-     * @param array $playersByTeam team key => array of player keys
      * @param bool $byExpenses
      * @return AbstractRanking[] first to last
      */
-    public function getTeamRankings(array $playersByTeam, bool $byExpenses = false): array
+    public function getTeamRankings(bool $byExpenses = false): array
+    {
+        if ($byExpenses) {
+            return $this->orderRankings($this->teamRankings, $byExpenses);
+        }
+        return $this->teamRankings;
+    }
+
+
+    /**
+     * @param bool $byExpenses
+     * @return AbstractRanking[] first to last
+     */
+    public function computeTeamRankings(): array
     {
         $teamRankings = array();
         $teamSeed = 1;
-        foreach ($playersByTeam as $teamKey => $playerKeys) {
+        foreach ($this->teamComp as $teamKey => $playerKeys) {
             $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
             $playerRankings = array();
             foreach ($playerKeys as $playerKey) {
@@ -295,7 +375,7 @@ abstract class AbstractCompetition
             $teamSeed++;
         }
 
-        return $this->orderRankings($teamRankings, $byExpenses);
+        return $this->orderRankings($teamRankings);
     }
 
     /**
@@ -407,6 +487,20 @@ abstract class AbstractCompetition
         return $rank - 1;
     }
 
+    /**
+     * @param int|string $teamKey
+     * @return int 0 if not found
+     */
+    public function getTeamRank($teamKey): int
+    {
+        $rank = 0;
+        foreach ($this->teamRankings as $ranking) {
+            $rank++;
+            if ($ranking->getPlayerKey() === $teamKey) return $rank;
+        }
+        return 0;
+    }
+
 
     /** @return int -1 if no max defined */
     abstract public static function getMaxPointForAGame(): int;
@@ -448,7 +542,9 @@ abstract class AbstractCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new static($competition->getPlayers($ranked));
+        $newCompetition = new static($competition->getPlayers($ranked));
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 

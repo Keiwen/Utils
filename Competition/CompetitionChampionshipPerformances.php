@@ -118,7 +118,9 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionChampionshipPerformances($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum());
+        $newCompetition = new CompetitionChampionshipPerformances($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 

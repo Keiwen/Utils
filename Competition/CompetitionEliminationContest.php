@@ -226,7 +226,9 @@ class CompetitionEliminationContest extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionEliminationContest($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getPlayerPassingCount(), $competition->getPlayerEliminatedPerRound());
+        $newCompetition = new CompetitionEliminationContest($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getPlayerPassingCount(), $competition->getPlayerEliminatedPerRound());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 }

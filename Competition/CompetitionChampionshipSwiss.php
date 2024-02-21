@@ -228,7 +228,9 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionChampionshipSwiss($competition->getPlayers($ranked), $competition->getRoundCount());
+        $newCompetition = new CompetitionChampionshipSwiss($competition->getPlayers($ranked), $competition->getRoundCount());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 }

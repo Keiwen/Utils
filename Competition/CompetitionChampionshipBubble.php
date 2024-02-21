@@ -169,13 +169,13 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
     }
 
 
-    public function getTeamRankings(array $playersByTeam, bool $byExpenses = false): array
+    public function computeTeamRankings(): array
     {
         $teamRankings = array();
         $teamSeed = 1;
         $teamBySeed = array();
         // first get combined rankings while computing average seed of the team
-        foreach ($playersByTeam as $teamKey => $playerKeys) {
+        foreach ($this->teamComp as $teamKey => $playerKeys) {
             $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
             $playerRankings = array();
             $sumSeeds = 0;
@@ -256,7 +256,9 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return new CompetitionChampionshipBubble($competition->getPlayers($ranked), $competition->getRoundCount());
+        $newCompetition = new CompetitionChampionshipBubble($competition->getPlayers($ranked), $competition->getRoundCount());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 }
