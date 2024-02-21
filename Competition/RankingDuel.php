@@ -68,6 +68,24 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * Returns points adjusted for forfeit and bye (counted as draw points)
+     * @return int
+     */
+    public function getAdjustedPoints(): int
+    {
+        $basePoints = $this->getPoints();
+        // adjust points for bye and forfeit: counted as draw
+        // formula: actual result A and counted result B, for X game:
+        // -X*A +X*B = X * (B-A)
+        $adjustedPoints = $basePoints
+            + $this->getWonBye() * (static::getPointsForDrawn() - static::getPointsForWon())
+            + $this->getWonByForfeit() * (static::getPointsForDrawn() - static::getPointsForWon())
+            + $this->getLossByForfeit() * (static::getPointsForDrawn() - static::getPointsForLoss())
+        ;
+        return $adjustedPoints;
+    }
+
+    /**
      * @param int $extremeExclusion exclude the first X and last X element
      * @return int
      */
@@ -89,9 +107,9 @@ class RankingDuel extends AbstractRanking
                 $firstExcluded++;
                 continue;
             }
-            // if wa already have all ranks needed, break the loop
+            // if we already have all ranks needed, break the loop
             if ($totalToSum <= 0) break;
-            $sum += $ranking->getPoints();
+            $sum += $ranking->getAdjustedPoints();
             // after we added a ranking, decrement total needed
             $totalToSum--;
         }
@@ -99,34 +117,34 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
-     * Returns player points + sum of opponent scores
+     * Returns sum of opponent scores
      * @return int
      */
     public function getPointsSolkoffSystem(): int
     {
-        return $this->getPoints() + $this->getSumOfOpponentScores();
+        return $this->getSumOfOpponentScores();
     }
 
     /**
-     * Returns player points * sum of opponent scores
+     * Returns player adjusted points * sum of opponent scores
      * @return int
      */
     public function getPointsBuchholzSystem(): int
     {
-        return $this->getPoints() * $this->getSumOfOpponentScores();
+        return $this->getAdjustedPoints() * $this->getSumOfOpponentScores();
     }
 
 
     /**
-     * Returns player points + sum of opponent scores
+     * Returns sum of opponent scores
      * This ignore the first X and last X opponents, with X = harkness rank given
      * @param int $harknessRank
      * @return int
      */
     public function getPointsHarknessSystem(int $harknessRank): int
     {
-        if ($harknessRank < 0) $harknessRank = 0;
-        return $this->getPoints() + $this->getSumOfOpponentScores($harknessRank);
+        if ($harknessRank < 1) $harknessRank = 1;
+        return $this->getSumOfOpponentScores($harknessRank);
     }
 
 
