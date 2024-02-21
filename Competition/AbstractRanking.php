@@ -5,8 +5,8 @@ namespace Keiwen\Utils\Competition;
 abstract class AbstractRanking
 {
 
-    protected $playerKey;
-    protected $playerSeed = 0;
+    protected $entityKey;
+    protected $entitySeed = 0;
 
     protected $gameByResult = array();
 
@@ -25,10 +25,10 @@ abstract class AbstractRanking
     protected static $pointByBonus = 1;
     protected static $pointByMalus = 1;
 
-    public function __construct($playerKey, int $playerSeed = 0)
+    public function __construct($entityKey, int $entitySeed = 0)
     {
-        $this->playerKey = $playerKey;
-        $this->playerSeed = $playerSeed;
+        $this->entityKey = $entityKey;
+        $this->entitySeed = $entitySeed;
         // initialize game by result
         $this->gameByResult = array_fill_keys(array_keys(static::$pointByResult), 0);
     }
@@ -130,17 +130,17 @@ abstract class AbstractRanking
         return static::$pointByMalus;
     }
 
-    public function getPlayerSeed(): int
+    public function getEntitySeed(): int
     {
-        return $this->playerSeed;
+        return $this->entitySeed;
     }
 
     /**
      * @return int|string
      */
-    public function getPlayerKey()
+    public function getEntityKey()
     {
-        return $this->playerKey;
+        return $this->entityKey;
     }
 
     public function getPlayed(): int
@@ -281,7 +281,7 @@ abstract class AbstractRanking
      */
     protected function saveGamePerformances(AbstractGame $game): bool
     {
-        $playerPerformances = $game->getPlayerPerformances($this->getPlayerKey());
+        $playerPerformances = $game->getPlayerPerformances($this->getEntityKey());
         if (empty($playerPerformances)) return false;
         foreach ($playerPerformances as $type => $performance) {
             if (empty($performance) || !is_int($performance)) $performance = 0;
@@ -293,7 +293,7 @@ abstract class AbstractRanking
 
     protected function saveGameExpenses(AbstractGame $game): bool
     {
-        $playerExpenses = $game->getPlayerExpenses($this->getPlayerKey());
+        $playerExpenses = $game->getPlayerExpenses($this->getEntityKey());
         if (empty($playerExpenses)) return false;
         foreach ($playerExpenses as $type => $expense) {
             if (empty($expense) || !is_numeric($expense)) $expense = 0;
@@ -305,8 +305,8 @@ abstract class AbstractRanking
 
     protected function saveGameBonusAndMalus(AbstractGame $game): bool
     {
-        $this->bonusCount += $game->getPlayerBonus($this->getPlayerKey());
-        $this->malusCount += $game->getPlayerMalus($this->getPlayerKey());
+        $this->bonusCount += $game->getPlayerBonus($this->getEntityKey());
+        $this->malusCount += $game->getPlayerMalus($this->getEntityKey());
         return true;
     }
 
@@ -330,8 +330,8 @@ abstract class AbstractRanking
         // played games: less played is first
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
-        // last case, first registered player is first
-        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
+        // last case, first registered entity is first
+        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
         return -1;
     }
 

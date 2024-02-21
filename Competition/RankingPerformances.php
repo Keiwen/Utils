@@ -150,7 +150,7 @@ class RankingPerformances extends AbstractRanking
         $this->saveSumPerformance($game);
         $this->saveLastRoundPoints($game);
 
-        if ($game->hasPlayerWon($this->getPlayerKey())) {
+        if ($game->hasPlayerWon($this->getEntityKey())) {
             $this->gameByResult[GamePerformances::RESULT_WON]++;
         } else {
             $this->gameByResult[GamePerformances::RESULT_LOSS]++;
@@ -164,7 +164,7 @@ class RankingPerformances extends AbstractRanking
      */
     protected function saveSumPerformance(AbstractGame $game): bool
     {
-        $gamePerf = $game->getPlayerPerformancesSum($this->getPlayerKey());
+        $gamePerf = $game->getPlayerPerformancesSum($this->getEntityKey());
         if ($gamePerf > $this->maxPerformance) $this->maxPerformance = $gamePerf;
         $this->sumPerformance += $gamePerf;
         return true;
@@ -182,7 +182,7 @@ class RankingPerformances extends AbstractRanking
      */
     protected function saveLastRoundPoints(AbstractGame $game): bool
     {
-        $playerRank = $game->getPlayerGameRank($this->getPlayerKey());
+        $playerRank = $game->getPlayerGameRank($this->getEntityKey());
         if ($playerRank === 0) return false;
         $competition = $game->getAffectation();
         $playersInCompetition = empty($competition) ? count($game->getPlayers()) : $competition->getPlayerCount();
@@ -221,8 +221,8 @@ class RankingPerformances extends AbstractRanking
         // played games: more played is first
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return -1;
-        // last case, first registered player is first
-        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
+        // last case, first registered entity is first
+        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
         return -1;
     }
 

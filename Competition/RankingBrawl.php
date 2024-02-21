@@ -81,7 +81,7 @@ class RankingBrawl extends AbstractRanking
         $this->saveGameExpenses($game);
         $this->saveGameBonusAndMalus($game);
 
-        if ($game->hasPlayerWon($this->getPlayerKey())) {
+        if ($game->hasPlayerWon($this->getEntityKey())) {
             $this->gameByResult[GameBrawl::RESULT_WON]++;
             $this->performances[self::PERF_TOTAL_BRAWL_COUNT_WON] += $game->getPlayerCount();
         } else {
@@ -111,8 +111,8 @@ class RankingBrawl extends AbstractRanking
         // played games: more played is first
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return -1;
-        // last case, first registered player is first
-        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
+        // last case, first registered entity is first
+        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
         return -1;
     }
 

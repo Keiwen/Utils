@@ -62,7 +62,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarGame
                 if (($rankings[$i])->getWonBye() > 0) continue;
 
                 // this player did not received any bye
-                $byeGame = $this->addGame(($rankings[$i])->getPlayerKey(), null, $this->currentRound);
+                $byeGame = $this->addGame(($rankings[$i])->getEntityKey(), null, $this->currentRound);
                 $byeGame->setEndOfBye();
 
                 // remove for further duels
@@ -116,7 +116,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarGame
         $found = false;
         for ($i = 1; $i < (count($rankings) - 1); $i++) {
             $awayRanking = $rankings[$i];
-            if (!$homeRanking->hasOpponent($awayRanking->getPlayerKey())) {
+            if (!$homeRanking->hasOpponent($awayRanking->getEntityKey())) {
                 $found = true;
                 break;
             }
@@ -127,7 +127,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarGame
             $awayRanking = $rankings[$i];
         }
 
-        $game = $this->addGame($homeRanking->getPlayerKey(), $awayRanking->getPlayerKey(), $this->currentRound);
+        $game = $this->addGame($homeRanking->getEntityKey(), $awayRanking->getEntityKey(), $this->currentRound);
         unset($rankings[0], $rankings[$i]);
         return $game;
     }

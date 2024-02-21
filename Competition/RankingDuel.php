@@ -89,8 +89,8 @@ class RankingDuel extends AbstractRanking
             throw new CompetitionException(sprintf('Ranking duel require %s as game, %s given', GameDuel::class, get_class($game)));
         }
         $isHome = $isAway = false;
-        if ($game->getKeyHome() == $this->getPlayerKey()) $isHome = true;
-        if ($game->getkeyAway() == $this->getPlayerKey()) $isAway = true;
+        if ($game->getKeyHome() == $this->getEntityKey()) $isHome = true;
+        if ($game->getkeyAway() == $this->getEntityKey()) $isAway = true;
         if (!$isHome && !$isAway) return false;
 
         $this->saveGamePerformances($game);
@@ -171,8 +171,8 @@ class RankingDuel extends AbstractRanking
         // played games: less played is first
         if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
         if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
-        // last case, first registered player is first
-        if ($rankingA->getPlayerSeed() < $rankingB->getPlayerSeed()) return 1;
+        // last case, first registered entity is first
+        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
         return -1;
     }
 

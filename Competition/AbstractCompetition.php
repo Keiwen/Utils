@@ -182,7 +182,7 @@ abstract class AbstractCompetition
         $rankedList = array();
         $rankings = $this->getRankings();
         foreach ($rankings as $ranking) {
-            $nextPlayerKey = $ranking->getPlayerKey();
+            $nextPlayerKey = $ranking->getEntityKey();
             $nextPlayer = $this->getPlayer($nextPlayerKey);
             if ($nextPlayer !== null) $rankedList[] = $nextPlayer;
         }
@@ -451,7 +451,7 @@ abstract class AbstractCompetition
         $rank = 0;
         foreach ($this->orderedRankings as $ranking) {
             $rank++;
-            if ($ranking->getPlayerKey() === $playerKey) return $rank;
+            if ($ranking->getEntityKey() === $playerKey) return $rank;
         }
         return 0;
     }
@@ -496,7 +496,7 @@ abstract class AbstractCompetition
         $rank = 0;
         foreach ($this->teamRankings as $ranking) {
             $rank++;
-            if ($ranking->getPlayerKey() === $teamKey) return $rank;
+            if ($ranking->getEntityKey() === $teamKey) return $rank;
         }
         return 0;
     }
