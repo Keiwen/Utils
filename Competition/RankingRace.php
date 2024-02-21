@@ -83,4 +83,13 @@ class RankingRace extends AbstractRanking
     {
         static::$pointByResult = array();
     }
+
+    /**
+     * @param RankingRace[] $rankings
+     */
+    public function combinedRankings(array $rankings)
+    {
+        parent::combinedRankings($rankings);
+    }
+
 }

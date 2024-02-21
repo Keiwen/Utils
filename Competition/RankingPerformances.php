@@ -226,4 +226,17 @@ class RankingPerformances extends AbstractRanking
         return -1;
     }
 
+    /**
+     * @param RankingPerformances[] $rankings
+     */
+    public function combinedRankings(array $rankings)
+    {
+        parent::combinedRankings($rankings);
+        foreach ($rankings as $ranking) {
+            if ($ranking->maxPerformance > $this->maxPerformance) $this->maxPerformance = $ranking->getMaxPerformance();
+            $this->sumPerformance += $ranking->getPerformancesSum();
+            $this->lastRoundPoints += $ranking->getLastRoundPoints();
+        }
+    }
+
 }

@@ -15,6 +15,8 @@ abstract class AbstractRanking
     protected $bonusCount = 0;
     protected $malusCount = 0;
 
+    protected $combinedRankings = 0;
+
     protected static $performanceTypesToRank = array();
     protected static $expensesTypesToRank = array();
 
@@ -155,6 +157,14 @@ abstract class AbstractRanking
         return $this->gameByResult[$result] ?? 0;
     }
 
+    /**
+     * @return array result => number of game ended with this result
+     */
+    public function getGameByResult(): array
+    {
+        return $this->gameByResult;
+    }
+
 
     public function getPoints(): int
     {
@@ -211,7 +221,11 @@ abstract class AbstractRanking
      */
     public function getRemainingCapital(string $expenseType): int
     {
-        return (static::getStartingCapitalForExpense($expenseType) - $this->getExpenseTotal($expenseType));
+        if ($this->combinedRankings <= 1) {
+            return (static::getStartingCapitalForExpense($expenseType) - $this->getExpenseTotal($expenseType));
+        }
+        $totalCapital = $this->combinedRankings * static::getStartingCapitalForExpense($expenseType);
+        return $totalCapital - $this->getExpenseTotal($expenseType);
     }
 
 
@@ -324,8 +338,9 @@ abstract class AbstractRanking
     /**
      * @return int
      */
-    protected static function orderRankingsByPerformances(self $rankingA, self $rankingB): int
+    public static function orderRankingsByPerformances(self $rankingA, self $rankingB): int
     {
+        static::checkStaticRankingClass($rankingA, $rankingB);
         foreach (static::$performanceTypesToRank as $performanceType) {
             if (strpos($performanceType, '-') === 0) {
                 $performanceType = substr($performanceType, 1);
@@ -346,8 +361,9 @@ abstract class AbstractRanking
     /**
      * @return int
      */
-    protected static function orderRankingsByExpenses(self $rankingA, self $rankingB): int
+    public static function orderRankingsByExpenses(self $rankingA, self $rankingB): int
     {
+        static::checkStaticRankingClass($rankingA, $rankingB);
         foreach (static::$expensesTypesToRank as $expenseType) {
             if (strpos($expenseType, '-') === 0) {
                 $expenseType = substr($expenseType, 1);
@@ -374,5 +390,32 @@ abstract class AbstractRanking
             throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', static::class, get_class($rankingB)));
         }
     }
+
+    /**
+     * Used for team ranking. Create a brand new rankings and combine all players rankings
+     * @param AbstractRanking[] $rankings players rankings to combine
+     */
+    public function combinedRankings(array $rankings)
+    {
+        $this->combinedRankings += count($rankings);
+        foreach ($rankings as $ranking) {
+            foreach ($ranking->getGameByResult() as $result => $numberOfGames) {
+                if (!isset($this->gameByResult[$result])) $this->gameByResult[$result] = 0;
+                $this->gameByResult[$result] += $numberOfGames;
+            }
+            $this->bonusCount += $ranking->getBonusCount();
+            $this->malusCount += $ranking->getMalusCount();
+
+            foreach (static::getPerformanceTypesToRank() as $type) {
+                if (!isset($this->performances[$type])) $this->performances[$type] = 0;
+                $this->performances[$type] += $ranking->getPerformanceTotal($type);
+            }
+            foreach (static::getExpenseTypesToRank() as $type) {
+                if (!isset($this->expenses[$type])) $this->expenses[$type] = 0;
+                $this->expenses[$type] += $ranking->getExpenseTotal($type);
+            }
+        }
+    }
+
 
 }

@@ -176,4 +176,19 @@ class RankingDuel extends AbstractRanking
         return -1;
     }
 
+    /**
+     * @param RankingDuel[] $rankings
+     */
+    public function combinedRankings(array $rankings)
+    {
+        parent::combinedRankings($rankings);
+        foreach ($rankings as $ranking) {
+            $this->wonByForfeit += $ranking->getWonByForfeit();
+            $this->lossByForfeit += $ranking->getLossByForfeit();
+            $this->wonBye += $ranking->getWonBye();
+            $this->opponentKeys = array_merge($this->opponentKeys, $ranking->getOpponentKeys());
+        }
+    }
+
+
 }

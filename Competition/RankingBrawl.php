@@ -116,4 +116,14 @@ class RankingBrawl extends AbstractRanking
         return -1;
     }
 
+
+    /**
+     * @param RankingBrawl[] $rankings
+     */
+    public function combinedRankings(array $rankings)
+    {
+        parent::combinedRankings($rankings);
+    }
+
+
 }
