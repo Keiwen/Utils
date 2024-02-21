@@ -28,7 +28,7 @@ abstract class AbstractCompetition
         $this->initializePlayers($players);
         // initialize rankings;
         $this->initializeRanking();
-        $this->orderRankings();
+        $this->orderedRankings = $this->orderRankings($this->rankings);
     }
 
     protected function initializePlayers(array $players)
@@ -219,18 +219,25 @@ abstract class AbstractCompetition
             if (!$game) continue;
             $this->updateRankingsForGame($game);
         }
-        $this->orderRankings();
+        $this->orderedRankings = $this->orderRankings($this->rankings);
     }
 
-    protected function orderRankings()
+    /**
+     * @param AbstractRanking[] $rankings
+     * @param bool $byExpenses
+     * @return AbstractRanking[]
+     */
+    protected function orderRankings(array $rankings, bool $byExpenses = false): array
     {
-        $this->orderedRankings = array_values($this->rankings);
-        if (!empty($this->orderedRankings)) {
-            $firstRanking = reset($this->orderedRankings);
+        $rankings = array_values($rankings);
+        if (!empty($rankings)) {
+            $firstRanking = reset($rankings);
             $rankingClass = get_class($firstRanking);
-            usort($this->orderedRankings, array($rankingClass, 'orderRankings'));
-            $this->orderedRankings = array_reverse($this->orderedRankings);
+            $rankingMethod = $byExpenses ? 'orderRankingsByExpenses' : 'orderRankings';
+            usort($rankings, array($rankingClass, $rankingMethod));
+            $rankings = array_reverse($rankings);
         }
+        return $rankings;
     }
 
     abstract protected function updateRankingsForGame($game);
@@ -255,20 +262,40 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param bool $byExpenses
      * @return AbstractRanking[] first to last
      */
     public function getRankings(bool $byExpenses = false): array
     {
         if ($byExpenses) {
-            if (empty($this->rankings)) return array();
-            $rankingsByExpenses = $this->rankings;
-            $firstRanking = reset($rankingsByExpenses);
-            $rankingClass = get_class($firstRanking);
-            usort($rankingsByExpenses, array($rankingClass, 'orderRankingsByExpenses'));
-            $rankingsByExpenses = array_reverse($rankingsByExpenses);
-            return $rankingsByExpenses;
+            return $this->orderRankings($this->rankings, $byExpenses);
         }
         return $this->orderedRankings;
+    }
+
+
+    /**
+     * @param array $playersByTeam team key => array of player keys
+     * @param bool $byExpenses
+     * @return AbstractRanking[] first to last
+     */
+    public function getTeamRankings(array $playersByTeam, bool $byExpenses = false): array
+    {
+        $teamRankings = array();
+        $teamSeed = 1;
+        foreach ($playersByTeam as $teamKey => $playerKeys) {
+            $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
+            $playerRankings = array();
+            foreach ($playerKeys as $playerKey) {
+                $playerRankings[] = $this->rankings[$playerKey];
+            }
+            $teamRanking->combinedRankings($playerRankings);
+
+            $teamRankings[$teamKey] = $teamRanking;
+            $teamSeed++;
+        }
+
+        return $this->orderRankings($teamRankings, $byExpenses);
     }
 
     /**

@@ -152,14 +152,57 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
     }
 
 
-    protected function orderRankings()
+    /**
+     * @param AbstractRanking[] $rankings
+     * @param bool $byExpenses
+     * @return AbstractRanking[]
+     */
+    protected function orderRankings(array $rankings, bool $byExpenses = false): array
     {
         // do not use classic rankings orderings: update player seeds instead
-        $this->orderedRankings = array();
+        $orderedRankings = array();
         $playerKeysSeeded = $this->getPlayerKeysSeeded();
         foreach ($playerKeysSeeded as $seed => $playerKey) {
-            $this->orderedRankings[] = $this->rankings[$playerKey];
+            $orderedRankings[] = $rankings[$playerKey];
         }
+        return $orderedRankings;
+    }
+
+
+    public function getTeamRankings(array $playersByTeam, bool $byExpenses = false): array
+    {
+        $teamRankings = array();
+        $teamSeed = 1;
+        $teamBySeed = array();
+        // first get combined rankings while computing average seed of the team
+        foreach ($playersByTeam as $teamKey => $playerKeys) {
+            $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
+            $playerRankings = array();
+            $sumSeeds = 0;
+            foreach ($playerKeys as $playerKey) {
+                $playerRankings[] = $this->rankings[$playerKey];
+                $sumSeeds = $this->getPlayerSeed($playerKey);
+            }
+            $teamRanking->combinedRankings($playerRankings);
+
+            $teamRankings[$teamKey] = $teamRanking;
+
+            // if no player, set last seed as average
+            $averageSeed = empty($playerKeys) ? $this->playerCount : $sumSeeds / count($playerKeys);
+            $teamBySeed[$teamKey] = $averageSeed;
+            $teamSeed++;
+        }
+
+        // sort by average seed (so lowest is better)
+        asort($teamBySeed);
+
+        // reorder rankings with seeding
+        $orderedRankings = array();
+        foreach ($teamBySeed as $teamKey => $averageSeed) {
+            $orderedRankings[] = $teamRankings[$teamKey];
+        }
+
+        return $orderedRankings;
     }
 
 
@@ -184,7 +227,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
                 }
             }
             // call back order rankings
-            $this->orderRankings();
+            $this->orderedRankings = $this->orderRankings($this->rankings);
 
             $this->generateNextRoundGames();
 
