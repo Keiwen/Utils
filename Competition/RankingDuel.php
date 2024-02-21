@@ -12,6 +12,7 @@ class RankingDuel extends AbstractRanking
     protected $wonByForfeit = 0;
     protected $lossByForfeit = 0;
     protected $wonBye = 0;
+    protected $cumulativeAdjustedPoints = array();
     protected $opponentKeys = array();
 
     /** @var AbstractCompetition $affectedTo */
@@ -147,6 +148,18 @@ class RankingDuel extends AbstractRanking
         return $this->getSumOfOpponentScores($harknessRank);
     }
 
+    /**
+     * @return int
+     */
+    public function getPointsCumulative(): int
+    {
+        $sum = 0;
+        foreach ($this->cumulativeAdjustedPoints as $cumulPoints) {
+            $sum += $cumulPoints;
+        }
+        return $sum;
+    }
+
 
 
     public function getWon(): int
@@ -209,6 +222,32 @@ class RankingDuel extends AbstractRanking
         return static::getPointsForResult(GameDuel::RESULT_LOSS);
     }
 
+    protected function getLastCumulPoints(): int
+    {
+        if (empty($this->cumulativeAdjustedPoints)) return 0;
+        return $this->cumulativeAdjustedPoints[count($this->cumulativeAdjustedPoints) - 1];
+    }
+
+    /**
+     * @param string $result
+     * @param bool $isForfeit
+     * @param bool $isBye
+     */
+    protected function addCumulPoints(string $result, bool $isForfeit = false, bool $isBye = false)
+    {
+        $cumul = $this->getLastCumulPoints();
+        // from last cumul, add points for last game
+        // if forfeit or bye, count adjusted point as draw
+        if ($isForfeit || $isBye || $result == GameDuel::RESULT_DRAWN) {
+            $cumul += static::getPointsForDrawn();
+        } else if ($result == GameDuel::RESULT_WON) {
+            $cumul += static::getPointsForWon();
+        } else if ($result == GameDuel::RESULT_LOSS) {
+            $cumul += static::getPointsForLoss();
+        }
+        $this->cumulativeAdjustedPoints[] = $cumul;
+    }
+
 
     public function saveGame(AbstractGame $game): bool
     {
@@ -232,12 +271,17 @@ class RankingDuel extends AbstractRanking
                 $this->gameByResult[GameDuel::RESULT_WON]++;
                 if ($game->hasForfeit()) $this->wonByForfeit++;
                 if ($game->isByeGame()) $this->wonBye++;
+                $this->addCumulPoints(GameDuel::RESULT_WON, $game->hasForfeit(), $game->isByeGame());
             }
             if ($game->hasAwayWon()) {
                 $this->gameByResult[GameDuel::RESULT_LOSS]++;
                 if ($game->hasForfeit()) $this->lossByForfeit++;
+                $this->addCumulPoints(GameDuel::RESULT_LOSS, $game->hasForfeit());
             }
-            if ($game->isDraw()) $this->gameByResult[GameDuel::RESULT_DRAWN]++;
+            if ($game->isDraw()) {
+                $this->gameByResult[GameDuel::RESULT_DRAWN]++;
+                $this->addCumulPoints(GameDuel::RESULT_DRAWN);
+            }
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreHome();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreHome() - $game->getScoreAway());
@@ -246,12 +290,17 @@ class RankingDuel extends AbstractRanking
             if ($game->hasHomeWon()) {
                 $this->gameByResult[GameDuel::RESULT_LOSS]++;
                 if ($game->hasForfeit()) $this->lossByForfeit++;
+                $this->addCumulPoints(GameDuel::RESULT_LOSS, $game->hasForfeit());
             }
             if ($game->hasAwayWon()) {
                 $this->gameByResult[GameDuel::RESULT_WON]++;
                 if ($game->hasForfeit()) $this->wonByForfeit++;
+                $this->addCumulPoints(GameDuel::RESULT_WON, $game->hasForfeit());
             }
-            if ($game->isDraw()) $this->gameByResult[GameDuel::RESULT_DRAWN]++;
+            if ($game->isDraw()) {
+                $this->gameByResult[GameDuel::RESULT_DRAWN]++;
+                $this->addCumulPoints(GameDuel::RESULT_DRAWN);
+            }
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreHome();
             $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreAway() - $game->getScoreHome());
