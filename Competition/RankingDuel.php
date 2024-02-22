@@ -61,7 +61,7 @@ class RankingDuel extends AbstractRanking
         $competitionRankings = $this->getAffectation()->getRankings();
         $opponentRankings = array();
         $opponentKeysToBeFound = $this->opponentKeys;
-        foreach ($competitionRankings as $index => $ranking) {
+        foreach ($competitionRankings as $ranking) {
             // use a while loop instead of just 'in_array'
             // so that we can consider opponent faced multiple times
             while(($index = array_search($ranking->getEntityKey(), $opponentKeysToBeFound)) !== false) {
