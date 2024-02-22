@@ -103,7 +103,7 @@ class RankingDuel extends AbstractRanking
 
         $sum = 0;
         // count how many we need with exclusion
-        $totalToSum = count($this->opponentKeys) - $extremeExclusion * 2;
+        $totalToSum = $this->getOpponentCount() - $extremeExclusion * 2;
         // if none left, return 0
         if ($totalToSum < 1) return 0;
         $firstExcluded = 0;
@@ -291,6 +291,8 @@ class RankingDuel extends AbstractRanking
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_DIFF] += ($game->getScoreHome() - $game->getScoreAway());
             if (!$game->isByeGame()) $this->opponentKeys[] = $game->getKeyAway();
+            // if bye, flag as empty string key in opponent list
+            else $this->opponentKeys[] = '';
         } else {
             if ($game->hasHomeWon()) {
                 $this->gameByResult[GameDuel::RESULT_LOSS]++;
@@ -318,6 +320,28 @@ class RankingDuel extends AbstractRanking
     public function getOpponentKeys(): array
     {
         return $this->opponentKeys;
+    }
+
+    /**
+     * @param bool $excludeBye true by default, to count only real opponent
+     * @return int
+     */
+    public function getOpponentCount(bool $excludeBye = true): int
+    {
+        $count = count($this->opponentKeys);
+        if (!$excludeBye) return $count;
+        $countValues = array_count_values($this->opponentKeys);
+        $countBye = $countValues[''] ?? 0;
+        return $count - $countBye;
+    }
+
+    /**
+     * @param int $round
+     * @return int|string|null null if not found
+     */
+    public function getOpponentKeyFacedInRound(int $round)
+    {
+        return $this->opponentKeys[$round - 1] ?? null;
     }
 
     /**
