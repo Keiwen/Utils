@@ -74,6 +74,19 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * @param int|string $opponentKey
+     * @return RankingDuel|null null if not found
+     */
+    public function getOpponentRanking($opponentKey): ?RankingDuel
+    {
+        if (!$this->isAffected()) return null;
+        if (!$this->hasOpponent($opponentKey)) return null;
+        /** @var RankingDuel $opponentRanking */
+        $opponentRanking = $this->getAffectation()->getPlayerRanking($opponentKey);
+        return $opponentRanking;
+    }
+
+    /**
      * Returns points adjusted for forfeit and bye (counted as draw points)
      * @return int
      */
@@ -98,8 +111,8 @@ class RankingDuel extends AbstractRanking
     public function getSumOfOpponentScores(int $extremeExclusion = 0): int
     {
         // NOTE: this method could take some time to compute
-        // we cannot store some kind of result easily because it depends on other object
-        // try to NOT call this by default, only on demand
+        // we cannot store some kind of final result of this easily
+        // because it depends on other object
 
         $sum = 0;
         // count how many we need with exclusion

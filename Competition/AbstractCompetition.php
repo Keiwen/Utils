@@ -343,6 +343,15 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param int|string $playerKey
+     * @return AbstractRanking|null null if not found
+     */
+    public function getPlayerRanking($playerKey): ?AbstractRanking
+    {
+        return $this->rankings[$playerKey] ?? null;
+    }
+
+    /**
      * @param bool $byExpenses
      * @return AbstractRanking[] first to last
      */
