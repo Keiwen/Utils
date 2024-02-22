@@ -168,6 +168,37 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * Returns sum of points earned vs player who gets a minimum ratio of points
+     * @param float $minPointsRatio default is .5, to get points against player that have at least 50 % of possible points
+     * @return int
+     */
+    public function getPointsKoyaSystem(float $minPointsRatio = 0.5): int
+    {
+        if ($minPointsRatio > 1) $minPointsRatio = 1;
+        if ($minPointsRatio < 0) $minPointsRatio = 0;
+        $sum = 0;
+        foreach ($this->getOpponentRankings() as $ranking) {
+            $actualPoints = $ranking->getPoints();
+            $maxPoints = $ranking->getPlayed() * static::getPointsForWon();
+            $pointsRatio = $maxPoints ? $actualPoints / $maxPoints : 0;
+            // check if this opponent is above min ratio
+            if ($pointsRatio >= $minPointsRatio) {
+                $results = $this->getResultsAgainst($ranking->getEntityKey());
+                foreach ($results as $result) {
+                    // sum all result we've got against this opponent
+                    switch ($result) {
+                        case GameDuel::RESULT_WON: $sum += static::getPointsForWon(); break;
+                        case GameDuel::RESULT_DRAWN: $sum += static::getPointsForDrawn(); break;
+                        case GameDuel::RESULT_LOSS: $sum += static::getPointsForLoss(); break;
+                    }
+                }
+            }
+        }
+        return $sum;
+    }
+
+
+    /**
      * @return int
      */
     public function getPointsCumulative(): int
