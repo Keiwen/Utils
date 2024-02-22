@@ -14,6 +14,7 @@ class RankingDuel extends AbstractRanking
     protected $wonBye = 0;
     protected $cumulativeAdjustedPoints = array();
     protected $opponentKeys = array();
+    protected $gameResults = array();
 
     /** @var AbstractCompetition $affectedTo */
     protected $affectedTo = null;
@@ -251,8 +252,13 @@ class RankingDuel extends AbstractRanking
      * @param bool $isForfeit
      * @param bool $isBye
      */
-    protected function addCumulPoints(string $result, bool $isForfeit = false, bool $isBye = false)
+    protected function storeGameResult(string $result, bool $isForfeit = false, bool $isBye = false)
     {
+        // store result
+        $this->gameByResult[$result]++;
+        $this->gameResults[] = $result;
+
+        // store cumul points
         $cumul = $this->getLastCumulPoints();
         // from last cumul, add points for last game
         // if forfeit or bye, count adjusted point as draw
@@ -286,19 +292,16 @@ class RankingDuel extends AbstractRanking
 
         if ($isHome) {
             if ($game->hasHomeWon()) {
-                $this->gameByResult[GameDuel::RESULT_WON]++;
                 if ($game->hasForfeit()) $this->wonByForfeit++;
                 if ($game->isByeGame()) $this->wonBye++;
-                $this->addCumulPoints(GameDuel::RESULT_WON, $game->hasForfeit(), $game->isByeGame());
+                $this->storeGameResult(GameDuel::RESULT_WON, $game->hasForfeit(), $game->isByeGame());
             }
             if ($game->hasAwayWon()) {
-                $this->gameByResult[GameDuel::RESULT_LOSS]++;
                 if ($game->hasForfeit()) $this->lossByForfeit++;
-                $this->addCumulPoints(GameDuel::RESULT_LOSS, $game->hasForfeit());
+                $this->storeGameResult(GameDuel::RESULT_LOSS, $game->hasForfeit());
             }
             if ($game->isDraw()) {
-                $this->gameByResult[GameDuel::RESULT_DRAWN]++;
-                $this->addCumulPoints(GameDuel::RESULT_DRAWN);
+                $this->storeGameResult(GameDuel::RESULT_DRAWN);
             }
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreHome();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreAway();
@@ -308,18 +311,15 @@ class RankingDuel extends AbstractRanking
             else $this->opponentKeys[] = '';
         } else {
             if ($game->hasHomeWon()) {
-                $this->gameByResult[GameDuel::RESULT_LOSS]++;
                 if ($game->hasForfeit()) $this->lossByForfeit++;
-                $this->addCumulPoints(GameDuel::RESULT_LOSS, $game->hasForfeit());
+                $this->storeGameResult(GameDuel::RESULT_LOSS, $game->hasForfeit());
             }
             if ($game->hasAwayWon()) {
-                $this->gameByResult[GameDuel::RESULT_WON]++;
                 if ($game->hasForfeit()) $this->wonByForfeit++;
-                $this->addCumulPoints(GameDuel::RESULT_WON, $game->hasForfeit());
+                $this->storeGameResult(GameDuel::RESULT_WON, $game->hasForfeit());
             }
             if ($game->isDraw()) {
-                $this->gameByResult[GameDuel::RESULT_DRAWN]++;
-                $this->addCumulPoints(GameDuel::RESULT_DRAWN);
+                $this->storeGameResult(GameDuel::RESULT_DRAWN);
             }
             $this->performances[self::PERF_SCORE_FOR] += $game->getScoreAway();
             $this->performances[self::PERF_SCORE_AGAINST] += $game->getScoreHome();
@@ -333,6 +333,19 @@ class RankingDuel extends AbstractRanking
     public function getOpponentKeys(): array
     {
         return $this->opponentKeys;
+    }
+
+    /**
+     * Returns results for the last games
+     * @param int $lastGamesCount number of games to consider (0 by default to return all)
+     * @return string[]
+     */
+    public function getGameResults(int $lastGamesCount = 0): array
+    {
+        if ($lastGamesCount < 0) $lastGamesCount = 0;
+        if ($lastGamesCount > count($this->gameResults)) $lastGamesCount = 0;
+        $lastGamesCount = -$lastGamesCount;
+        return array_slice($this->gameResults, $lastGamesCount);
     }
 
     /**
@@ -358,12 +371,57 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * @param int $round
+     * @return string|null null if not found
+     */
+    public function getResultInRound(int $round): ?string
+    {
+        return $this->gameResults[$round - 1] ?? null;
+    }
+
+    /**
      * @param int|string $playerKey
      * @return bool
      */
     public function hasOpponent($playerKey): bool
     {
         return in_array($playerKey, $this->opponentKeys);
+    }
+
+
+    /**
+     * @param int|string $playerKey
+     * @return string[]
+     */
+    public function getResultsAgainst($playerKey): array
+    {
+        $confrontationRounds = array();
+        $opponentList = $this->opponentKeys;
+        while (($index = array_search($playerKey, $opponentList)) !== false) {
+            $confrontationRounds[] = $index + 1;
+            unset($opponentList[$index]);
+        }
+        $confrontationResults = array();
+        foreach ($confrontationRounds as $round) {
+            $confrontationResults[] = $this->getResultInRound($round);
+        }
+        return $confrontationResults;
+    }
+
+    /**
+     * compares only direct duels versus given player
+     * @param int|string $playerKey
+     * @return int 1 if more won, -1 if more loss, 0 if tie
+     */
+    public function orderDirectDuelsAgainst($playerKey): int
+    {
+        $confrontationResults = $this->getResultsAgainst($playerKey);
+        $confrontationResults = array_count_values($confrontationResults);
+        if (!isset($confrontationResults[GameDuel::RESULT_WON])) $confrontationResults[GameDuel::RESULT_WON] = 0;
+        if (!isset($confrontationResults[GameDuel::RESULT_LOSS])) $confrontationResults[GameDuel::RESULT_LOSS] = 0;
+        if ($confrontationResults[GameDuel::RESULT_WON] > $confrontationResults[GameDuel::RESULT_LOSS]) return 1;
+        if ($confrontationResults[GameDuel::RESULT_WON] < $confrontationResults[GameDuel::RESULT_LOSS]) return -1;
+        return 0;
     }
 
     /**
@@ -381,6 +439,10 @@ class RankingDuel extends AbstractRanking
         // won bye games: less won for bye game is first
         if ($rankingA->getWonBye() < $rankingB->getWonBye()) return 1;
         if ($rankingA->getWonBye() > $rankingB->getWonBye()) return -1;
+
+        // then compare direct confrontations
+        $directRanking = $rankingA->orderDirectDuelsAgainst($rankingB->getEntityKey());
+        if ($directRanking !== 0) return $directRanking;
 
         // then compare performances if declared
         $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
