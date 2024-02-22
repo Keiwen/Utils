@@ -53,16 +53,21 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
-     * @return RankingDuel[]
+     * @return RankingDuel[] ordered by rank
      */
     public function getOpponentRankings(): array
     {
         if (!$this->isAffected()) return array();
         $competitionRankings = $this->getAffectation()->getRankings();
         $opponentRankings = array();
+        $opponentKeysToBeFound = $this->opponentKeys;
         foreach ($competitionRankings as $index => $ranking) {
-            if (in_array($ranking->getEntityKey(), $this->opponentKeys)) {
-                $opponentRankings[$index + 1] = $ranking;
+            // use a while loop instead of just 'in_array'
+            // so that we can consider opponent faced multiple times
+            while(($index = array_search($ranking->getEntityKey(), $opponentKeysToBeFound)) !== false) {
+                //this one is an opponent
+                $opponentRankings[] = $ranking;
+                unset($opponentKeysToBeFound[$index]);
             }
         }
         return $opponentRankings;
@@ -102,7 +107,7 @@ class RankingDuel extends AbstractRanking
         // if none left, return 0
         if ($totalToSum < 1) return 0;
         $firstExcluded = 0;
-        foreach ($this->getOpponentRankings() as $rank => $ranking) {
+        foreach ($this->getOpponentRankings() as $ranking) {
             if ($firstExcluded < $extremeExclusion) {
                 // count exclusion for first ranks, and ignore these rankings
                 $firstExcluded++;
