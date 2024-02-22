@@ -199,6 +199,48 @@ class RankingDuel extends AbstractRanking
 
 
     /**
+     * Returns sum of opponents points, considering:
+     * - all points if player won against this opponent
+     * - half points if player drawn against this opponent
+     * - no point if player loss against this opponent
+     * @return float
+     */
+    public function getPointsNeustadtlSystem(): float
+    {
+        $sum = 0;
+        if (!$this->isAffected()) return 0;
+        $competition = $this->getAffectation();
+        foreach ($this->gameResults as $index => $result) {
+            // if loss, do nothing
+            if ($result == GameDuel::RESULT_LOSS) continue;
+
+            // get opponent points
+            $opponent = $this->opponentKeys[$index];
+            $opponentRanking = $competition->getPlayerRanking($opponent);
+            if (!$opponentRanking) continue;
+            $opponentPoints = $opponentRanking->getPoints();
+            if ($result == GameDuel::RESULT_DRAWN) {
+                // drawn: count half
+                $sum += $opponentPoints / 2;
+            } elseif ($result == GameDuel::RESULT_WON) {
+                // won: count all
+                $sum += $opponentPoints;
+            }
+        }
+        return $sum;
+    }
+
+    /**
+     * Add the square of current player points to the Neustadtl points
+     * @return float
+     */
+    public function getPointsSonnebornBergerSystem(): float
+    {
+        return $this->getPoints() ** 2 + $this->getPointsNeustadtlSystem();
+    }
+
+
+    /**
      * @return int
      */
     public function getPointsCumulative(): int
