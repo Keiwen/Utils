@@ -302,6 +302,16 @@ abstract class AbstractCompetition
         if (!empty($rankings)) {
             $firstRanking = reset($rankings);
             $rankingClass = get_class($firstRanking);
+
+            if ($firstRanking instanceof RankingDuel && !$byExpenses) {
+                // update point method before actually order
+                foreach ($rankings as $ranking) {
+                    /** @var RankingDuel $ranking */
+                    $ranking->updatePointMethodCalcul(false);
+                    $ranking->updatePointMethodCalcul(true);
+                }
+            }
+
             $rankingMethod = $byExpenses ? 'orderRankingsByExpenses' : 'orderRankings';
             usort($rankings, array($rankingClass, $rankingMethod));
             $rankings = array_reverse($rankings);
