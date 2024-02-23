@@ -247,13 +247,13 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
 
     public static function getMaxPointForAGame(): int
     {
-        return RankingDuel::getPointsForWon();
+        return RankingDuel::getPointsForWon(true);
     }
 
 
     public static function getMinPointForAGame(): int
     {
-        return RankingDuel::getPointsForLoss();
+        return RankingDuel::getPointsForLoss(true);
     }
 
     /**

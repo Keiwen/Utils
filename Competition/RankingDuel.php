@@ -9,6 +9,23 @@ class RankingDuel extends AbstractRanking
     const PERF_SCORE_AGAINST = 'scoreAgainst';
     const PERF_SCORE_DIFF = 'scoreDiff';
 
+    const POINT_METHOD_BASE = 'base';
+    const POINT_METHOD_SCOREFOR = 'scoreFor';
+    const POINT_METHOD_SCOREDIFF = 'scoreDiff';
+    const POINT_METHOD_CUMULATIVE = 'cumulative';
+    const POINT_METHOD_SOLKOFF = 'solkoff';
+    const POINT_METHOD_BUCHHOLZ = 'buchholz';
+    const POINT_METHOD_HARKNESS1 = 'harkness1';
+    const POINT_METHOD_HARKNESS2 = 'harkness2';
+    const POINT_METHOD_HARKNESS3 = 'harkness3';
+    const POINT_METHOD_KOYA = 'koya';
+    const POINT_METHOD_KOYA40 = 'koya40';
+    const POINT_METHOD_KOYA30 = 'koya30';
+    const POINT_METHOD_KOYA25 = 'koya25';
+    const POINT_METHOD_KOYA20 = 'koya20';
+    const POINT_METHOD_NEUSTADTL = 'neustadtl';
+    const POINT_METHOD_SONNEBORNBERGER = 'sonnebornBerger';
+
     protected $wonByForfeit = 0;
     protected $lossByForfeit = 0;
     protected $wonBye = 0;
@@ -19,6 +36,8 @@ class RankingDuel extends AbstractRanking
     /** @var AbstractCompetition $affectedTo */
     protected $affectedTo = null;
 
+    protected $lastPointMethodCalcul = 0;
+    protected $lastPointMethodTieBreakerCalcul = 0;
 
     protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
 
@@ -27,6 +46,9 @@ class RankingDuel extends AbstractRanking
         GameDuel::RESULT_DRAWN => 1,
         GameDuel::RESULT_LOSS => 0,
     );
+
+    protected static $pointMethod = self::POINT_METHOD_BASE;
+    protected static $pointMethodTieBreaker = self::POINT_METHOD_BASE;
 
 
     public function isAffected(): bool
@@ -109,7 +131,7 @@ class RankingDuel extends AbstractRanking
      * @param int $extremeExclusion exclude the first X and last X element
      * @return int
      */
-    public function getSumOfOpponentScores(int $extremeExclusion = 0): int
+    public function getSumOfOpponentsPoints(int $extremeExclusion = 0): int
     {
         // NOTE: this method could take some time to compute
         // we cannot store some kind of final result of this easily
@@ -142,7 +164,7 @@ class RankingDuel extends AbstractRanking
      */
     public function getPointsSolkoffSystem(): int
     {
-        return $this->getSumOfOpponentScores();
+        return $this->getSumOfOpponentsPoints();
     }
 
     /**
@@ -151,7 +173,7 @@ class RankingDuel extends AbstractRanking
      */
     public function getPointsBuchholzSystem(): int
     {
-        return $this->getAdjustedPoints() * $this->getSumOfOpponentScores();
+        return $this->getAdjustedPoints() * $this->getSumOfOpponentsPoints();
     }
 
 
@@ -164,7 +186,7 @@ class RankingDuel extends AbstractRanking
     public function getPointsHarknessSystem(int $harknessRank): int
     {
         if ($harknessRank < 1) $harknessRank = 1;
-        return $this->getSumOfOpponentScores($harknessRank);
+        return $this->getSumOfOpponentsPoints($harknessRank);
     }
 
     /**
@@ -253,6 +275,126 @@ class RankingDuel extends AbstractRanking
     }
 
 
+    /**
+     * @param bool $tieBreaker set true to return methods used for tie breaker
+     * @return string[] available methods
+     */
+    public static function getPointMethods(bool $tieBreaker = false): array
+    {
+        if ($tieBreaker) {
+            return array(
+                self::POINT_METHOD_BASE,
+                self::POINT_METHOD_SCOREFOR,
+                self::POINT_METHOD_SCOREDIFF,
+                self::POINT_METHOD_CUMULATIVE,
+                self::POINT_METHOD_SOLKOFF,
+                self::POINT_METHOD_HARKNESS1,
+                self::POINT_METHOD_HARKNESS2,
+                self::POINT_METHOD_HARKNESS3,
+                self::POINT_METHOD_NEUSTADTL,
+                self::POINT_METHOD_KOYA,
+                self::POINT_METHOD_KOYA40,
+                self::POINT_METHOD_KOYA30,
+                self::POINT_METHOD_KOYA25,
+                self::POINT_METHOD_KOYA20,
+            );
+        }
+        return array(
+            self::POINT_METHOD_BASE,
+            self::POINT_METHOD_SCOREFOR,
+            self::POINT_METHOD_SCOREDIFF,
+            self::POINT_METHOD_CUMULATIVE,
+            self::POINT_METHOD_BUCHHOLZ,
+            self::POINT_METHOD_SONNEBORNBERGER,
+        );
+    }
+
+    public static function getPointMethod(): string
+    {
+        return static::$pointMethod;
+    }
+
+    public static function setPointMethod(string $method): bool
+    {
+        if (in_array($method, static::getPointMethods())) {
+            static::$pointMethod = $method;
+            return true;
+        }
+        return false;
+    }
+
+    public static function getPointMethodTieBreaker(): string
+    {
+        return static::$pointMethodTieBreaker;
+    }
+
+    public static function setPointMethodTieBreaker(string $method): bool
+    {
+        if (in_array($method, static::getPointMethods(true))) {
+            static::$pointMethodTieBreaker = $method;
+            return true;
+        }
+        return false;
+    }
+
+    public function updatePointMethodCalcul(bool $tieBreaker = false)
+    {
+        // do not update for conbined rankings
+        if ($this->combinedRankings >= 1) {
+            return;
+        }
+        $method = $tieBreaker ? static::$pointMethodTieBreaker : static::$pointMethod;
+        switch ($method) {
+            case self::POINT_METHOD_SCOREFOR:
+                $points = $this->getScoreFor(); break;
+            case self::POINT_METHOD_SCOREDIFF:
+                $points = $this->getScoreDiff(); break;
+            case self::POINT_METHOD_CUMULATIVE:
+                $points = $this->getPointsCumulative(); break;
+            case self::POINT_METHOD_SOLKOFF:
+                $points = $this->getPointsSolkoffSystem(); break;
+            case self::POINT_METHOD_BUCHHOLZ:
+                $points = $this->getPointsBuchholzSystem(); break;
+            case self::POINT_METHOD_HARKNESS1:
+                $points = $this->getPointsHarknessSystem(1); break;
+            case self::POINT_METHOD_HARKNESS2:
+                $points = $this->getPointsHarknessSystem(2); break;
+            case self::POINT_METHOD_HARKNESS3:
+                $points = $this->getPointsHarknessSystem(3); break;
+            case self::POINT_METHOD_NEUSTADTL:
+                $points = $this->getPointsNeustadtlSystem(); break;
+            case self::POINT_METHOD_SONNEBORNBERGER:
+                $points = $this->getPointsSonnebornBergerSystem(); break;
+            case self::POINT_METHOD_KOYA:
+                $points = $this->getPointsKoyaSystem(); break;
+            case self::POINT_METHOD_KOYA40:
+                $points = $this->getPointsKoyaSystem(0.4); break;
+            case self::POINT_METHOD_KOYA30:
+                $points = $this->getPointsKoyaSystem(0.3); break;
+            case self::POINT_METHOD_KOYA25:
+                $points = $this->getPointsKoyaSystem(0.25); break;
+            case self::POINT_METHOD_KOYA20:
+                $points = $this->getPointsKoyaSystem(0.2); break;
+            case self::POINT_METHOD_BASE;
+            default:
+                $points = $this->getPoints();
+        }
+
+        if ($tieBreaker) {
+            $this->lastPointMethodTieBreakerCalcul = $points;
+        } else {
+            $this->lastPointMethodCalcul = $points;
+        }
+    }
+
+
+    /**
+     * @return int|float
+     */
+    public function getPointsInMethod(bool $tieBreaker = false)
+    {
+        return $tieBreaker ? $this->lastPointMethodTieBreakerCalcul : $this->lastPointMethodCalcul;
+    }
 
     public function getWon(): int
     {
@@ -299,19 +441,56 @@ class RankingDuel extends AbstractRanking
         return $this->getPerformanceTotal(self::PERF_SCORE_DIFF);
     }
 
-    public static function getPointsForWon(): int
+    public static function getPointsForWon(bool $inMethod = false): int
     {
-        return static::getPointsForResult(GameDuel::RESULT_WON);
+        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_WON);
+        switch (static::$pointMethod) {
+            case self::POINT_METHOD_SCOREFOR:
+            case self::POINT_METHOD_SCOREDIFF:
+            case self::POINT_METHOD_CUMULATIVE:
+            case self::POINT_METHOD_BUCHHOLZ:
+            case self::POINT_METHOD_SONNEBORNBERGER:
+                // is variable
+                return -1;
+            case self::POINT_METHOD_BASE:
+            default:
+                return static::getPointsForResult(GameDuel::RESULT_WON);
+        }
     }
 
-    public static function getPointsForDrawn(): int
+    public static function getPointsForDrawn(bool $inMethod = false): int
     {
-        return static::getPointsForResult(GameDuel::RESULT_DRAWN);
+        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_DRAWN);
+        switch (static::$pointMethod) {
+            case self::POINT_METHOD_SCOREFOR:
+            case self::POINT_METHOD_SCOREDIFF:
+            case self::POINT_METHOD_CUMULATIVE:
+            case self::POINT_METHOD_BUCHHOLZ:
+            case self::POINT_METHOD_SONNEBORNBERGER:
+                // is variable
+                return -1;
+            case self::POINT_METHOD_BASE:
+            default:
+                return static::getPointsForResult(GameDuel::RESULT_DRAWN);
+        }
     }
 
-    public static function getPointsForLoss(): int
+    public static function getPointsForLoss(bool $inMethod = false): int
     {
-        return static::getPointsForResult(GameDuel::RESULT_LOSS);
+        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_LOSS);
+        switch (static::$pointMethod) {
+            case self::POINT_METHOD_SCOREFOR:
+            case self::POINT_METHOD_SCOREDIFF:
+            case self::POINT_METHOD_CUMULATIVE:
+            case self::POINT_METHOD_BUCHHOLZ:
+                // is variable
+                return -1;
+            case self::POINT_METHOD_SONNEBORNBERGER:
+                return static::getPointsForResult(GameDuel::RESULT_LOSS) ** 2;
+            case self::POINT_METHOD_BASE:
+            default:
+                return static::getPointsForResult(GameDuel::RESULT_LOSS);
+        }
     }
 
     protected function getLastCumulPoints(): int
@@ -504,8 +683,11 @@ class RankingDuel extends AbstractRanking
     {
         static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
-        if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
-        if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
+        if ($rankingA->getPointsInMethod() > $rankingB->getPointsInMethod()) return 1;
+        if ($rankingA->getPointsInMethod() < $rankingB->getPointsInMethod()) return -1;
+        // then compare points with tiebreaker method: more points is first
+        if ($rankingA->getPointsInMethod(true) > $rankingB->getPointsInMethod(true)) return 1;
+        if ($rankingA->getPointsInMethod(true) < $rankingB->getPointsInMethod(true)) return -1;
         // won games: more won is first
         if ($rankingA->getWon() > $rankingB->getWon()) return 1;
         if ($rankingA->getWon() < $rankingB->getWon()) return -1;
@@ -540,6 +722,8 @@ class RankingDuel extends AbstractRanking
             $this->lossByForfeit += $ranking->getLossByForfeit();
             $this->wonBye += $ranking->getWonBye();
             $this->opponentKeys = array_merge($this->opponentKeys, $ranking->getOpponentKeys());
+            $this->lastPointMethodCalcul += $ranking->getPointsInMethod();
+            $this->lastPointMethodTieBreakerCalcul += $ranking->getPointsInMethod(true);
         }
     }
 
