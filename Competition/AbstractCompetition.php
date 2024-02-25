@@ -2,6 +2,11 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Elo\EloDuel;
+use Keiwen\Utils\Elo\EloRace;
+use Keiwen\Utils\Elo\EloRating;
+use Keiwen\Utils\Elo\EloSystem;
+
 abstract class AbstractCompetition
 {
     /** @var array $playersSeeds key => seed */
@@ -25,6 +30,10 @@ abstract class AbstractCompetition
     /** @var AbstractRanking[] $teamRankings */
     protected $teamRankings = array();
 
+    protected $playerEloAccess = '';
+    protected $usingEloRating = false;
+    protected $usingEloInt = false;
+    protected $usingEloArray = false;
 
     public function __construct(array $players)
     {
@@ -218,6 +227,179 @@ abstract class AbstractCompetition
     }
 
     /**
+     * @param int|string $playerKey
+     * @param mixed $playerData
+     */
+    protected function setPlayer($playerKey, $playerData)
+    {
+        $this->players[$playerKey] = $playerData;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @return EloRating|null null if not found, not implemented or not EloRating
+     */
+    public function getPlayerEloRating($playerKey): ?EloRating
+    {
+        if (empty($this->playerEloAccess)) return null;
+        $playerData = $this->getPlayer($playerKey);
+        if (is_object($playerData)) {
+            if (method_exists($playerData, $this->playerEloAccess)) {
+                $eloRating = call_user_func(array($playerData, $this->playerEloAccess));
+                if ($eloRating instanceof EloRating) {
+                    // flag ELO use to true
+                    $this->usingEloRating = true;
+                    return $eloRating;
+                } else if (is_int($eloRating)) {
+                    $this->usingEloInt = true;
+                    return new EloRating($eloRating);
+                }
+            }
+        } elseif (is_array($playerData)) {
+            if (isset($playerData[$this->playerEloAccess])) {
+                $eloRating = $playerData[$this->playerEloAccess];
+                if ($eloRating instanceof EloRating) {
+                    // flag ELO use to true
+                    $this->usingEloRating = true;
+                    $this->usingEloArray = true;
+                    return $eloRating;
+                } else if (is_int($eloRating)) {
+                    $this->usingEloInt = true;
+                    $this->usingEloArray = true;
+                    return new EloRating($eloRating);
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param EloRating $eloRating
+     * @return bool
+     */
+    protected function setPlayerElo($playerKey, EloRating $eloRating): bool
+    {
+        if (empty($this->playerEloAccess)) return false;
+        if (!$this->usingEloArray && !$this->usingEloInt) return false;
+        $playerData = $this->getPlayer($playerKey);
+        if (is_object($playerData) && $this->usingEloInt) {
+            // if we have a player object:
+            // - we do not need to update anything if we have ELO object (updated by ref)
+            // - but we need to update player object if ELo received as int
+
+            // we should received a getter method, try to guess set method
+            // replace first 3 letters ('get'?) by 'set'
+            $setter = substr_replace($this->playerEloAccess, 'set', 0, 3);
+            if (method_exists($playerData, $setter)) {
+                call_user_func(array($playerData, $setter), $eloRating->getElo());
+                return true;
+            }
+        } elseif (is_array($playerData) && $this->usingEloArray) {
+            // if we have a player array:
+            // but always need to update player data
+            if (isset($playerData[$this->playerEloAccess])) {
+                if ($this->usingEloInt) {
+                    $playerData[$this->playerEloAccess] = $eloRating->getElo();
+                } else {
+                    $playerData[$this->playerEloAccess] = $eloRating;
+                }
+                $this->setPlayer($playerKey, $playerData);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Define method to call on player object to retrieve ELO Rating
+     * Competition must be provided with players as objects or array,
+     * containing a full ELORating object or just the int ELO value.
+     *
+     * For object player data, specify here the get method to ELO.
+     * If you are using ELORating as object, it will be automatically
+     * updated by object reference.
+     * If you are using ELO as int, your player class should also
+     * have a set method (same name, except with 'set' replacing 'get')
+     * with the ELO int value as a parameter, so that its value can be updated.
+     *
+     * For array player data, specify here the key to ELO.
+     * The same key will be used to update ELO data.
+     *
+     * If conditions are satisfied, competition will update player's ELO
+     * @param string $method name of method in player class returning ELO | name of the key in player data array returning ELO
+     */
+    public function setPlayerEloAccess(string $method)
+    {
+        $this->playerEloAccess = $method;
+    }
+
+    public function getPlayerEloAccess(): string
+    {
+        return $this->playerEloAccess;
+    }
+
+    public function isUsingElo(): bool
+    {
+        return !empty($this->playerEloAccess);
+    }
+
+
+    protected function updateEloForGame(AbstractGame $game): bool
+    {
+        if (!$game->isPlayed()) return false;
+        if ($game instanceof GameDuel) {
+            $eloHome = $this->getPlayerEloRating($game->getKeyHome());
+            $eloAway = $this->getPlayerEloRating($game->getKeyAway());
+            if (empty($eloHome) || empty($eloAway)) return false;
+            $eloDuel = new EloDuel($eloHome, $eloAway);
+            $gameHomeResult = $game->getPlayerResult($game->getKeyHome());
+            // convert to ELO result
+            switch ($gameHomeResult) {
+                case GameDuel::RESULT_WON: $gameHomeResult = EloSystem::WIN; break;
+                case GameDuel::RESULT_LOSS: $gameHomeResult = EloSystem::LOSS; break;
+                case GameDuel::RESULT_DRAWN: $gameHomeResult = EloSystem::TIE; break;
+                default: return false;
+            }
+            $eloDuel->updateElo($gameHomeResult);
+            if ($this->usingEloInt || $this->usingEloArray) {
+                $this->setPlayerElo($game->getKeyHome(), $eloHome);
+                $this->setPlayerElo($game->getKeyAway(), $eloAway);
+            }
+            return true;
+        } elseif ($game instanceof GameRace || $game instanceof GamePerformances) {
+            // get keys in resulting order
+            if ($game instanceof GameRace) {
+                $playerKeys = $game->getPositions();
+                $playerKeys = array_values($playerKeys);
+            } else if ($game instanceof GamePerformances) {
+                $playerKeys = $game->getGameRanks();
+                $playerKeys = array_keys($playerKeys);
+            }
+            // for now I have a list of keys
+            $playersElo = array();
+            foreach ($playerKeys as $playerKey) {
+                $playerElo = $this->getPlayerEloRating($playerKey);
+                if (empty($playerElo)) return false;
+                $playersElo[$playerKey] = $playerElo;
+            }
+
+            // now I have a array of key => ELORating
+            $eloRace = new EloRace($playersElo);
+            $eloRace->updateElo();
+            if ($this->usingEloInt || $this->usingEloArray) {
+                $playersElo = $eloRace->getResultingList();
+                foreach ($playersElo as $playerKey => $playerElo) {
+                    $this->setPlayerElo($playerKey, $playerElo);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * get game with a given number
      * @param int $gameNumber
      * @return AbstractGame|null game if found
@@ -286,6 +468,7 @@ abstract class AbstractCompetition
             $game = $this->getGameByNumber($gameNumber);
             if (!$game) continue;
             $this->updateRankingsForGame($game);
+            $this->updateEloForGame($game);
         }
         $this->orderedRankings = $this->orderRankings($this->rankings);
         $this->teamRankings = $this->computeTeamRankings();
