@@ -37,6 +37,8 @@ class EloBrawl extends EloRace
                 $duel = new EloDuel($competitor, $eloRating);
                 $gain += $duel->getGain(EloSystem::WIN);
             }
+            $gain = $gain / $this->competitorsCount;
+            $gain = round($gain);
             $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
             return $gain;
         } else {
@@ -44,6 +46,8 @@ class EloBrawl extends EloRace
             $firstRating = reset($this->rankedEloList);
             $duel = new EloDuel($competitor, $firstRating);
             $gain = $duel->getGain(EloSystem::LOSS);
+            $gain = $gain / $this->competitorsCount;
+            $gain = round($gain);
             $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
             return $gain;
         }
