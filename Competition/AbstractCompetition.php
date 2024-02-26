@@ -348,6 +348,59 @@ abstract class AbstractCompetition
     }
 
 
+    /**
+     * @param string|int $teamKey
+     * @return EloRating|null null if not found
+     */
+    public function getTeamEloRating($teamKey): ?EloRating
+    {
+        if (!$this->isUsingElo()) return null;
+        $playerKeys = $this->getPlayerKeysInTeam($teamKey);
+        if (empty($playerKeys)) return null;
+        $eloTeam = 0;
+        foreach ($playerKeys as $playerKey) {
+            $playerElo = $this->getPlayerEloRating($playerKey);
+            $eloTeam += $playerElo->getElo();
+        }
+        return new EloRating($eloTeam / count($playerKeys));
+    }
+
+
+    /**
+     * @return EloRating[] player key => EloRating, ordered from best to worst
+     */
+    public function getEloRankings(): array
+    {
+        if (!$this->isUsingElo()) return array();
+        $playerKeys = $this->getPlayerKeysSeeded();
+        $playerElo = array();
+        foreach ($playerKeys as $playerKey) {
+            $eloRating = $this->getPlayerEloRating($playerKey);
+            if (!empty($eloRating)) $playerElo[$playerKey] = $eloRating;
+        }
+        uasort($playerElo, array(EloRating::class, 'orderEloRating'));
+        $playerElo = array_reverse($playerElo, true);
+        return $playerElo;
+    }
+
+
+    /**
+     * @return EloRating[] team key => EloRating, ordered from best to worst
+     */
+    public function getTeamEloRankings(): array
+    {
+        if (!$this->isUsingElo()) return array();
+        $teamKeys = array_keys($this->getTeamComposition());
+        $teamElo = array();
+        foreach ($teamKeys as $teamKey) {
+            $eloRating = $this->getTeamEloRating($teamKey);
+            if (!empty($eloRating)) $teamElo[$teamKey] = $eloRating;
+        }
+        uasort($teamElo, array(EloRating::class, 'orderEloRating'));
+        $teamElo = array_reverse($teamElo, true);
+        return $teamElo;
+    }
+
     protected function updateEloForGame(AbstractGame $game): bool
     {
         if (!$game->isPlayed()) return false;
