@@ -13,13 +13,26 @@ class EloDuel
      * EloDuel constructor.
      * EloSystem should be common
      *
-     * @param EloRating $eloRating
-     * @param EloRating $eloRatingOpponent
+     * @param EloRating|int $eloRating
+     * @param EloRating|int $eloRatingOpponent
      */
-    public function __construct(EloRating $eloRating, EloRating $eloRatingOpponent)
+    public function __construct($elo, $eloOpponent)
     {
-        $this->eloRating = $eloRating;
-        $this->eloRatingOpponent = $eloRatingOpponent;
+        if (is_int($elo)) {
+            if (!is_int($eloOpponent)) {
+                throw new \RuntimeException('Invalid elo value');
+            }
+            $this->eloRating = new EloRating($elo);
+            $this->eloRatingOpponent = new EloRating($eloOpponent);
+        } else if ($elo instanceof EloRating) {
+            if (!$eloOpponent instanceof EloRating) {
+                throw new \RuntimeException('Invalid elo value');
+            }
+            $this->eloRating = $elo;
+            $this->eloRatingOpponent = $eloOpponent;
+        } else {
+            throw new \RuntimeException('Invalid elo value');
+        }
     }
 
     /**
