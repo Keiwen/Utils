@@ -103,4 +103,18 @@ class EloRating
         return $this->eloSystem;
     }
 
+
+    /**
+     * @param EloRating $eloA
+     * @param EloRating $eloB
+     * @return int
+     */
+    public static function orderEloRating(self $eloA, self $eloB): int
+    {
+        // more elo is first
+        if ($eloA->getElo() > $eloB->getElo()) return 1;
+        if ($eloA->getElo() < $eloB->getElo()) return -1;
+        return 0;
+    }
+
 }
