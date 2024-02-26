@@ -2,10 +2,12 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Elo\EloBrawl;
 use Keiwen\Utils\Elo\EloDuel;
 use Keiwen\Utils\Elo\EloRace;
 use Keiwen\Utils\Elo\EloRating;
 use Keiwen\Utils\Elo\EloSystem;
+use Keiwen\Utils\Mutator\ArrayMutator;
 
 abstract class AbstractCompetition
 {
@@ -390,6 +392,34 @@ abstract class AbstractCompetition
             $eloRace->updateElo();
             if ($this->usingEloInt || $this->usingEloArray) {
                 $playersElo = $eloRace->getResultingList();
+                foreach ($playersElo as $playerKey => $playerElo) {
+                    $this->setPlayerElo($playerKey, $playerElo);
+                }
+            }
+            return true;
+        } elseif ($game instanceof GameBrawl) {
+            // get keys
+            $playerKeys = $game->getPlayersKeys();
+            $playerKeys = array_values($playerKeys);
+            $winnerKey = $game->getWinnerKey();
+            // remove winner key from list
+            ArrayMutator::removeByValue($playerKeys, $winnerKey);
+            // create new array with winner key first
+            $playerKeys = array_merge(array($winnerKey), $playerKeys);
+
+            // for now I have a list of keys
+            $playersElo = array();
+            foreach ($playerKeys as $playerKey) {
+                $playerElo = $this->getPlayerEloRating($playerKey);
+                if (empty($playerElo)) return false;
+                $playersElo[$playerKey] = $playerElo;
+            }
+
+            // now I have a array of key => ELORating
+            $eloBrawl = new EloBrawl($playersElo);
+            $eloBrawl->updateElo();
+            if ($this->usingEloInt || $this->usingEloArray) {
+                $playersElo = $eloBrawl->getResultingList();
                 foreach ($playersElo as $playerKey => $playerElo) {
                     $this->setPlayerElo($playerKey, $playerElo);
                 }

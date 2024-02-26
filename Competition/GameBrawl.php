@@ -40,4 +40,15 @@ class GameBrawl extends AbstractGame
         return $this->getPlayerResult($playerKey) == self::RESULT_WON;
     }
 
+    /**
+     * @return string|int|null player key of null if not found
+     */
+    public function getWinnerKey()
+    {
+        $list = $this->getWinnerKeys();
+        if (empty($list)) return null;
+        $uniqueWinner = reset($list);
+        return $uniqueWinner;
+    }
+
 }
