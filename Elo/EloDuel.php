@@ -35,17 +35,6 @@ class EloDuel
         }
     }
 
-    /**
-     * EloSystem should be common
-     * @param int $elo
-     * @param int $eloOpponent
-     * @return static
-     */
-    public static function buildDuel(int $elo, int $eloOpponent)
-    {
-        return new static(new EloRating($elo), new EloRating($eloOpponent));
-    }
-
 
     /**
      * @return int
