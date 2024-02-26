@@ -7,7 +7,7 @@ class EloBrawl extends EloRace
 {
 
     /**
-     * EloRace constructor.
+     * EloBrawl constructor.
      *
      * @param EloRating[]|int[] $rankedEloList list of competitors elo (object or just int) with winner first
      */
