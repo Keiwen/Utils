@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipDuel extends AbstractFixedCalendarGame
+class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
 {
     protected $serieCount;
     protected $shuffleCalendar;

@@ -3,7 +3,7 @@
 namespace Keiwen\Utils\Competition;
 
 
-class CompetitionEliminationThreshold extends AbstractFixedCalendarGame
+class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
 {
     /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();

@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipBubble extends AbstractFixedCalendarGame
+class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
 {
 
     /** @var GameDuel[] $gameRepository */

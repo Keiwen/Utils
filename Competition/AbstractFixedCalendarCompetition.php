@@ -3,7 +3,7 @@
 namespace Keiwen\Utils\Competition;
 
 
-abstract class AbstractFixedCalendarGame extends AbstractCompetition
+abstract class AbstractFixedCalendarCompetition extends AbstractCompetition
 {
     protected $calendar;
 
