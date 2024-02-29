@@ -100,5 +100,15 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     }
 
 
+    /**
+     * @param CompetitionChampionshipBrawl $competition
+     * @param bool $ranked
+     * @return CompetitionChampionshipBrawl
+     * @throws CompetitionException
+     */
+    public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
+    {
+        return parent::newCompetitionWithSamePlayers($competition, $ranked);
+    }
 
 }
