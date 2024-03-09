@@ -13,6 +13,7 @@ class RankingDuel extends AbstractRanking
     const POINT_METHOD_SCOREFOR = 'scoreFor';
     const POINT_METHOD_SCOREDIFF = 'scoreDiff';
     const POINT_METHOD_CUMULATIVE = 'cumulative';
+    const POINT_METHOD_ROUNDREACHADD = 'roundReachAdd';
     const POINT_METHOD_SOLKOFF = 'solkoff';
     const POINT_METHOD_BUCHHOLZ = 'buchholz';
     const POINT_METHOD_HARKNESS1 = 'harkness1';
@@ -159,6 +160,16 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * Returns base points + max round reached
+     * Useful in tournaments where players could be eliminated
+     * @return int
+     */
+    public function getPointsRoundReachAdd(): int
+    {
+        return $this->getPoints() + $this->getMaxRoundReached();
+    }
+
+    /**
      * Returns sum of opponent scores
      * @return int
      */
@@ -287,6 +298,7 @@ class RankingDuel extends AbstractRanking
                 self::POINT_METHOD_SCOREFOR,
                 self::POINT_METHOD_SCOREDIFF,
                 self::POINT_METHOD_CUMULATIVE,
+                self::POINT_METHOD_ROUNDREACHADD,
                 self::POINT_METHOD_SOLKOFF,
                 self::POINT_METHOD_HARKNESS1,
                 self::POINT_METHOD_HARKNESS2,
@@ -304,6 +316,7 @@ class RankingDuel extends AbstractRanking
             self::POINT_METHOD_SCOREFOR,
             self::POINT_METHOD_SCOREDIFF,
             self::POINT_METHOD_CUMULATIVE,
+            self::POINT_METHOD_ROUNDREACHADD,
             self::POINT_METHOD_BUCHHOLZ,
             self::POINT_METHOD_SONNEBORNBERGER,
         );
@@ -351,6 +364,8 @@ class RankingDuel extends AbstractRanking
                 $points = $this->getScoreDiff(); break;
             case self::POINT_METHOD_CUMULATIVE:
                 $points = $this->getPointsCumulative(); break;
+            case self::POINT_METHOD_ROUNDREACHADD:
+                $points = $this->getPointsRoundReachAdd(); break;
             case self::POINT_METHOD_SOLKOFF:
                 $points = $this->getPointsSolkoffSystem(); break;
             case self::POINT_METHOD_BUCHHOLZ:
@@ -439,6 +454,11 @@ class RankingDuel extends AbstractRanking
     public function getScoreDiff(): int
     {
         return $this->getPerformanceTotal(self::PERF_SCORE_DIFF);
+    }
+
+    public function getMaxRoundReached(): int
+    {
+        return count($this->gameResults);
     }
 
     public static function getPointsForWon(bool $inMethod = false): int
@@ -694,6 +714,9 @@ class RankingDuel extends AbstractRanking
         // won bye games: less won for bye game is first
         if ($rankingA->getWonBye() < $rankingB->getWonBye()) return 1;
         if ($rankingA->getWonBye() > $rankingB->getWonBye()) return -1;
+        // round reach: higher round reach is first
+        if ($rankingA->getMaxRoundReached() > $rankingB->getMaxRoundReached()) return 1;
+        if ($rankingA->getMaxRoundReached() < $rankingB->getMaxRoundReached()) return -1;
 
         // then compare direct confrontations
         $directRanking = $rankingA->orderDirectDuelsAgainst($rankingB->getEntityKey());
