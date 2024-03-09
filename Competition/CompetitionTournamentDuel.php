@@ -12,6 +12,13 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
 
     protected $hasPlayIn = false;
     protected $qualifiedAfterPlayIn = array();
+    protected $includeThirdPlaceGame = false;
+
+    public function __construct(array $players, bool $includeThirdPlaceGame = false)
+    {
+        $this->includeThirdPlaceGame = $includeThirdPlaceGame;
+        parent::__construct($players);
+    }
 
 
     /**
@@ -53,6 +60,8 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             // initialize round count (without considering play-in yet)
             // equal to the power of 2 number of player (what we'll have with play-in if needed)
             $this->roundCount = $highestPowerof2;
+            // add additional round if third place game required
+            if ($this->includeThirdPlaceGame()) $this->roundCount++;
 
             if ($remainder != 0) {
                 // play-in is required with number of duel = remainder
@@ -135,9 +144,39 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             return;
         }
 
-        // check consistency: we should keep a number of players as a power of 2
         $numberOfPlayersLeft = count($previousWinners);
+
+        if ($numberOfPlayersLeft == 3 && $this->includeThirdPlaceGame()) {
+            // we just played third place game, so 3 winners: both finalists with bye game
+            // and winner of third place. So keep the first 2 winners and set the final round
+            $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
+            $this->consolidateCalendar();
+            return;
+        }
+
+        // check consistency: we should keep a number of players as a power of 2
         $this->checkPowerOf2NumberOfPlayer($numberOfPlayersLeft, $this->currentRound);
+
+        if ($numberOfPlayersLeft == 2 && $this->includeThirdPlaceGame()) {
+            // we have 2 finalists but a third place game is required!
+            // add bye for previous winners
+            $byeGame = $this->addGame($previousWinners[0], null, $this->currentRound);
+            $byeGame->setEndOfBye();
+            $byeGame = $this->addGame($previousWinners[1], null, $this->currentRound);
+            $byeGame->setEndOfBye();
+
+            // get looser of previous round (should always have 2 players)
+            $gamesInRound = $this->getGamesByRound($this->currentRound - 1);
+            $looserKeys = array();
+            foreach ($gamesInRound as $game) {
+                if (!$game->isPlayed()) continue;
+                $looserKeys[] = $game->hasAwayWon() ? $game->getKeyHome() : $game->getKeyAway();
+            }
+            // add the 3rd place game
+            $this->addGame($looserKeys[0], $looserKeys[1], $this->currentRound);
+            $this->consolidateCalendar();
+            return;
+        }
 
         // match previous winner 2 by 2
         for ($i = 0; $i < $numberOfPlayersLeft; $i += 2) {
@@ -244,6 +283,14 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     }
 
     /**
+     * @return bool
+     */
+    public function includeThirdPlaceGame(): bool
+    {
+        return $this->includeThirdPlaceGame;
+    }
+
+    /**
      * get games for given round
      * @param int $round
      * @return GameDuel[] games of the round
@@ -340,7 +387,9 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return parent::newCompetitionWithSamePlayers($competition, $ranked);
+        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->hasThirdPlaceGame());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
 
 }
