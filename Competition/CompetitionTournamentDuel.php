@@ -395,7 +395,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->hasThirdPlaceGame());
+        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->includeThirdPlaceGame());
         $newCompetition->setTeamComposition($competition->getTeamComposition());
         return $newCompetition;
     }
