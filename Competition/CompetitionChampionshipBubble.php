@@ -71,21 +71,22 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
         // first player is left aside on odd round
         $startFromSeed = Divisibility::isNumberOdd($this->currentRound) ? 2 : 1;
 
-        /*
-         * NOTE HERE when first player or last player are left aside, 2 possibilities
-         * FIRST ignore player: it will not play and will not register any result and related points
-         * => choice made for bubble
-         * SECOND give player a bye: it will register a win and related points
-         * => we do not need it in bubble case
-         * Just in case (game number will be computed automatically)
-         *      $byeGame = $this->addGame($this->getPlayerKeyOnSeed(1), null, $this->currentRound);
-         *      $byeGame->setEndOfBye();
-         */
+        if ($startFromSeed == 2) {
+            // if first player left aside, set a bye for him
+            $byeGame = $this->addGame($this->getPlayerKeyOnSeed(1), null, $this->currentRound);
+            $byeGame->setEndOfBye();
+        }
 
         // each seed will duel vs following seed
         // note that last seed is left aside one on two rounds (depend on player count odd/even)
         for ($homeSeed = $startFromSeed; $homeSeed <= ($this->playerCount - 1); $homeSeed += 2) {
             $this->addGame($this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($homeSeed + 1), $this->currentRound);
+        }
+
+        if ($homeSeed == ($this->playerCount)) {
+            // if last player left aside, set a bye for him
+            $byeGame = $this->addGame($this->getPlayerKeyOnSeed(($this->playerCount)), null, $this->currentRound);
+            $byeGame->setEndOfBye();
         }
 
         // consolidate calendar after each round games generation
@@ -162,6 +163,10 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
         $orderedRankings = array();
         $playerKeysSeeded = $this->getPlayerKeysSeeded();
         foreach ($playerKeysSeeded as $seed => $playerKey) {
+            /** @var RankingDuel $playerRanking */
+            $playerRanking = $rankings[$playerKey];
+            $playerRanking->updatePointMethodCalcul();
+            $playerRanking->updatePointMethodCalcul(true);
             $orderedRankings[] = $rankings[$playerKey];
         }
         return $orderedRankings;
