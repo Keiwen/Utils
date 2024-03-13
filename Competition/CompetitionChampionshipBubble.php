@@ -39,10 +39,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
     public static function getDefaultRoundCount(int $playersCount): int
     {
         // enough round for last player = player count
-        $roundCount = $playersCount;
-        // if round, 1 round can be removed
-        if (Divisibility::isNumberOdd($roundCount)) $roundCount--;
-        return $roundCount;
+        return $playersCount;
     }
 
     /**
