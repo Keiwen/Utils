@@ -13,10 +13,12 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     protected $hasPlayIn = false;
     protected $qualifiedAfterPlayIn = array();
     protected $includeThirdPlaceGame = false;
+    protected $bestSeedAlwaysHome = false;
 
-    public function __construct(array $players, bool $includeThirdPlaceGame = false)
+    public function __construct(array $players, bool $includeThirdPlaceGame = false, bool $bestSeedAlwaysHome = false)
     {
         $this->includeThirdPlaceGame = $includeThirdPlaceGame;
+        $this->bestSeedAlwaysHome = $bestSeedAlwaysHome;
         parent::__construct($players);
     }
 
@@ -300,6 +302,11 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         return $this->includeThirdPlaceGame;
     }
 
+    public function isBestSeedAlwaysHome(): bool
+    {
+        return $this->bestSeedAlwaysHome;
+    }
+
     /**
      * get games for given round
      * @param int $round
@@ -338,6 +345,15 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
      */
     protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
     {
+        if ($keyAway !== null && $this->isBestSeedAlwaysHome()) {
+            $seedHome = $this->getPlayerSeed($keyHome);
+            $seedAway = $this->getPlayerSeed($keyAway);
+            if ($seedAway < $seedHome) {
+                $tempKey = $keyAway;
+                $keyAway = $keyHome;
+                $keyHome = $tempKey;
+            }
+        }
         $gameDuel = new GameDuel($keyHome, $keyAway);
         $gameDuel->setCompetitionRound($round);
         $this->calendar[$round][] = $gameDuel;
@@ -404,7 +420,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->includeThirdPlaceGame());
+        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->includeThirdPlaceGame(), $competition->isBestSeedAlwaysHome());
         $newCompetition->setTeamComposition($competition->getTeamComposition());
         return $newCompetition;
     }
