@@ -66,7 +66,7 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
     }
 
 
-    public function getGameCountByPlayer(): int
+    public function getMinGameCountByPlayer(): int
     {
         return 1;
     }
@@ -158,6 +158,13 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
 
             $lastGame = $this->getGameByNumber($this->lastGameNumberAdded);
             $qualified = $lastGame->getPlayersKeysThatReachedPerformance($this->getMinPerformanceForRound($this->lastGameNumberAdded));
+            // store elimination round
+            $alreadyEliminated = array_keys($this->playerEliminationRound);
+            foreach ($this->getPlayerKeysSeeded() as $playerKey) {
+                if (!in_array($playerKey, $qualified) && !in_array($playerKey, $alreadyEliminated)) {
+                    $this->setPlayerEliminationRound($playerKey, $this->currentRound - 1);
+                }
+            }
             $newGame = $this->addGame($qualified, $potentialRound);
 
             // call back setNextGame

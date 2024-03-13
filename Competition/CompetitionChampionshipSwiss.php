@@ -39,11 +39,6 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
         return $ranking;
     }
 
-    public function getGameCountByPlayer(): int
-    {
-        return $this->roundCount;
-    }
-
     protected function generateCalendar(): void
     {
         // generate first round

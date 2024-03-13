@@ -57,9 +57,9 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
         return $ranking;
     }
 
-    public function getGameCountByPlayer(): int
+    public function getMinGameCountByPlayer(): int
     {
-        return round($this->roundCount / 2);
+        return round($this->getRoundCount() / 2);
     }
 
     protected function generateCalendar(): void

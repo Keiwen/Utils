@@ -48,10 +48,6 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
         return $this->shuffleCalendar;
     }
 
-    public function getGameCountByPlayer(): int
-    {
-        return ($this->playerCount - 1) * $this->serieCount;
-    }
 
     protected function generateCalendar(): void
     {

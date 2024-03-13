@@ -43,7 +43,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         return $ranking;
     }
 
-    public function getGameCountByPlayer(): int
+    public function getMinGameCountByPlayer(): int
     {
         return 1;
     }
@@ -131,13 +131,18 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     {
         $this->currentRound++;
 
-        // get winners of previous round
-        $previousWinners = $this->getRoundWinners($this->currentRound - 1);
+        // get winners and loosers of previous round
+        $previousLoosers = array();
+        $previousWinners = $this->getRoundWinners($this->currentRound - 1, $previousLoosers);
 
         if ($this->currentRound == 2 && $this->hasPlayIn()) {
             // We are just out of play-in, retrieve REMAINING players
             // = previous winners, that includes bye games
             $this->qualifiedAfterPlayIn = $previousWinners;
+            // store elimination round
+            foreach ($previousLoosers as $previousLooser) {
+                $this->setPlayerEliminationRound($previousLooser, $this->currentRound - 1);
+            }
             // regenerate calendar and consolidate
             $this->generateCalendar();
             $this->consolidateCalendar();
@@ -149,6 +154,8 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         if ($numberOfPlayersLeft == 3 && $this->includeThirdPlaceGame()) {
             // we just played third place game, so 3 winners: both finalists with bye game
             // and winner of third place. So keep the first 2 winners and set the final round
+            $this->setPlayerEliminationRound($previousLoosers[0], $this->currentRound - 1);
+            $this->setPlayerEliminationRound($previousWinners[2], $this->currentRound);
             $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
             $this->consolidateCalendar();
             return;
@@ -165,17 +172,15 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             $byeGame = $this->addGame($previousWinners[1], null, $this->currentRound);
             $byeGame->setEndOfBye();
 
-            // get looser of previous round (should always have 2 players)
-            $gamesInRound = $this->getGamesByRound($this->currentRound - 1);
-            $looserKeys = array();
-            foreach ($gamesInRound as $game) {
-                if (!$game->isPlayed()) continue;
-                $looserKeys[] = $game->hasAwayWon() ? $game->getKeyHome() : $game->getKeyAway();
-            }
             // add the 3rd place game
-            $this->addGame($looserKeys[0], $looserKeys[1], $this->currentRound);
+            $this->addGame($previousLoosers[0], $previousLoosers[1], $this->currentRound);
             $this->consolidateCalendar();
             return;
+        }
+
+        // store elimination round
+        foreach ($previousLoosers as $previousLooser) {
+            $this->setPlayerEliminationRound($previousLooser, $this->currentRound - 1);
         }
 
         // match previous winner 2 by 2
@@ -204,17 +209,20 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
 
     /**
      * @param int $round
+     * @param array $loosers
      * @return int[]|string[]
      */
-    public function getRoundWinners(int $round): array
+    public function getRoundWinners(int $round, array &$loosers = array()): array
     {
         $gamesInRound = $this->getGamesByRound($round);
         $winnerKeys = array();
+        $loosers = array();
         foreach ($gamesInRound as $game) {
             if (!$game->isPlayed()) continue;
             $winnerKeys[] = $game->hasAwayWon() ? $game->getKeyAway() : $game->getKeyHome();
             // we should not have drawn on tournament
             // but if drawn set, we consider that home won
+            $loosers[] = $game->hasAwayWon() ? $game->getKeyHome() : $game->getKeyAway();
         }
         return $winnerKeys;
     }

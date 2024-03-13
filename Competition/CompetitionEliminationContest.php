@@ -82,7 +82,7 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
     }
 
 
-    public function getGameCountByPlayer(): int
+    public function getMinGameCountByPlayer(): int
     {
         return 1;
     }
@@ -176,6 +176,11 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
             $lastGame = $this->getGameByNumber($this->lastGameNumberAdded);
             $keysRanked = array_keys($lastGame->getGameRanks());
             $nextRoundKeys = array_slice($keysRanked, 0, $playerCountExpected);
+            // store elimination round
+            $eliminatedKeys = array_slice($keysRanked, $playerCountExpected);
+            foreach ($eliminatedKeys as $eliminatedKey) {
+                $this->setPlayerEliminationRound($eliminatedKey, $this->currentRound - 1);
+            }
             $newGame = $this->addGame($nextRoundKeys, $potentialRound);
 
             // call back setNextGame

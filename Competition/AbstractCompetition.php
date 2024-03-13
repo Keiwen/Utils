@@ -21,6 +21,9 @@ abstract class AbstractCompetition
     /** @var array $teamComp team key => array of player keys */
     protected $teamComp = array();
 
+    /** @var array $playerEliminationRound key => round on which player has been eliminated */
+    protected $playerEliminationRound = array();
+
     /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
     protected $nextGameNumber = 1;
@@ -97,10 +100,40 @@ abstract class AbstractCompetition
         return count($this->gameRepository);
     }
 
-    public function getGameCountByPlayer(): int
+    public function getMinGameCountByPlayer(): int
     {
-        return count($this->gameRepository);
+        return $this->getRoundCount();
     }
+
+    /**
+     * @param int|string $playerKey specify to get max game count for a specific player (if competition includes some elimination)
+     * @return int
+     */
+    public function getMaxGameCountByPlayer($playerKey = null): int
+    {
+        $eliminationRound = 0;
+        if (!empty($playerKey)) $eliminationRound = $this->getPlayerEliminationRound($playerKey);
+        return $eliminationRound ?: $this->getRoundCount();
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $round
+     */
+    protected function setPlayerEliminationRound($playerKey, int $round)
+    {
+        $this->playerEliminationRound[$playerKey] = $round;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @return int 0 if not eliminated
+     */
+    protected function getPlayerEliminationRound($playerKey): int
+    {
+        return $this->playerEliminationRound[$playerKey] ?? 0;
+    }
+
 
     /**
      * @return AbstractGame[]
@@ -682,12 +715,7 @@ abstract class AbstractCompetition
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
         $playerRanking = $this->rankings[$playerKey] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
-        if (static::getMaxPointForAGame() === -1) return true;
-        $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $minPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMinPointForAGame();
-        $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $maxPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * static::getMaxPointForAGame();
-        return $maxPointsForPlayer >= $minPointsForRank;
+        return $this->canRankingReachRanking($playerRanking, $rankRanking);
     }
 
     /**
@@ -700,12 +728,23 @@ abstract class AbstractCompetition
         $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
         $playerRanking = $this->rankings[$playerKey] ?? null;
         if (empty($rankRanking) || empty($playerRanking)) return false;
+        return $this->canRankingReachRanking($rankRanking, $playerRanking);
+    }
+
+
+    /**
+     * @param AbstractRanking $rankingA
+     * @param AbstractRanking $rankingB
+     * @return bool true if rankingB can have points equal or greater
+     */
+    protected function canRankingReachRanking(AbstractRanking $rankingA, AbstractRanking $rankingB): bool
+    {
         if (static::getMaxPointForAGame() === -1) return true;
-        $toBePlayedForRank = $this->getGameCountByPlayer() - $rankRanking->getPlayed();
-        $maxPointsForRank = $rankRanking->getPoints() + $toBePlayedForRank * static::getMaxPointForAGame();
-        $toBePlayedForPlayer = $this->getGameCountByPlayer() - $playerRanking->getPlayed();
-        $minPointsForPlayer = $playerRanking->getPoints() + $toBePlayedForPlayer * static::getMinPointForAGame();
-        return $maxPointsForRank >= $minPointsForPlayer;
+        $toBePlayedA = $this->getMaxGameCountByPlayer($rankingA->getEntityKey()) - $rankingA->getPlayed();
+        $maxPointsA = $rankingA->getPoints() + $toBePlayedA * static::getMaxPointForAGame();
+        $toBePlayedB = $this->getMaxGameCountByPlayer($rankingB->getEntityKey()) - $rankingB->getPlayed();
+        $minPointsB = $rankingB->getPoints() + $toBePlayedB * static::getMinPointForAGame();
+        return $maxPointsA >= $minPointsB;
     }
 
     /**
