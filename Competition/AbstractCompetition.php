@@ -739,7 +739,12 @@ abstract class AbstractCompetition
      */
     protected function canRankingReachRanking(AbstractRanking $rankingA, AbstractRanking $rankingB): bool
     {
+        // if A already eliminated, cannot reach B
+        if ($this->getPlayerEliminationRound($rankingA->getEntityKey()) > 0) return false;
+
+        // if we do not know how many max point we can score, it's still reachable!
         if (static::getMaxPointForAGame() === -1) return true;
+
         $toBePlayedA = $this->getMaxGameCountByPlayer($rankingA->getEntityKey()) - $rankingA->getPlayed();
         $maxPointsA = $rankingA->getPoints() + $toBePlayedA * static::getMaxPointForAGame();
         $toBePlayedB = $this->getMaxGameCountByPlayer($rankingB->getEntityKey()) - $rankingB->getPlayed();
