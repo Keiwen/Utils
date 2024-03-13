@@ -246,7 +246,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
 
     public static function getMaxPointForAGame(): int
     {
-        return -1;
+        return 1;
     }
 
 
@@ -254,6 +254,39 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
     {
         return 0;
     }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $rank
+     * @return bool
+     */
+    public function canPlayerReachRank($playerKey, int $rank): bool
+    {
+        // in bubble competition, you can reach rank if you have enough games
+        $playerRanking = $this->rankings[$playerKey] ?? null;
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->getPlayerRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $return = $toBePlayedForPlayer >= ($playerRank - $rank);
+        return $return;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $rank
+     * @return bool
+     */
+    public function canPlayerDropToRank($playerKey, int $rank): bool
+    {
+        // in bubble competition, you can reach rank if you have enough games
+        $playerRanking = $this->rankings[$playerKey] ?? null;
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->getPlayerRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $return = $toBePlayedForPlayer >= ($rank - $playerRank);
+        return $return;
+    }
+
 
     /**
      * @param CompetitionChampionshipBubble $competition
