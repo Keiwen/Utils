@@ -215,12 +215,9 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
         parent::updateGamesPlayed();
 
         if ($this->nextGameNumber == -1) {
-            // we run out of games, check if new game needed
-            if ($this->currentRound >= $this->roundCount) {
-                // if current round is above defined round count, it's done!
-                return;
-            }
+            // we run out of games
 
+            // round is ended, update seeding
             $lastRoundGames = $this->getGamesByRound($this->currentRound);
             foreach ($lastRoundGames as $game) {
                 if ($game->hasAwayWon()) {
@@ -232,6 +229,12 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
             }
             // call back order rankings
             $this->orderedRankings = $this->orderRankings($this->rankings);
+
+            // check if new game needed
+            if ($this->currentRound >= $this->roundCount) {
+                // if current round is above defined round count, it's done!
+                return;
+            }
 
             $this->generateNextRoundGames();
 
