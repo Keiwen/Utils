@@ -468,6 +468,7 @@ class RankingDuel extends AbstractRanking
             case self::POINT_METHOD_SCOREFOR:
             case self::POINT_METHOD_SCOREDIFF:
             case self::POINT_METHOD_CUMULATIVE:
+            case self::POINT_METHOD_ROUNDREACHADD:
             case self::POINT_METHOD_BUCHHOLZ:
             case self::POINT_METHOD_SONNEBORNBERGER:
                 // is variable
@@ -485,6 +486,7 @@ class RankingDuel extends AbstractRanking
             case self::POINT_METHOD_SCOREFOR:
             case self::POINT_METHOD_SCOREDIFF:
             case self::POINT_METHOD_CUMULATIVE:
+            case self::POINT_METHOD_ROUNDREACHADD:
             case self::POINT_METHOD_BUCHHOLZ:
             case self::POINT_METHOD_SONNEBORNBERGER:
                 // is variable
@@ -507,6 +509,8 @@ class RankingDuel extends AbstractRanking
                 return -1;
             case self::POINT_METHOD_SONNEBORNBERGER:
                 return static::getPointsForResult(GameDuel::RESULT_LOSS) ** 2;
+            case self::POINT_METHOD_ROUNDREACHADD:
+                return 0;
             case self::POINT_METHOD_BASE:
             default:
                 return static::getPointsForResult(GameDuel::RESULT_LOSS);
