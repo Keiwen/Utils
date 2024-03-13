@@ -153,9 +153,11 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
 
         if ($numberOfPlayersLeft == 3 && $this->includeThirdPlaceGame()) {
             // we just played third place game, so 3 winners: both finalists with bye game
-            // and winner of third place. So keep the first 2 winners and set the final round
-            $this->setPlayerEliminationRound($previousLoosers[0], $this->currentRound - 1);
+            // and winner of third place.
+            // get players of third game and set their elimination round
+            $this->setPlayerEliminationRound($previousLoosers[2], $this->currentRound - 1);
             $this->setPlayerEliminationRound($previousWinners[2], $this->currentRound);
+            // Keep the first 2 winners and set the final round
             $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
             $this->consolidateCalendar();
             return;
@@ -365,6 +367,13 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             // we run out of games, check if new game needed
             if ($this->currentRound >= $this->roundCount) {
                 // if current round is above defined round count, it's done!
+
+                // store elimination round for the last one
+                $previousLoosers = array();
+                $this->getRoundWinners($this->roundCount, $previousLoosers);
+                foreach ($previousLoosers as $previousLooser) {
+                    $this->setPlayerEliminationRound($previousLooser, $this->roundCount);
+                }
                 return;
             }
             $lastGameNumber = count($this->gameRepository);
