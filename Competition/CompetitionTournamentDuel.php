@@ -6,6 +6,7 @@ use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
 {
+    use CompetitionTournamentTrait;
 
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
@@ -13,7 +14,6 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     protected $hasPlayIn = false;
     protected $qualifiedAfterPlayIn = array();
     protected $includeThirdPlaceGame = false;
-    protected $bestSeedAlwaysHome = false;
 
     public function __construct(array $players, bool $includeThirdPlaceGame = false, bool $bestSeedAlwaysHome = false)
     {
@@ -57,11 +57,11 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         if (!$this->hasPlayIn()) {
             // get the highest power of 2 that is <= to number of player
             $remainder = 0;
-            $highestPowerof2 = Divisibility::getHighestPowerOf($this->playerCount, 2, $remainder);
+            $highestPowerOf2 = Divisibility::getHighestPowerOf($this->playerCount, 2, $remainder);
 
             // initialize round count (without considering play-in yet)
             // equal to the power of 2 number of player (what we'll have with play-in if needed)
-            $this->roundCount = $highestPowerof2;
+            $this->roundCount = $highestPowerOf2;
             // add additional round if third place game required
             if ($this->includeThirdPlaceGame()) $this->roundCount++;
 
@@ -79,45 +79,9 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         $this->checkPowerOf2NumberOfPlayer($numberOfRemainingPlayers, $firstFinalRound);
 
 
-        // for each player in first half, match with last player available
-        // should be X (number of player) + 1 - first player seed
-        // for 8 players, we will have
-        // 1vs8, 2vs7, 3vs6, 4vs5
-        // note: do not add games yet because of next step
-        $duelTable = array();
-        for ($i = 1; $i <= $numberOfRemainingPlayers / 2; $i++) {
-            $duelTable[$i - 1][] = array(
-                'seedHome' => $i,
-                'seedAway' => $numberOfRemainingPlayers + 1 - $i,
-            );
-        }
-        // now we want to avoid duel between high seeds until the end
-        // to dispatch, each duel are set in a table part.
-        // while this table has more than 1 part,
-        // second half of parts are put in first half (in reversed order)
-        // for 8 players, we started with 4 parts
-        // first iteration will give
-        // PART1, PART2
-        // 1vs8, 2vs7
-        // 4vs5, 3vs6 (not 3vs6 and 4vs5, as we reversed)
-        // 2nd iteration will give
-        // PART1
-        // 1vs8
-        // 4vs5
-        // 2vs7
-        // 3vs6
-        // note: we always have halves in parts because number of player is power of 2
-        while (count($duelTable) > 1) {
-            $partCount = count($duelTable);
-            for ($i = $partCount / 2; $i < $partCount; $i++) {
-                $firstHalfPart = $partCount - $i - 1;
-                $duelTable[$firstHalfPart] = array_merge($duelTable[$firstHalfPart], $duelTable[$i]);
-                unset($duelTable[$i]);
-            }
-        }
-
-        // now that all are dispatched, add games
-        $duelTable = reset($duelTable);
+        // generate duel table
+        $duelTable = $this->generateDuelTable($numberOfRemainingPlayers);
+        // now that everything is dispatched, create games
         foreach ($duelTable as $duel) {
             // beware if we had a play-in: we must consider reseeding from this round
             // + now it's round 2 not one
@@ -133,17 +97,17 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     {
         $this->currentRound++;
 
-        // get winners and loosers of previous round
-        $previousLoosers = array();
-        $previousWinners = $this->getRoundWinners($this->currentRound - 1, $previousLoosers);
+        // get winners and losers of previous round
+        $previousLosers = array();
+        $previousWinners = $this->getRoundWinners($this->currentRound - 1, $previousLosers);
 
         if ($this->currentRound == 2 && $this->hasPlayIn()) {
             // We are just out of play-in, retrieve REMAINING players
             // = previous winners, that includes bye games
             $this->qualifiedAfterPlayIn = $previousWinners;
             // store elimination round
-            foreach ($previousLoosers as $previousLooser) {
-                $this->setPlayerEliminationRound($previousLooser, $this->currentRound - 1);
+            foreach ($previousLosers as $previousLoser) {
+                $this->setPlayerEliminationRound($previousLoser, $this->currentRound - 1);
             }
             // regenerate calendar and consolidate
             $this->generateCalendar();
@@ -157,7 +121,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             // we just played third place game, so 3 winners: both finalists with bye game
             // and winner of third place.
             // get players of third game and set their elimination round
-            $this->setPlayerEliminationRound($previousLoosers[2], $this->currentRound - 1);
+            $this->setPlayerEliminationRound($previousLosers[2], $this->currentRound - 1);
             $this->setPlayerEliminationRound($previousWinners[2], $this->currentRound);
             // Keep the first 2 winners and set the final round
             $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
@@ -177,14 +141,14 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             $byeGame->setEndOfBye();
 
             // add the 3rd place game
-            $this->addGame($previousLoosers[0], $previousLoosers[1], $this->currentRound);
+            $this->addGame($previousLosers[0], $previousLosers[1], $this->currentRound);
             $this->consolidateCalendar();
             return;
         }
 
         // store elimination round
-        foreach ($previousLoosers as $previousLooser) {
-            $this->setPlayerEliminationRound($previousLooser, $this->currentRound - 1);
+        foreach ($previousLosers as $previousLoser) {
+            $this->setPlayerEliminationRound($previousLoser, $this->currentRound - 1);
         }
 
         // match previous winner 2 by 2
@@ -194,43 +158,6 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
         // consolidate calendar after each round games generation
         $this->consolidateCalendar();
     }
-
-
-    /**
-     * @param int $numberOfPlayers
-     * @param int $round
-     * @return void
-     * @throws CompetitionException
-     */
-    protected function checkPowerOf2NumberOfPlayer(int $numberOfPlayers, int $round)
-    {
-        $remainder = 0;
-        Divisibility::getHighestPowerOf($numberOfPlayers, 2, $remainder);
-        if ($remainder > 0) {
-            throw new CompetitionException(sprintf('Cannot create next round with a number of players that is not a power of 2, %d given on round %d', $numberOfPlayers, $round));
-        }
-    }
-
-    /**
-     * @param int $round
-     * @param array $loosers
-     * @return int[]|string[]
-     */
-    public function getRoundWinners(int $round, array &$loosers = array()): array
-    {
-        $gamesInRound = $this->getGamesByRound($round);
-        $winnerKeys = array();
-        $loosers = array();
-        foreach ($gamesInRound as $game) {
-            if (!$game->isPlayed()) continue;
-            $winnerKeys[] = $game->hasAwayWon() ? $game->getKeyAway() : $game->getKeyHome();
-            // we should not have drawn on tournament
-            // but if drawn set, we consider that home won
-            $loosers[] = $game->hasAwayWon() ? $game->getKeyHome() : $game->getKeyAway();
-        }
-        return $winnerKeys;
-    }
-
 
     /**
      * Classic tournament uses a power of 2 number of players. If we have more, we use a play-in
@@ -300,11 +227,6 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     public function includeThirdPlaceGame(): bool
     {
         return $this->includeThirdPlaceGame;
-    }
-
-    public function isBestSeedAlwaysHome(): bool
-    {
-        return $this->bestSeedAlwaysHome;
     }
 
     /**
@@ -385,10 +307,10 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
                 // if current round is above defined round count, it's done!
 
                 // store elimination round for the last one
-                $previousLoosers = array();
-                $this->getRoundWinners($this->roundCount, $previousLoosers);
-                foreach ($previousLoosers as $previousLooser) {
-                    $this->setPlayerEliminationRound($previousLooser, $this->roundCount);
+                $previousLosers = array();
+                $this->getRoundWinners($this->roundCount, $previousLosers);
+                foreach ($previousLosers as $previousLoser) {
+                    $this->setPlayerEliminationRound($previousLoser, $this->roundCount);
                 }
                 return;
             }
