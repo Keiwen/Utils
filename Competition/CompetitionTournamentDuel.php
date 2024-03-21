@@ -15,10 +15,17 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
     protected $qualifiedAfterPlayIn = array();
     protected $includeThirdPlaceGame = false;
 
-    public function __construct(array $players, bool $includeThirdPlaceGame = false, bool $bestSeedAlwaysHome = false)
+    /**
+     * @param array $players
+     * @param bool $includeThirdPlaceGame set true to include a third place game
+     * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
+     * @param bool $preRoundShuffle set true to randomize matching before each round instead of following a fixed tree
+     */
+    public function __construct(array $players, bool $includeThirdPlaceGame = false, bool $bestSeedAlwaysHome = false, bool $preRoundShuffle = false)
     {
         $this->includeThirdPlaceGame = $includeThirdPlaceGame;
         $this->bestSeedAlwaysHome = $bestSeedAlwaysHome;
+        $this->preRoundShuffle = $preRoundShuffle;
         parent::__construct($players);
     }
 
@@ -151,10 +158,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             $this->setPlayerEliminationRound($previousLoser, $this->currentRound - 1);
         }
 
-        // match previous winner 2 by 2
-        for ($i = 0; $i < $numberOfPlayersLeft; $i += 2) {
-            $this->addGame($previousWinners[$i], $previousWinners[$i + 1], $this->currentRound);
-        }
+        $this->generateNextRoundForClassicRound($previousWinners);
         // consolidate calendar after each round games generation
         $this->consolidateCalendar();
     }
@@ -199,6 +203,25 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
             $this->addGame($this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($awaySeed), 1);
         }
     }
+
+    /**
+     * winners are matched 2 by 2
+     * @param array $winnerKeys
+     * @throws CompetitionException
+     */
+    protected function generateNextRoundForClassicRound(array $winnerKeys)
+    {
+        // shuffle if needed
+        if ($this->hasPreRoundShuffle()) {
+            shuffle($winnerKeys);
+        }
+
+        // match previous winner 2 by 2
+        for ($i = 0; $i < count($winnerKeys); $i += 2) {
+            $this->addGame($winnerKeys[$i], $winnerKeys[$i + 1], $this->currentRound);
+        }
+    }
+
 
     /**
      * @param int $playerSeed
@@ -342,7 +365,7 @@ class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->includeThirdPlaceGame(), $competition->isBestSeedAlwaysHome());
+        $newCompetition = new CompetitionTournamentDuel($competition->getPlayers($ranked), $competition->includeThirdPlaceGame(), $competition->isBestSeedAlwaysHome(), $competition->hasPreRoundShuffle());
         $newCompetition->setTeamComposition($competition->getTeamComposition());
         return $newCompetition;
     }

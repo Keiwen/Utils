@@ -6,11 +6,17 @@ use Keiwen\Utils\Math\Divisibility;
 trait CompetitionTournamentTrait
 {
     protected $bestSeedAlwaysHome = false;
+    protected $preRoundShuffle = false;
 
 
     public function isBestSeedAlwaysHome(): bool
     {
         return $this->bestSeedAlwaysHome;
+    }
+
+    public function hasPreRoundShuffle(): bool
+    {
+        return $this->preRoundShuffle;
     }
 
 

@@ -22,10 +22,15 @@ class CompetitionTournamentDoubleElimination extends AbstractFixedCalendarCompet
 
     protected $secondFinalRequired = false;
 
-    public function __construct(array $players, bool $bestSeedAlwaysHome = false)
+    /**
+     * @param array $players
+     * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
+     * @param bool $preRoundShuffle set true to randomize matching before each round instead of following a fixed tree
+     */
+    public function __construct(array $players, bool $bestSeedAlwaysHome = false, bool $preRoundShuffle = false)
     {
-        // TODO parameter to randomize games in each round, as well as for classic tournament
         $this->bestSeedAlwaysHome = $bestSeedAlwaysHome;
+        $this->preRoundShuffle = $preRoundShuffle;
         parent::__construct($players);
     }
 
@@ -210,6 +215,11 @@ class CompetitionTournamentDoubleElimination extends AbstractFixedCalendarCompet
                 $byeGame->setEndOfBye();
             }
         }
+        // shuffle if needed
+        if ($this->hasPreRoundShuffle()) {
+            shuffle($winnersFromWB);
+        }
+
         // match winners from WB 2 by 2
         for ($i = 0; $i < count($winnersFromWB); $i += 2) {
             $this->addGame($winnersFromWB[$i], $winnersFromWB[$i + 1], $this->currentRound);
@@ -249,6 +259,11 @@ class CompetitionTournamentDoubleElimination extends AbstractFixedCalendarCompet
             $losersKeyFromWB = array_reverse($losersKeyFromWB);
         }
 
+        // shuffle if needed
+        if ($this->hasPreRoundShuffle()) {
+            shuffle($losersKeyFromWB);
+        }
+
         // now match a WB loser vs LB winner
         // note: as we may have shuffled loser array, loop on winner array to keep LB orders
         for ($i = 0; $i < count($winnersFromLB); $i ++) {
@@ -280,6 +295,12 @@ class CompetitionTournamentDoubleElimination extends AbstractFixedCalendarCompet
                 $winnersFromLB[] = $winnerKey;
             }
         }
+
+        // shuffle if needed
+        if ($this->hasPreRoundShuffle()) {
+            shuffle($winnersFromLB);
+        }
+
         // match winners from LB 2 by 2
         for ($i = 0; $i < count($winnersFromLB); $i += 2) {
             $this->addGame($winnersFromLB[$i], $winnersFromLB[$i + 1], $this->currentRound);
@@ -447,7 +468,7 @@ class CompetitionTournamentDoubleElimination extends AbstractFixedCalendarCompet
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        $newCompetition = new CompetitionTournamentDoubleElimination($competition->getPlayers($ranked), $competition->isBestSeedAlwaysHome());
+        $newCompetition = new CompetitionTournamentDoubleElimination($competition->getPlayers($ranked), $competition->isBestSeedAlwaysHome(), $competition->hasPreRoundShuffle());
         $newCompetition->setTeamComposition($competition->getTeamComposition());
         return $newCompetition;
     }
