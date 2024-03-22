@@ -21,6 +21,9 @@ abstract class AbstractCompetition
     /** @var array $teamComp team key => array of player keys */
     protected $teamComp = array();
 
+    protected $promotionSpots = 0;
+    protected $relegationSpots = 0;
+
     /** @var array $playerEliminationRound key => round on which player has been eliminated */
     protected $playerEliminationRound = array();
 
@@ -863,6 +866,85 @@ abstract class AbstractCompetition
         if (empty($this->getGameCount())) return 0;
         return $this->getGameCount() - $this->getGamesCompletedCount();
     }
+
+
+    public function setPromotionSpots(int $spots)
+    {
+        $this->promotionSpots = $spots;
+    }
+
+    /**
+     * Get how many spots are opened for a promotion at the end of the competition
+     * @return int
+     */
+    public function getPromotionSpots(): int
+    {
+        return $this->promotionSpots;
+    }
+
+    /**
+     * @return int[]|string[]
+     */
+    public function getPlayerKeysForPromotion(): array
+    {
+        $rankedKeys = array();
+        $rankings = $this->getRankings();
+        $rankings = array_slice($rankings, 0, $this->getPromotionSpots());
+        foreach ($rankings as $ranking) {
+            $nextPlayerKey = $ranking->getEntityKey();
+            if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
+        }
+        return $rankedKeys;
+    }
+
+
+    public function setRelegationSpots(int $spots)
+    {
+        $this->relegationSpots = $spots;
+    }
+
+    /**
+     * Get how many spots are opened for a relegation at the end of the competition
+     * @return int
+     */
+    public function getRelegationSpots(): int
+    {
+        return $this->relegationSpots;
+    }
+
+    /**
+     * @return int[]|string[]
+     */
+    public function getPlayerKeysForRelegation(): array
+    {
+        if ($this->getRelegationSpots() == 0) return array();
+        $rankedKeys = array();
+        $rankings = $this->getRankings();
+        $rankings = array_slice($rankings, -($this->getRelegationSpots()));
+        foreach ($rankings as $ranking) {
+            $nextPlayerKey = $ranking->getEntityKey();
+            if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
+        }
+        return $rankedKeys;
+    }
+
+    /**
+     * @return int[]|string[]
+     */
+    public function getPlayerKeysForStagnation(): array
+    {
+        $rankedKeys = array();
+        $rankings = $this->getRankings();
+        $stagnationCount = $this->playerCount - $this->getPromotionSpots() - $this->getRelegationSpots();
+        if ($stagnationCount <= 0) return array();
+        $rankings = array_slice($rankings, $this->getPromotionSpots(), $stagnationCount);
+        foreach ($rankings as $ranking) {
+            $nextPlayerKey = $ranking->getEntityKey();
+            if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
+        }
+        return $rankedKeys;
+    }
+
 
     /**
      * @param AbstractCompetition $competition
