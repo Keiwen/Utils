@@ -203,9 +203,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         }
 
         // match winners from WB 2 by 2
-        for ($i = 0; $i < count($winnersFromWB); $i += 2) {
-            $this->addGame($winnersFromWB[$i], $winnersFromWB[$i + 1], $this->currentRound);
-        }
+        $this->matchPlayers2By2($winnersFromWB);
     }
 
     /**
@@ -284,9 +282,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         }
 
         // match winners from LB 2 by 2
-        for ($i = 0; $i < count($winnersFromLB); $i += 2) {
-            $this->addGame($winnersFromLB[$i], $winnersFromLB[$i + 1], $this->currentRound);
-        }
+        $this->matchPlayers2By2($winnersFromLB);
     }
 
     /**

@@ -111,6 +111,22 @@ abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompet
         return $winnerKeys;
     }
 
+
+    /**
+     * add games by matching given players 2 by 2, in received order
+     *
+     * @param array $playerKeys
+     * @throws CompetitionException
+     */
+    protected function matchPlayers2By2(array $playerKeys)
+    {
+        $playerKeys = array_values($playerKeys);
+        for ($i = 0; $i < count($playerKeys); $i += 2) {
+            $this->addGame($playerKeys[$i], $playerKeys[$i + 1], $this->currentRound);
+        }
+    }
+
+
     public function getMinGameCountByPlayer(): int
     {
         return 1;

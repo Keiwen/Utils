@@ -200,9 +200,7 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
         }
 
         // match previous winner 2 by 2
-        for ($i = 0; $i < count($winnerKeys); $i += 2) {
-            $this->addGame($winnerKeys[$i], $winnerKeys[$i + 1], $this->currentRound);
-        }
+        $this->matchPlayers2By2($winnerKeys);
     }
 
 
