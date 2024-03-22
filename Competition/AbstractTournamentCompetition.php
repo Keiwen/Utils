@@ -3,7 +3,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-trait CompetitionTournamentTrait
+abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompetition
 {
     protected $bestSeedAlwaysHome = false;
     protected $preRoundShuffle = false;

@@ -4,9 +4,8 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionTournamentDuel extends AbstractFixedCalendarCompetition
+class CompetitionTournamentDuel extends AbstractTournamentCompetition
 {
-    use CompetitionTournamentTrait;
 
     /** @var GameDuel[] $gameRepository */
     protected $gameRepository = array();
