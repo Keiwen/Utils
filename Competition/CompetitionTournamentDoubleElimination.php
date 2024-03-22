@@ -7,9 +7,6 @@ use Keiwen\Utils\Math\Divisibility;
 class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetition
 {
 
-    /** @var GameDuel[] $gameRepository */
-    protected $gameRepository = array();
-
     protected $winnerBracketRounds = array();
     protected $loserBracketRoundsMajor = array();
     protected $loserBracketRoundsMinor = array();

@@ -8,6 +8,9 @@ abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompet
     protected $bestSeedAlwaysHome = false;
     protected $preRoundShuffle = false;
 
+    /** @var GameDuel[] $gameRepository */
+    protected $gameRepository = array();
+
 
     public function isBestSeedAlwaysHome(): bool
     {

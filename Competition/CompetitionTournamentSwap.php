@@ -7,9 +7,6 @@ use Keiwen\Utils\Math\Divisibility;
 class CompetitionTournamentSwap extends AbstractTournamentCompetition
 {
 
-    /** @var GameDuel[] $gameRepository */
-    protected $gameRepository = array();
-
     /**
      * @param array $players
      * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
