@@ -218,13 +218,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
      */
     public function canPlayerReachRank($playerKey, int $rank): bool
     {
-        // in bubble competition, you can reach rank if you have enough games
-        $playerRanking = $this->rankings[$playerKey] ?? null;
-        if (empty($playerRanking)) return false;
-        $playerRank = $this->getPlayerRank($playerKey);
-        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
-        $return = $toBePlayedForPlayer >= ($playerRank - $rank);
-        return $return;
+        return $this->canPlayerReachSeed($playerKey, $rank);
     }
 
     /**
@@ -234,13 +228,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
      */
     public function canPlayerDropToRank($playerKey, int $rank): bool
     {
-        // in bubble competition, you can reach rank if you have enough games
-        $playerRanking = $this->rankings[$playerKey] ?? null;
-        if (empty($playerRanking)) return false;
-        $playerRank = $this->getPlayerRank($playerKey);
-        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
-        $return = $toBePlayedForPlayer >= ($rank - $playerRank);
-        return $return;
+        return $this->canPlayerDropToSeed($playerKey, $rank);
     }
 
 

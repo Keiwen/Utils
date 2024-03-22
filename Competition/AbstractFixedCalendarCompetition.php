@@ -210,4 +210,39 @@ abstract class AbstractFixedCalendarCompetition extends AbstractCompetition
 
 
 
+    /**
+     * @param int|string $playerKey
+     * @param int $seed
+     * @return bool
+     */
+    public function canPlayerReachSeed($playerKey, int $seed): bool
+    {
+        // in re-seeding competitions, you can reach seed if you have enough games
+        $playerRanking = $this->rankings[$playerKey] ?? null;
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->getPlayerRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $canReach = ($toBePlayedForPlayer >= ($playerRank - $seed));
+        return $canReach;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $seed
+     * @return bool
+     */
+    public function canPlayerDropToSeed($playerKey, int $seed): bool
+    {
+        // in re-seeding competitions, you can reach seed if you have enough games
+        $playerRanking = $this->rankings[$playerKey] ?? null;
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->getPlayerRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $canDrop = ($toBePlayedForPlayer >= ($seed - $playerRank));
+        return $canDrop;
+    }
+
+
+
+
 }
