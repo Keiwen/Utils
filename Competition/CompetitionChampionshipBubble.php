@@ -159,6 +159,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
      */
     protected function orderRankings(array $rankings, bool $byExpenses = false): array
     {
+        if ($byExpenses) return parent::orderRankings($rankings, true);
         // do not use classic rankings orderings: rank by player seeds instead
         return $this->orderRankingsBySeed($rankings);
     }
