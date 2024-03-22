@@ -111,5 +111,106 @@ trait CompetitionTournamentTrait
         return $winnerKeys;
     }
 
+    public function getMinGameCountByPlayer(): int
+    {
+        return 1;
+    }
+
+    public static function getMinPlayerCount(): int
+    {
+        return 4;
+    }
+
+
+    /**
+     * @param int|string $playerKey
+     * @param int $playerSeed
+     * @return RankingDuel
+     */
+    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    {
+        $ranking =  new RankingDuel($playerKey, $playerSeed);
+        $ranking->affectTo($this);
+        return $ranking;
+    }
+
+
+    /**
+     * get games for given round
+     * @param int $round
+     * @return GameDuel[] games of the round
+     */
+    public function getGamesByRound(int $round): array
+    {
+        return parent::getGamesByRound($round);
+    }
+
+    /**
+     * get game with a given number
+     * @param int $gameNumber
+     * @return GameDuel|null game if found
+     */
+    public function getGameByNumber(int $gameNumber): ?AbstractGame
+    {
+        return parent::getGameByNumber($gameNumber);
+    }
+
+    /**
+     * @return GameDuel[]
+     */
+    public function getGames(): array
+    {
+        return parent::getGames();
+    }
+
+    /**
+     * @param int|string $keyHome
+     * @param int|string $keyAway
+     * @param int $round
+     * @return GameDuel
+     * @throws CompetitionException
+     */
+    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
+    {
+        if ($keyAway !== null && $this->isBestSeedAlwaysHome()) {
+            $seedHome = $this->getPlayerSeed($keyHome);
+            $seedAway = $this->getPlayerSeed($keyAway);
+            if ($seedAway < $seedHome) {
+                $tempKey = $keyAway;
+                $keyAway = $keyHome;
+                $keyHome = $tempKey;
+            }
+        }
+        $gameDuel = new GameDuel($keyHome, $keyAway);
+        $gameDuel->setCompetitionRound($round);
+        $this->calendar[$round][] = $gameDuel;
+        return $gameDuel;
+    }
+
+    /**
+     * @param GameDuel $game
+     */
+    protected function updateRankingsForGame($game)
+    {
+        if (isset($this->rankings[$game->getKeyHome()])) {
+            ($this->rankings[$game->getKeyHome()])->saveGame($game);
+        }
+        if (isset($this->rankings[$game->getKeyAway()])) {
+            ($this->rankings[$game->getKeyAway()])->saveGame($game);
+        }
+    }
+
+    public static function getMaxPointForAGame(): int
+    {
+        return RankingDuel::getPointsForWon(true);
+    }
+
+
+    public static function getMinPointForAGame(): int
+    {
+        return RankingDuel::getPointsForLoss(true);
+    }
+
+
 
 }
