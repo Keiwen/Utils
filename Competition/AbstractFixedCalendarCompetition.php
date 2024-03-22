@@ -122,5 +122,92 @@ abstract class AbstractFixedCalendarCompetition extends AbstractCompetition
         return false;
     }
 
+    /**
+     * Call this method if players needs to be re-seeded after completing a round
+     * Only if GameDuel are used
+     */
+    protected function reseedPlayers()
+    {
+        $lastRoundGames = $this->getGamesByRound($this->currentRound);
+        foreach ($lastRoundGames as $game) {
+            if (!($game instanceof GameDuel)) continue;
+            if ($game->hasAwayWon()) {
+                // switch both seeds
+                $homeSeed = $this->getPlayerSeed($game->getKeyHome());
+                $this->playersSeeds[$game->getKeyHome()] = $homeSeed + 1;
+                $this->playersSeeds[$game->getKeyAway()] = $homeSeed;
+            }
+        }
+        // call back order rankings
+        $this->orderedRankings = $this->orderRankings($this->rankings);
+    }
+
+
+    /**
+     * On this ranking method, only seed is used to rank player
+     * This may require re-seeding during competition
+     * @param RankingDuel[] $rankings
+     * @return RankingDuel[]
+     */
+    protected function orderRankingsBySeed(array $rankings): array
+    {
+        // instead of classic rankings orderings, update player seeds
+        $orderedRankings = array();
+        $playerKeysSeeded = $this->getPlayerKeysSeeded();
+        foreach ($playerKeysSeeded as $seed => $playerKey) {
+            /** @var RankingDuel $playerRanking */
+            $playerRanking = $rankings[$playerKey];
+            if (!$playerRanking instanceof RankingDuel) continue;
+            $playerRanking->updatePointMethodCalcul();
+            $playerRanking->updatePointMethodCalcul(true);
+            $orderedRankings[] = $playerRanking;
+        }
+        return $orderedRankings;
+    }
+
+
+    /**
+     * On this ranking method, only seed is used to rank teams
+     * This may require re-seeding during competition
+     * @return RankingDuel[]
+     */
+    public function computeTeamRankingsBySeed(): array
+    {
+        $teamRankings = array();
+        $teamSeed = 1;
+        $teamBySeed = array();
+        // first get combined rankings while computing average seed of the team
+        foreach ($this->teamComp as $teamKey => $playerKeys) {
+            $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
+            if (!$teamRanking instanceof RankingDuel) continue;
+            $playerRankings = array();
+            $sumSeeds = 0;
+            foreach ($playerKeys as $playerKey) {
+                $playerRankings[] = $this->rankings[$playerKey];
+                $sumSeeds = $this->getPlayerSeed($playerKey);
+            }
+            $teamRanking->combinedRankings($playerRankings);
+
+            $teamRankings[$teamKey] = $teamRanking;
+
+            // if no player, set last seed as average
+            $averageSeed = empty($playerKeys) ? $this->playerCount : $sumSeeds / count($playerKeys);
+            $teamBySeed[$teamKey] = $averageSeed;
+            $teamSeed++;
+        }
+
+        // sort by average seed (so lowest is better)
+        asort($teamBySeed);
+
+        // reorder rankings with seeding
+        $orderedRankings = array();
+        foreach ($teamBySeed as $teamKey => $averageSeed) {
+            $orderedRankings[] = $teamRankings[$teamKey];
+        }
+
+        return $orderedRankings;
+    }
+
+
 
 }

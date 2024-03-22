@@ -153,60 +153,24 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
 
 
     /**
-     * @param AbstractRanking[] $rankings
+     * @param RankingDuel[] $rankings
      * @param bool $byExpenses
-     * @return AbstractRanking[]
+     * @return RankingDuel[]
      */
     protected function orderRankings(array $rankings, bool $byExpenses = false): array
     {
-        // do not use classic rankings orderings: update player seeds instead
-        $orderedRankings = array();
-        $playerKeysSeeded = $this->getPlayerKeysSeeded();
-        foreach ($playerKeysSeeded as $seed => $playerKey) {
-            /** @var RankingDuel $playerRanking */
-            $playerRanking = $rankings[$playerKey];
-            $playerRanking->updatePointMethodCalcul();
-            $playerRanking->updatePointMethodCalcul(true);
-            $orderedRankings[] = $rankings[$playerKey];
-        }
-        return $orderedRankings;
+        // do not use classic rankings orderings: rank by player seeds instead
+        return $this->orderRankingsBySeed($rankings);
     }
 
 
+    /**
+     * @return RankingDuel[]
+     */
     public function computeTeamRankings(): array
     {
-        $teamRankings = array();
-        $teamSeed = 1;
-        $teamBySeed = array();
-        // first get combined rankings while computing average seed of the team
-        foreach ($this->teamComp as $teamKey => $playerKeys) {
-            $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
-            $playerRankings = array();
-            $sumSeeds = 0;
-            foreach ($playerKeys as $playerKey) {
-                $playerRankings[] = $this->rankings[$playerKey];
-                $sumSeeds = $this->getPlayerSeed($playerKey);
-            }
-            $teamRanking->combinedRankings($playerRankings);
-
-            $teamRankings[$teamKey] = $teamRanking;
-
-            // if no player, set last seed as average
-            $averageSeed = empty($playerKeys) ? $this->playerCount : $sumSeeds / count($playerKeys);
-            $teamBySeed[$teamKey] = $averageSeed;
-            $teamSeed++;
-        }
-
-        // sort by average seed (so lowest is better)
-        asort($teamBySeed);
-
-        // reorder rankings with seeding
-        $orderedRankings = array();
-        foreach ($teamBySeed as $teamKey => $averageSeed) {
-            $orderedRankings[] = $teamRankings[$teamKey];
-        }
-
-        return $orderedRankings;
+        // do not use classic rankings computing: rank by average players seeds instead
+        return $this->computeTeamRankingsBySeed();
     }
 
 
@@ -218,17 +182,7 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
             // we run out of games
 
             // round is ended, update seeding
-            $lastRoundGames = $this->getGamesByRound($this->currentRound);
-            foreach ($lastRoundGames as $game) {
-                if ($game->hasAwayWon()) {
-                    // switch both seeds
-                    $homeSeed = $this->getPlayerSeed($game->getKeyHome());
-                    $this->playersSeeds[$game->getKeyHome()] = $homeSeed + 1;
-                    $this->playersSeeds[$game->getKeyAway()] = $homeSeed;
-                }
-            }
-            // call back order rankings
-            $this->orderedRankings = $this->orderRankings($this->rankings);
+            $this->reseedPlayers();
 
             // check if new game needed
             if ($this->currentRound >= $this->roundCount) {
@@ -236,10 +190,11 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
                 return;
             }
 
+            $lastGameNumber = count($this->gameRepository);
             $this->generateNextRoundGames();
 
             // call back setNextGame with last game number
-            $this->setNextGame($game->getGameNumber() + 1);
+            $this->setNextGame($lastGameNumber + 1);
         }
     }
 
