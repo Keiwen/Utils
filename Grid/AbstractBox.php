@@ -31,13 +31,13 @@ abstract class AbstractBox
 
     /**
      * @param int[] $coord
-     * @throws KeiwenGridException Invalid coordinates
+     * @throws GridException Invalid coordinates
      */
     public function moveTo(array $coord)
     {
         $msg = '';
         if(!AbstractGrid::isValidCoord($coord, $msg)) {
-            throw new KeiwenGridException($msg);
+            throw new GridException($msg);
         }
         $this->coord = array_values($coord);
     }

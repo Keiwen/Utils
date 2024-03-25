@@ -11,12 +11,12 @@ class HexagonVerticalGrid extends AbstractGrid
     /**
      * If no border, max height should be even
      * @inheritdoc
-     * @throws KeiwenGridException odd height without border
+     * @throws GridException odd height without border
      */
     public function __construct(int $maxWidth = 0, int $maxHeight = 0, bool $hasBorder = true)
     {
         if(!$hasBorder && $maxHeight > 0 && !Divisibility::isNumberEven($maxHeight)) {
-            throw new KeiwenGridException('HexagonVerticalGrid without border should have maxHeight as even number');
+            throw new GridException('HexagonVerticalGrid without border should have maxHeight as even number');
         }
         parent::__construct($maxWidth, $maxHeight, $hasBorder);
     }
