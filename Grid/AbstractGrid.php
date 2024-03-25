@@ -162,7 +162,7 @@ abstract class AbstractGrid
             return false;
         }
         $coord = array_values($coord);
-        if(!is_int($coord[0] || !is_int($coord[1]))) {
+        if(!is_int($coord[0]) || !is_int($coord[1])) {
             $msg = 'Coordinates should be integers';
             return false;
         }
