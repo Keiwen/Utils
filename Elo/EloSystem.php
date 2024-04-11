@@ -17,6 +17,7 @@ class EloSystem
     protected $defaultKFactor = 20;
     protected $kFactorGainCountModifier = array(0 => 0);
     protected $kFactorEloModifier = array(0 => 0);
+    protected $scoreFactorDivider = 100;
 
 
     /**
@@ -260,5 +261,71 @@ class EloSystem
     {
         return static::adjustMaxLimit($gain, $this->getMaxGain());
     }
+
+
+    /**
+     * @param int $scoreFactorDivider
+     */
+    public function setScoreFactorDivider(int $scoreFactorDivider)
+    {
+        $this->scoreFactorDivider = $scoreFactorDivider;
+    }
+
+    /**
+     * Default score factor divider
+     * Set to 0 will de-activate score factor
+     * @see getScoreFactor()
+     * @return int
+     */
+    public function getScoreFactorDivider()
+    {
+        return $this->scoreFactorDivider;
+    }
+
+
+    /**
+     * Value that may used to adjust match/competition gain according to score difference.
+     * By default this factor can vary between 1 (no impact) to 2 (double gain).
+     * Default function is 2 - (1/ (1 + (scoreDiff**3 / divider) )).
+     * With divider = 100, factor 2 is approached (1.9) with a 10 difference.
+     * Increasing this divider will increase the 'range' of this function.
+     * @param int $scoreDiff
+     * @return float
+     */
+    public function getScoreFactor(int $scoreDiff): float
+    {
+        // you can override this method to set exactly what you want/need
+        // IMPORTANT default factor should still be 1 with no impact when
+        // score diff is 0 (include cases when scores are not managed)
+
+        // if parameter set to 0, just ignore this factor
+        if (static::getScoreFactorDivider() == 0) return 1;
+
+        // gain or loss is defined in gain methods, so we consider here the absolute value of score diff
+        if ($scoreDiff < 0) $scoreDiff = -$scoreDiff;
+
+        // we choose here to use a transfer function to adjust a low limit (1, no impact)
+        // and high limit (2, double the gain, going above does not sounds relevant by default).
+        // so we will have base function: 2 - ( 1/(1 + (x^b / a) ) )
+        // b is the order of transfer function will impact on the curve slope, we choose here 3rd order
+        // a is a divider that will impact on the curve slope range
+        // (from where we really take off from the minimum factor, set to 1
+        // to where we get close to the maximum factor, set to 2)
+        // we choose here 100 by default, that imply that we get close to max factor with a 10-diff score
+
+        // with these data:
+        // diff of 0: factor 1 (no change)
+        // diff of 2: factor 1.074 (slight increase)
+        // diff of 4: factor of 1.39 (around 40 % more gain)
+        // diff of 6: factor of 1.684 (around 70 % more gain)
+        // diff of 8: factor of 1.837 (around 85 % more gain)
+        // diff of 10: factor of 1.909 (almost reached 2)
+        // diff of 20: factor of 1.988 (not lot more than 10-diff)
+
+        $scoreFactor = 2 - (1/ (1 + ($scoreDiff**3 / static::getScoreFactorDivider()) ));
+
+        return $scoreFactor;
+    }
+
 
 }

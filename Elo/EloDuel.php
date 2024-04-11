@@ -59,16 +59,17 @@ class EloDuel
     /**
      * @param string|int $result
      * @param int|null   $opponentGain
+     * @param int        $scoreDiff score difference between player to adjust gain (if set)
      * @return int
      */
-    public function getGain($result, &$opponentGain = null)
+    public function getGain($result, &$opponentGain = null, int $scoreDiff = 0)
     {
         $resultFactor = $this->eloRating->getEloSystem()->getResultFactor($result);
-        $gain = $this->computeGain($resultFactor);
+        $gain = $this->computeGain($resultFactor, false, $scoreDiff);
         if($this->eloRating->getCurrentKFactor() == $this->eloRatingOpponent->getCurrentKFactor()) {
             $opponentGain = -$gain;
         } else {
-            $opponentGain = $this->computeGain($resultFactor, true);
+            $opponentGain = $this->computeGain($resultFactor, true, $scoreDiff);
         }
         return $gain;
     }
@@ -77,15 +78,17 @@ class EloDuel
     /**
      * @param EloRating $eloRating
      * @param float $resultFactor
+     * @param int $scoreDiff score difference between player to adjust gain (if set)
      * @return int
      */
-    protected function computeGain(float $resultFactor, bool $opponent = false)
+    protected function computeGain(float $resultFactor, bool $opponent = false, int $scoreDiff = 0)
     {
         $eloRating = $opponent ? $this->eloRatingOpponent : $this->eloRating;
         $kFactor = $eloRating->getCurrentKFactor();
         $multiplier = $resultFactor - $this->getWinProbability();
+        $scoreFactor = $eloRating->getEloSystem()->getScoreFactor($scoreDiff);
         if($opponent) $multiplier = 1 - $multiplier;
-        $floatGain = $kFactor * $multiplier;
+        $floatGain = $kFactor * $scoreFactor * $multiplier;
         $intGain = round($floatGain);
         $limitedGain = $eloRating->getEloSystem()->adjustGainLimit($intGain);
         return $limitedGain;
