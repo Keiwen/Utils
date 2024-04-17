@@ -160,9 +160,21 @@ abstract class AbstractEloMultiplayer
     {
         $eloList = array();
         foreach($this->eloList as $competitorKey => $competitor) {
-            $eloList[$competitorKey] = $this->getElo($competitorKey);
+            $eloList[$competitorKey] = $competitor->getElo();
         }
         return $eloList;
+    }
+
+    /**
+     * @return EloRating[]
+     */
+    public function getEloRatingList(): array
+    {
+        $eloRatingList = array();
+        foreach($this->eloList as $competitorKey => $competitor) {
+            $eloRatingList[$competitorKey] = $competitor;
+        }
+        return $eloRatingList;
     }
 
 }
