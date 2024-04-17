@@ -159,8 +159,9 @@ abstract class AbstractGrid
      * @param string $msg invalid message if return is false
      * @return bool
      */
-    static public function isValidCoord(array $coord, string &$msg = '')
+    static public function isValidCoord(?array $coord, string &$msg = ''): bool
     {
+        if ($coord == null) return false;
         if(count($coord) !== 2) {
             $msg = 'Coordinates should contain exactly 2 elements';
             return false;
@@ -171,6 +172,53 @@ abstract class AbstractGrid
             return false;
         }
         return true;
+    }
+
+    /**
+     * Call this function to adjust coord in 'normal grid', mainly for coord that should be out of the grid
+     * For example when you want to get [-1;-1]
+     * If there are borders and you are blocked by, this will return coord at the border ([0;0] in given example)
+     * If there are no border, this will adjust coord considering grid definition (last row and last column in given example)
+     * @param array $coord
+     * @param bool $blockedByBorder false by default: if there is border and coord are out of grid, coord cannot be found
+     * @return array|null null if coord cannot be adjusted
+     */
+    public function adjustCoord(array $coord, bool $blockedByBorder = false): ?array
+    {
+        if (!static::isValidCoord($coord)) return null;
+        // if already on grid, return as this
+        if ($this->isOnGrid($coord)) return $coord;
+        // if we have border, and not blocked by them, cannot do anything
+        if ($this->hasBorder() && !$blockedByBorder) return null;
+
+        $adjustedCoord = $coord;
+        if ($this->hasBorder()) {
+            // below min row
+            if ($adjustedCoord[0] < 0) $adjustedCoord[0] = 0;
+            // above max row
+            if ($adjustedCoord[0] >= $this->getMaxHeight()) $adjustedCoord[0] = $this->getMaxHeight() - 1;
+            // below min column
+            if ($adjustedCoord[1] < 0) $adjustedCoord[1] = 0;
+            // above max column
+            if ($adjustedCoord[1] >= $this->getMaxWidth()) $adjustedCoord[1] = $this->getMaxWidth() - 1;
+
+            return $adjustedCoord;
+        }
+
+        // no border, consider max offset
+        // should be RECURSIVE if user got coord really far away of 'normal grid'
+        // after some iteration, we will be on the grid and fall back to isOnGrid() check at the beginning
+
+        // below min row
+        if ($adjustedCoord[0] < 0) $adjustedCoord[0] += $this->getMaxHeight();
+        // above max row
+        if ($adjustedCoord[0] >= $this->getMaxHeight()) $adjustedCoord[0] -= $this->getMaxHeight();
+        // below min column
+        if ($adjustedCoord[1] < 0) $adjustedCoord[1] += $this->getMaxWidth();
+        // above max column
+        if ($adjustedCoord[1] >= $this->getMaxWidth()) $adjustedCoord[1] -= $this->getMaxWidth();
+
+        return $this->adjustCoord($adjustedCoord);
     }
 
 }
