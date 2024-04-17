@@ -12,9 +12,9 @@ class HexagonVerticalBox extends AbstractBox
     public function getNeighbor(int $direction): ?AbstractBox
     {
         $neighborsCoord = $this->coord;
-        $maxRowOffset = ceil($this->grid->getMaxHeight() / 2);
+        $maxColOffset = ceil($this->grid->getMaxWidth() / 2);
         switch($direction) {
-            case AbstractGrid::DIRECTION_UPRIGHT:
+            case AbstractGrid::DIRECTION_UP:
                 $neighborsCoord[0]--;
                 //if "out of grid"
                 if(!$this->grid->isOnGrid($neighborsCoord)) {
@@ -22,15 +22,10 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    if($neighborsCoord[0] === -1) {
-                        $neighborsCoord[0] = $this->grid->getMaxHeight() - 1;
-                        $neighborsCoord[1] += $maxRowOffset;
-                    } else {
-                        $neighborsCoord[1] -= $this->grid->getMaxWidth();
-                    }
+                    $neighborsCoord[0] += $this->grid->getMaxHeight();
                 }
                 break;
-            case AbstractGrid::DIRECTION_RIGHT:
+            case AbstractGrid::DIRECTION_UPRIGHT:
                 $neighborsCoord[1]++;
                 //if "out of grid"
                 if(!$this->grid->isOnGrid($neighborsCoord)) {
@@ -38,9 +33,16 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    $neighborsCoord[1] -= $this->grid->getMaxWidth();
+                    if($neighborsCoord[1] === $this->grid->getMaxWidth()) {
+                        $neighborsCoord[1] = 0;
+                        $neighborsCoord[0] -= $maxColOffset;
+                    } else {
+                        $neighborsCoord[0] += $this->grid->getMaxHeight();
+                    }
                 }
                 break;
+
+
             case AbstractGrid::DIRECTION_DOWNRIGHT:
                 $neighborsCoord[0]++;
                 $neighborsCoord[1]++;
@@ -50,19 +52,19 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    if($neighborsCoord[0] === $this->grid->getMaxHeight()) {
-                        $neighborsCoord[0] = 0;
-                        if($neighborsCoord[1] === $this->grid->getMaxWidth() + $maxRowOffset) {
-                            $neighborsCoord[1] = 0;
+                    if($neighborsCoord[1] === $this->grid->getMaxWidth()) {
+                        $neighborsCoord[1] = 0;
+                        if($neighborsCoord[0] === $this->grid->getMaxHeight() + $maxColOffset) {
+                            $neighborsCoord[0] = 0;
                         } else {
-                            $neighborsCoord[1] -= $maxRowOffset;
+                            $neighborsCoord[0] -= $maxColOffset;
                         }
                     } else {
-                        $neighborsCoord[1] -= $this->grid->getMaxWidth();
+                        $neighborsCoord[0] -= $this->grid->getMaxHeight();
                     }
                 }
                 break;
-            case AbstractGrid::DIRECTION_DOWNLEFT:
+            case AbstractGrid::DIRECTION_DOWN:
                 $neighborsCoord[0]++;
                 //if "out of grid"
                 if(!$this->grid->isOnGrid($neighborsCoord)) {
@@ -70,15 +72,10 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    if($neighborsCoord[0] === $this->grid->getMaxHeight()) {
-                        $neighborsCoord[0] = 0;
-                        $neighborsCoord[1] -= $maxRowOffset;
-                    } else {
-                        $neighborsCoord[1] += $this->grid->getMaxWidth();
-                    }
+                    $neighborsCoord[0] -= $this->grid->getMaxHeight();
                 }
                 break;
-            case AbstractGrid::DIRECTION_LEFT:
+            case AbstractGrid::DIRECTION_DOWNLEFT:
                 $neighborsCoord[1]--;
                 //if "out of grid"
                 if(!$this->grid->isOnGrid($neighborsCoord)) {
@@ -86,10 +83,17 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    $neighborsCoord[1] += $this->grid->getMaxWidth();
+                    if($neighborsCoord[1] === -1) {
+                        $neighborsCoord[1] = $this->grid->getMaxWidth() - 1;
+                        $neighborsCoord[0] += $maxColOffset;
+                    } else {
+                        $neighborsCoord[0] -= $this->grid->getMaxHeight();
+                    }
                 }
                 break;
             case AbstractGrid::DIRECTION_UPLEFT:
+
+
                 $neighborsCoord[0]--;
                 $neighborsCoord[1]--;
                 //if "out of grid"
@@ -98,15 +102,15 @@ class HexagonVerticalBox extends AbstractBox
                         //we have border => no neighbor
                         return null;
                     }
-                    if($neighborsCoord[0] === -1) {
-                        $neighborsCoord[0] = $this->grid->getMaxHeight() - 1;
-                        if($neighborsCoord[1] === -1) {
-                            $neighborsCoord[1] = $this->grid->getMaxWidth() + $maxRowOffset - 1;
+                    if($neighborsCoord[1] === -1) {
+                        $neighborsCoord[1] = $this->grid->getMaxWidth() - 1;
+                        if($neighborsCoord[0] === -1) {
+                            $neighborsCoord[0] = $this->grid->getMaxHeight() + $maxColOffset - 1;
                         } else {
-                            $neighborsCoord[1] += $maxRowOffset;
+                            $neighborsCoord[0] += $maxColOffset;
                         }
                     } else {
-                        $neighborsCoord[1] += $this->grid->getMaxWidth();
+                        $neighborsCoord[0] += $this->grid->getMaxHeight();
                     }
                 }
                 break;
