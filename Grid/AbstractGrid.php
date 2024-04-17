@@ -30,6 +30,10 @@ abstract class AbstractGrid
      */
     public function __construct(int $maxWidth = 0, int $maxHeight = 0, bool $hasBorder = true)
     {
+        if (!$hasBorder) {
+            if ($maxWidth <= 0) throw new GridException('A grid without border cannot have unlimited width');
+            if ($maxHeight <= 0) throw new GridException('A grid without border cannot have unlimited height');
+        }
         $this->maxWidth = $maxWidth;
         $this->maxHeight = $maxHeight;
         $this->hasBorder = $hasBorder;
