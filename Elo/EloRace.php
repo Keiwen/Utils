@@ -3,61 +3,54 @@
 namespace Keiwen\Utils\Elo;
 
 
-class EloRace
+class EloRace extends AbstractEloMultiplayer
 {
 
-    protected $rawList = array();
-    protected $rawListKeys = array();
-    protected $updatedList = array();
-    /** @var EloRating[] */
-    protected $rankedEloList;
-    protected $competitorsCount = 0;
-    protected $gains = array();
-
+    protected $rankedKeys = array();
 
     /**
-     * EloRace constructor.
-     *
-     * @param EloRating[]|int[] $rankedEloList list of competitors elo (object or just int) ranked
+     * @param int[]|string[] $rankedKeys ranked keys list, first to last
+     * @return int[] competitor key => gain
      */
-    public function __construct(array $rankedEloList)
+    public function getGains(array $rankedKeys = array())
     {
-        $this->rawList = $rankedEloList;
-        $this->rawListKeys = array_keys($rankedEloList);
-        $this->rankedEloList = $rankedEloList;
-        foreach($this->rankedEloList as &$competitor) {
-            if(!$competitor instanceof EloRating) {
-                if(!is_int($competitor)) throw new \RuntimeException('Invalid elo value');
-                $competitor = new EloRating($competitor);
-            }
+        $gains = array();
+        foreach($this->eloList as $competitorKey => $competitor) {
+            $gains[$competitorKey] = $this->getGain($competitorKey, $rankedKeys);
         }
-        unset($competitor);
-        $this->competitorsCount = count($this->rankedEloList);
-        $this->computeGains();
+        return $gains;
     }
 
 
     /**
-     * compute gain for specific competitor
-     * @param int $competitorIndex
+     * get gain for specific competitor
+     * @param int|string $competitorKey
+     * @param int[]|string[] $rankedKeys ranked keys list, first to last
      * @return int
      */
-    protected function computeGain(int $competitorIndex)
+    public function getGain($competitorKey, array $rankedKeys = array()): int
     {
-        $competitorKey = $this->rawListKeys[$competitorIndex];
-        $competitor = $this->rankedEloList[$competitorKey];
+        $competitor = $this->eloList[$competitorKey];
+
+        // if rankings not forced, try the one stored
+        if (empty($rankedKeys)) $rankedKeys = $this->rankedKeys;
+        // if no rankings, return 0
+        if (empty($rankedKeys)) return 0;
 
         $result = EloSystem::LOSS;
         $gain = 0;
-        foreach($this->rankedEloList as $key => $eloRating) {
-            if($key == $competitorKey) {
+        $opponentCount = 0;
+        foreach ($rankedKeys as $key) {
+            if ($key == $competitorKey) {
                 $result = EloSystem::WIN;
                 continue;
             }
-            $duel = new EloDuel($competitor, $eloRating);
+            if (!isset($this->eloList[$key])) continue;
+            $opponentCount++;
+            $duel = new EloDuel($competitor, $this->eloList[$key]);
             $gain += $duel->getGain($result);
         }
-        $gain = $gain / $this->competitorsCount;
+        $gain = $gain / $opponentCount;
         $gain = round($gain);
         $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
         return $gain;
@@ -65,67 +58,13 @@ class EloRace
 
 
     /**
-     * compute gain for all competitors
+     * @param int[]|string[] $rankedKeys ranked keys list, first to last
      */
-    protected function computeGains()
+    public function setResult(array $rankedKeys = array())
     {
-        $index = 0;
-        foreach($this->rankedEloList as $key => $competitor) {
-            $this->gains[$index + 1] = $this->computeGain($index);
-            $index++;
-        }
-    }
+        $this->rankedKeys = $rankedKeys;
 
-
-    /**
-     * get gain for specific competitor
-     * @param int $rank
-     * @return int
-     */
-    public function getGain(int $rank)
-    {
-        return $this->gains[$rank] ?? 0;
-    }
-
-    /**
-     * get gain for all competitors
-     * @return int[]
-     */
-    public function getGains()
-    {
-        return $this->gains;
-    }
-
-
-    /**
-     * update competitors values
-     */
-    public function updateElo()
-    {
-        if(!empty($this->updatedList)) return;
-
-        $this->updatedList = $this->rawList;
-        $rank = 0;
-        foreach($this->updatedList as $key => &$competitor) {
-            $rank++;
-            $gain = $this->getGain($rank);
-            if($competitor instanceof EloRating) {
-                $competitor->gainElo($gain);
-            } else {
-                //int
-                $competitor += $gain;
-            }
-        }
-    }
-
-
-    /**
-     * @return EloRating[]|int[]
-     */
-    public function getResultingList()
-    {
-        if(empty($this->updatedList)) $this->updateElo();
-        return $this->updatedList;
+        $this->updateElo();
     }
 
 }

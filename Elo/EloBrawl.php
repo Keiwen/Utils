@@ -3,34 +3,45 @@
 namespace Keiwen\Utils\Elo;
 
 
-class EloBrawl extends EloRace
+class EloBrawl extends AbstractEloMultiplayer
 {
+    protected $winnerKey = null;
+
 
     /**
-     * EloBrawl constructor.
-     *
-     * @param EloRating[]|int[] $rankedEloList list of competitors elo (object or just int) with winner first
+     * @param int|string $winnerKey specify value to check potential gain
+     * @return int[] competitor key => gain
      */
-    public function __construct(array $rankedEloList)
+    public function getGains($winnerKey = null)
     {
-        parent::__construct($rankedEloList);
+        $gains = array();
+        foreach($this->eloList as $competitorKey => $competitor) {
+            $gains[$competitorKey] = $this->getGain($competitorKey, $winnerKey);
+        }
+        return $gains;
     }
 
 
+
     /**
-     * compute gain for specific competitor
-     * @param int $competitorIndex
+     * get gain for specific competitor
+     * @param int|string $competitorKey
+     * @param int|string $winnerKey specify value to check potential gain
      * @return int
      */
-    protected function computeGain(int $competitorIndex)
+    public function getGain($competitorKey, $winnerKey = null): int
     {
-        $competitorKey = $this->rawListKeys[$competitorIndex];
-        $competitor = $this->rankedEloList[$competitorKey];
+        $competitor = $this->eloList[$competitorKey];
 
-        if ($competitorIndex == 0) {
+        // if winner not forced, try the one stored
+        if ($winnerKey == null) $winnerKey = $this->winnerKey;
+        // if no winner, return 0
+        if ($winnerKey == null) return 0;
+
+        if ($winnerKey == $competitorKey) {
             // win over all other
             $gain = 0;
-            foreach($this->rankedEloList as $key => $eloRating) {
+            foreach($this->eloList as $key => $eloRating) {
                 if($key == $competitorKey) {
                     continue;
                 }
@@ -43,15 +54,27 @@ class EloBrawl extends EloRace
             return $gain;
         } else {
             // loose against winner
-            $firstRating = reset($this->rankedEloList);
-            $duel = new EloDuel($competitor, $firstRating);
+            $winnerRating = $this->eloList[$winnerKey];
+            if (empty($winnerRating)) return 0;
+            $duel = new EloDuel($competitor, $winnerRating);
             $gain = $duel->getGain(EloSystem::LOSS);
             $gain = $gain / $this->competitorsCount;
             $gain = round($gain);
             $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
             return $gain;
         }
-
     }
+
+
+    /**
+     * @param int|string $winnerKey
+     */
+    public function setResult($winnerKey = null)
+    {
+        $this->winnerKey = $winnerKey;
+
+        $this->updateElo();
+    }
+
 
 }
