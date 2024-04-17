@@ -48,43 +48,4 @@ class HexagonHorizontalGrid extends AbstractGrid
         );
     }
 
-    /**
-     * @param int[] $coord
-     * @return bool
-     */
-    public function isOnGrid(array $coord): bool
-    {
-        if (!static::isValidCoord($coord)) return false;
-        //up
-        if ($coord[0] < 0) return false;
-        //bottom
-        if ($this->maxHeight !== 0 && $coord[0] >= $this->maxHeight) return false;
-
-        $rowOffset = ceil($coord[0] / 2);
-        //left
-        if($coord[1] < $rowOffset) return false;
-        //right
-        if ($this->maxWidth !== 0 && $coord[1] >= ($this->maxWidth + $rowOffset)) return false;
-
-        return true;
-    }
-
-
-    /**
-     * @param int[] $coord
-     * @return bool
-     */
-    public function isOnBorder(array $coord): bool
-    {
-        if (!static::isValidCoord($coord)) return false;
-        if (!$this->hasBorder) return false;
-        if ($coord[0] === 0) return true;
-        if ($this->maxHeight !== 0 && $coord[0] === $this->maxHeight - 1) return true;
-
-        $rowOffset = ceil($coord[0] / 2);
-        if($coord[1] === $rowOffset) return true;
-        if ($this->maxWidth !== 0 && $coord[1] === ($this->maxWidth + $rowOffset - 1)) return true;
-        return false;
-    }
-
 }

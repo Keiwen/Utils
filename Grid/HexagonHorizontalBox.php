@@ -1,6 +1,8 @@
 <?php
 namespace Keiwen\Utils\Grid;
 
+use Keiwen\Utils\Math\Divisibility;
+
 class HexagonHorizontalBox extends AbstractBox
 {
 
@@ -12,106 +14,44 @@ class HexagonHorizontalBox extends AbstractBox
     public function getNeighbor(int $direction): ?AbstractBox
     {
         $neighborsCoord = $this->coord;
-        $maxRowOffset = ceil($this->grid->getMaxHeight() / 2);
         switch($direction) {
             case AbstractGrid::DIRECTION_UPRIGHT:
                 $neighborsCoord[0]--;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    if($neighborsCoord[0] === -1) {
-                        $neighborsCoord[0] = $this->grid->getMaxHeight() - 1;
-                        $neighborsCoord[1] += $maxRowOffset;
-                    } else {
-                        $neighborsCoord[1] -= $this->grid->getMaxWidth();
-                    }
+                // on odd row, we have a column offset
+                if (Divisibility::isNumberOdd($this->coord[0])) {
+                    $neighborsCoord[1]++;
                 }
                 break;
             case AbstractGrid::DIRECTION_RIGHT:
                 $neighborsCoord[1]++;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    $neighborsCoord[1] -= $this->grid->getMaxWidth();
-                }
                 break;
             case AbstractGrid::DIRECTION_DOWNRIGHT:
                 $neighborsCoord[0]++;
-                $neighborsCoord[1]++;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    if($neighborsCoord[0] === $this->grid->getMaxHeight()) {
-                        $neighborsCoord[0] = 0;
-                        if($neighborsCoord[1] === $this->grid->getMaxWidth() + $maxRowOffset) {
-                            $neighborsCoord[1] = 0;
-                        } else {
-                            $neighborsCoord[1] -= $maxRowOffset;
-                        }
-                    } else {
-                        $neighborsCoord[1] -= $this->grid->getMaxWidth();
-                    }
+                // on odd row, we have a column offset
+                if (Divisibility::isNumberOdd($this->coord[0])) {
+                    $neighborsCoord[1]++;
                 }
                 break;
             case AbstractGrid::DIRECTION_DOWNLEFT:
                 $neighborsCoord[0]++;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    if($neighborsCoord[0] === $this->grid->getMaxHeight()) {
-                        $neighborsCoord[0] = 0;
-                        $neighborsCoord[1] -= $maxRowOffset;
-                    } else {
-                        $neighborsCoord[1] += $this->grid->getMaxWidth();
-                    }
+                // on even row, we have a column offset
+                if (Divisibility::isNumberEven($this->coord[0])) {
+                    $neighborsCoord[1]--;
                 }
                 break;
             case AbstractGrid::DIRECTION_LEFT:
                 $neighborsCoord[1]--;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    $neighborsCoord[1] += $this->grid->getMaxWidth();
-                }
                 break;
             case AbstractGrid::DIRECTION_UPLEFT:
                 $neighborsCoord[0]--;
-                $neighborsCoord[1]--;
-                //if "out of grid"
-                if(!$this->grid->isOnGrid($neighborsCoord)) {
-                    if($this->grid->hasBorder()) {
-                        //we have border => no neighbor
-                        return null;
-                    }
-                    if($neighborsCoord[0] === -1) {
-                        $neighborsCoord[0] = $this->grid->getMaxHeight() - 1;
-                        if($neighborsCoord[1] === -1) {
-                            $neighborsCoord[1] = $this->grid->getMaxWidth() + $maxRowOffset - 1;
-                        } else {
-                            $neighborsCoord[1] += $maxRowOffset;
-                        }
-                    } else {
-                        $neighborsCoord[1] += $this->grid->getMaxWidth();
-                    }
+                // on even row, we have a column offset
+                if (Divisibility::isNumberEven($this->coord[0])) {
+                    $neighborsCoord[1]--;
                 }
                 break;
             default: return null;
         }
+        $neighborsCoord = $this->grid->adjustCoord($neighborsCoord);
         if(!HexagonHorizontalGrid::isValidCoord($neighborsCoord)) return null;
         return $this->grid->getBox($neighborsCoord);
     }
