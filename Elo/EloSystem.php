@@ -197,21 +197,33 @@ class EloSystem
     }
 
     /**
+     * If competitor reach the threshold value for gain count (or games played),
+     * then modifier value is added to kfactor.
+     * No modifier set by default
+     *
+     * For example, addKFactorGainCountModifier(10, -20) will remove 20 to kfactor
+     * after he played his 10th game (10th not included)
      * @param int $threshold
-     * @param int $value
+     * @param int $modifier
      */
-    public function addKFactorGainCountModifier(int $threshold, int $value)
+    public function addKFactorGainCountModifier(int $threshold, int $modifier)
     {
-        $this->kFactorGainCountModifier[$threshold] = $value;
+        $this->kFactorGainCountModifier[$threshold] = $modifier;
     }
 
     /**
+     * If competitor reach the threshold value for ELO,
+     * then modifier value is added to kfactor.
+     * No modifier set by default
+     *
+     * For example, addKFactorEloModifier(1600, -10) will remove 10 to kfactor
+     * if competitor have ELO >= 1600
      * @param int $threshold
-     * @param int $value
+     * @param int $modifier
      */
-    public function addKFactorEloModifier(int $threshold, int $value)
+    public function addKFactorEloModifier(int $threshold, int $modifier)
     {
-        $this->kFactorEloModifier[$threshold] = $value;
+        $this->kFactorEloModifier[$threshold] = $modifier;
     }
 
     /**
