@@ -478,9 +478,9 @@ abstract class AbstractCompetition
 
             // now I have a array of key => ELORating
             $eloRace = new EloRace($playersElo);
-            $eloRace->updateElo();
+            $eloRace->setResult(array_keys($playersElo));
             if ($this->usingEloInt || $this->usingEloArray) {
-                $playersElo = $eloRace->getResultingList();
+                $playersElo = $eloRace->getEloRatingList();
                 foreach ($playersElo as $playerKey => $playerElo) {
                     $this->setPlayerElo($playerKey, $playerElo);
                 }
@@ -506,9 +506,9 @@ abstract class AbstractCompetition
 
             // now I have a array of key => ELORating
             $eloBrawl = new EloBrawl($playersElo);
-            $eloBrawl->updateElo();
+            $eloBrawl->setResult($winnerKey);
             if ($this->usingEloInt || $this->usingEloArray) {
-                $playersElo = $eloBrawl->getResultingList();
+                $playersElo = $eloBrawl->getEloRatingList();
                 foreach ($playersElo as $playerKey => $playerElo) {
                     $this->setPlayerElo($playerKey, $playerElo);
                 }
