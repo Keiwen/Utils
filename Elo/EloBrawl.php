@@ -48,7 +48,7 @@ class EloBrawl extends AbstractEloMultiplayer
                 $duel = new EloDuel($competitor, $eloRating);
                 $gain += $duel->getGain(EloSystem::WIN);
             }
-            $gain = $gain / $this->competitorsCount;
+            $gain = $gain / ($this->competitorsCount - 1);
             $gain = round($gain);
             $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
             return $gain;
@@ -58,7 +58,7 @@ class EloBrawl extends AbstractEloMultiplayer
             if (empty($winnerRating)) return 0;
             $duel = new EloDuel($competitor, $winnerRating);
             $gain = $duel->getGain(EloSystem::LOSS);
-            $gain = $gain / $this->competitorsCount;
+            $gain = $gain / ($this->competitorsCount - 1);
             $gain = round($gain);
             $gain = $competitor->getEloSystem()->adjustGainLimit($gain);
             return $gain;
