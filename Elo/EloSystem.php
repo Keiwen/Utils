@@ -204,7 +204,7 @@ class EloSystem
      * For example, addKFactorGainCountModifier(10, -20) will remove 20 to kfactor
      * after he played his 10th game (10th not included)
      *
-     * Warning: Modifier are not cumulative
+     * Warning: modifiers are not cumulative
      *
      * @param int $threshold
      * @param int $modifier
@@ -222,7 +222,7 @@ class EloSystem
      * For example, addKFactorEloModifier(1600, -10) will remove 10 to kfactor
      * if competitor have ELO >= 1600
      *
-     * Warning: Modifier are not cumulative
+     * Warning: modifiers are not cumulative
      *
      * @param int $threshold
      * @param int $modifier
