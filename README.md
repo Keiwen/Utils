@@ -1,5 +1,9 @@
 # Utils
-A bench of utils functions
+A bench of utils functions.
+
+All classes here should be designed to be extendable the most as possible. 
+
+*Full doc is planned like hemmmm you know... Later... Sorry!*
 
 ## Analyser and Mutator
 * Check if array is sequential (numerical keys ordered)
@@ -26,8 +30,26 @@ A bench of utils functions
 * Get attribute from isolated html tag
 
 ## UnitConverter
-Convert some data from a unit to another
+* Convert some data from a unit to another
 (typically from fahrenheit degree to celsius degree, using kelvin International System unit)
 
 ## StringSanitizer
-Filter incoming string
+* Filter incoming string
+
+## Grid
+* Defines a frame to build a grid composed of box.
+Moving from a box in some direction will get the neighbor box.
+* Includes tetragon (rectangular) format, with diagonal option
+* Includes hexagon format, vertical or horizontal
+
+## ELO
+* Setup ELO system and configuration
+* Manage duels
+* Extends to multiplayer: races and brawls
+
+## Competition
+* Setup players in various types of games within a competition
+* Includes games type: duel, race, brawl, performance
+* Includes classic competition type (round robin, race championship, tournament, swiss round, ...)
+* and more exotic ones (gauntlet tournamenet, bubble championship, ...)
+* Support teams rankings and ELO
