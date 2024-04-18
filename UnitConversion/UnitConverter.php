@@ -192,7 +192,7 @@ abstract class UnitConverter
     public static function getConverter(string $domain, string $namespace = null)
     {
         if($namespace == null) $namespace = __NAMESPACE__;
-        $converter = ucfirst(strtolower($domain)) . 'Converter';
+        $converter = ucfirst($domain) . 'Converter';
         $className = $namespace . '\\' . $converter;
         if(!class_exists($className)) return null;
         return new $className();
