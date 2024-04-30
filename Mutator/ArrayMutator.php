@@ -285,4 +285,21 @@ class ArrayMutator
         return empty($found) ? null : reset($found);
     }
 
+
+    /**
+     * shuffle array, preserving keys
+     * @param array $data
+     * @return array shuffled
+     */
+    public static function shufflePreservingKeys(array $data)
+    {
+        $keys = array_keys($data);
+        shuffle($keys);
+        $shuffled = array();
+        foreach ($keys as $key) {
+            $shuffled[$key] = $data[$key];
+        }
+        return $shuffled;
+    }
+
 }
