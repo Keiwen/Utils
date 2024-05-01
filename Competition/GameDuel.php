@@ -110,6 +110,8 @@ class GameDuel extends AbstractGame
     public function setScores(int $scoreHome, int $scoreAway): bool
     {
         if ($this->isPlayed()) return false;
+        if ($this->isByeGame()) return $this->setEndOfBye();
+
         $this->setPlayerPerformanceType($this->getKeyHome(), 'score', $scoreHome);
         $this->setPlayerPerformanceType($this->getKeyAway(), 'score', $scoreAway);
 
