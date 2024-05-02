@@ -76,35 +76,32 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
 
 
     /**
-     * @param RankingDuel[] $rankings
      * @param bool $byExpenses
-     * @return RankingDuel[]
+     * @return RankingDuel[] first to last
      */
-    protected function orderRankings(array $rankings, bool $byExpenses = false): array
+    public function getRankings(bool $byExpenses = false): array
     {
-        if ($byExpenses) return parent::orderRankings($rankings, true);
-        // do not use classic rankings orderings: rank by player seeds instead
-        return $this->orderRankingsBySeed($rankings);
+        // do not use classic rankings computing: rank by player seed instead
+        return $byExpenses ? $this->rankingsHolder->getRankingsByExpenses() : $this->rankingsHolder->getRankingsBySeed($this->getPlayerKeysSeeded());
     }
-
 
     /**
-     * @return RankingDuel[]
+     * @return AbstractRanking[] first to last
      */
-    public function computeTeamRankings(): array
+    public function getTeamRankings(): array
     {
         // do not use classic rankings computing: rank by average players seeds instead
-        return $this->computeTeamRankingsBySeed();
+        return $this->rankingsHolder->getTeamRankingsByAverageSeed($this->teamComp, $this->getPlayerKeysSeeded());
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
         return 1;
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
         return 0;
     }
@@ -134,7 +131,7 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
         $eliminated = ($this->currentRound - 1);
         $playerSeed = $this->getPlayerSeed($playerKey);
         if ($playerSeed > ($this->playerCount - $eliminated)) return false;
-        $playerRanking = $this->rankings[$playerKey] ?? null;
+        $playerRanking = $this->rankingsHolder->getRanking($playerKey);
         // if player played at least one game, he cannot go down
         if ($playerRanking->getPlayed() > 0) return false;
         if ($rank == ($playerSeed + 1)) return true;

@@ -27,17 +27,11 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
         return 3;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingDuel
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    protected function initializeRankingsHolder(): RankingsHolder
     {
-        $ranking =  new RankingDuel($playerKey, $playerSeed);
-        $ranking->affectTo($this);
-        return $ranking;
+        return RankingDuel::generateDefaultRankingsHolder();
     }
+
 
     protected function generateCalendar(): void
     {
@@ -178,11 +172,13 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
      */
     protected function updateRankingsForGame($game)
     {
-        if (isset($this->rankings[$game->getKeyHome()])) {
-            ($this->rankings[$game->getKeyHome()])->saveGame($game);
+        $rankingHome = $this->rankingsHolder->getRanking($game->getKeyHome());
+        if ($rankingHome) {
+            $rankingHome->saveGame($game);
         }
-        if (isset($this->rankings[$game->getKeyAway()])) {
-            ($this->rankings[$game->getKeyAway()])->saveGame($game);
+        $rankingAway = $this->rankingsHolder->getRanking($game->getKeyAway());
+        if ($rankingAway) {
+            $rankingAway->saveGame($game);
         }
     }
 
@@ -206,15 +202,21 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
-        return RankingDuel::getPointsForWon(true);
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return -1;
+        return $firstRanking->getPointsForWon(true);
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
-        return RankingDuel::getPointsForLoss(true);
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return 0;
+        return $firstRanking->getPointsForLoss(true);
     }
 
     /**

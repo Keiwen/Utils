@@ -34,46 +34,22 @@ class RankingDuel extends AbstractRanking
     protected $opponentKeys = array();
     protected $gameResults = array();
 
-    /** @var AbstractCompetition $affectedTo */
-    protected $affectedTo = null;
-
     protected $lastPointMethodCalcul = 0;
     protected $lastPointMethodTieBreakerCalcul = 0;
 
-    protected static $performanceTypesToRank = array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
 
-    protected static $pointByResult = array(
-        GameDuel::RESULT_WON => 3,
-        GameDuel::RESULT_DRAWN => 1,
-        GameDuel::RESULT_LOSS => 0,
-    );
-
-    protected static $pointMethod = self::POINT_METHOD_BASE;
-    protected static $pointMethodTieBreaker = self::POINT_METHOD_BASE;
-
-
-    public function isAffected(): bool
+    public static function generateDefaultRankingsHolder(): RankingsHolder
     {
-        return !empty($this->affectedTo);
-    }
-
-    /**
-     * @return AbstractCompetition|null
-     */
-    public function getAffectation(): ?AbstractCompetition
-    {
-        return $this->affectedTo;
-    }
-
-    /**
-     * @param AbstractCompetition $competition
-     * @return bool true if affected
-     */
-    public function affectTo(AbstractCompetition $competition): bool
-    {
-        if ($this->isAffected()) return false;
-        $this->affectedTo = $competition;
-        return true;
+        $holder = new RankingsHolder(static::class);
+        $holder->setPointsAttributionForResult(GameDuel::RESULT_WON, 3);
+        $holder->setPointsAttributionForResult(GameDuel::RESULT_DRAWN, 1);
+        $holder->setPointsAttributionForResult(GameDuel::RESULT_LOSS, 0);
+        $holder->addPerformanceTypeToRank(self::PERF_SCORE_DIFF);
+        $holder->addPerformanceTypeToRank(self::PERF_SCORE_FOR);
+        $holder->addPerformanceTypeToRank(self::PERF_SCORE_AGAINST);
+        $holder->setDuelPointMethod(self::POINT_METHOD_BASE);
+        $holder->setDuelTieBreakerMethod(self::POINT_METHOD_BASE);
+        return $holder;
     }
 
     /**
@@ -81,8 +57,7 @@ class RankingDuel extends AbstractRanking
      */
     public function getOpponentRankings(): array
     {
-        if (!$this->isAffected()) return array();
-        $competitionRankings = $this->getAffectation()->getRankings();
+        $competitionRankings = $this->rankingsHolder->getAllRankings();
         $opponentRankings = array();
         $opponentKeysToBeFound = $this->opponentKeys;
         foreach ($competitionRankings as $ranking) {
@@ -103,10 +78,9 @@ class RankingDuel extends AbstractRanking
      */
     public function getOpponentRanking($opponentKey): ?RankingDuel
     {
-        if (!$this->isAffected()) return null;
         if (!$this->hasOpponent($opponentKey)) return null;
         /** @var RankingDuel $opponentRanking */
-        $opponentRanking = $this->getAffectation()->getPlayerRanking($opponentKey);
+        $opponentRanking = $this->rankingsHolder->getRanking($opponentKey);
         return $opponentRanking;
     }
 
@@ -121,9 +95,9 @@ class RankingDuel extends AbstractRanking
         // formula: actual result A and counted result B, for X game:
         // -X*A +X*B = X * (B-A)
         $adjustedPoints = $basePoints
-            + $this->getWonBye() * (static::getPointsForDrawn() - static::getPointsForWon())
-            + $this->getWonByForfeit() * (static::getPointsForDrawn() - static::getPointsForWon())
-            + $this->getLossByForfeit() * (static::getPointsForDrawn() - static::getPointsForLoss())
+            + $this->getWonBye() * ($this->getPointsForDrawn() - $this->getPointsForWon())
+            + $this->getWonByForfeit() * ($this->getPointsForDrawn() - $this->getPointsForWon())
+            + $this->getLossByForfeit() * ($this->getPointsForDrawn() - $this->getPointsForLoss())
         ;
         return $adjustedPoints;
     }
@@ -212,7 +186,7 @@ class RankingDuel extends AbstractRanking
         $sum = 0;
         foreach ($this->getOpponentRankings() as $ranking) {
             $actualPoints = $ranking->getPoints();
-            $maxPoints = $ranking->getPlayed() * static::getPointsForWon();
+            $maxPoints = $ranking->getPlayed() * $this->getPointsForWon();
             $pointsRatio = $maxPoints ? $actualPoints / $maxPoints : 0;
             // check if this opponent is above min ratio
             if ($pointsRatio >= $minPointsRatio) {
@@ -220,9 +194,9 @@ class RankingDuel extends AbstractRanking
                 foreach ($results as $result) {
                     // sum all result we've got against this opponent
                     switch ($result) {
-                        case GameDuel::RESULT_WON: $sum += static::getPointsForWon(); break;
-                        case GameDuel::RESULT_DRAWN: $sum += static::getPointsForDrawn(); break;
-                        case GameDuel::RESULT_LOSS: $sum += static::getPointsForLoss(); break;
+                        case GameDuel::RESULT_WON: $sum += $this->getPointsForWon(); break;
+                        case GameDuel::RESULT_DRAWN: $sum += $this->getPointsForDrawn(); break;
+                        case GameDuel::RESULT_LOSS: $sum += $this->getPointsForLoss(); break;
                     }
                 }
             }
@@ -241,15 +215,13 @@ class RankingDuel extends AbstractRanking
     public function getPointsNeustadtlSystem(): float
     {
         $sum = 0;
-        if (!$this->isAffected()) return 0;
-        $competition = $this->getAffectation();
         foreach ($this->gameResults as $index => $result) {
             // if loss, do nothing
             if ($result == GameDuel::RESULT_LOSS) continue;
 
             // get opponent points
             $opponent = $this->opponentKeys[$index];
-            $opponentRanking = $competition->getPlayerRanking($opponent);
+            $opponentRanking = $this->rankingsHolder->getRanking($opponent);
             if (!$opponentRanking) continue;
             $opponentPoints = $opponentRanking->getPoints();
             if ($result == GameDuel::RESULT_DRAWN) {
@@ -322,33 +294,6 @@ class RankingDuel extends AbstractRanking
         );
     }
 
-    public static function getPointMethod(): string
-    {
-        return static::$pointMethod;
-    }
-
-    public static function setPointMethod(string $method): bool
-    {
-        if (in_array($method, static::getPointMethods())) {
-            static::$pointMethod = $method;
-            return true;
-        }
-        return false;
-    }
-
-    public static function getPointMethodTieBreaker(): string
-    {
-        return static::$pointMethodTieBreaker;
-    }
-
-    public static function setPointMethodTieBreaker(string $method): bool
-    {
-        if (in_array($method, static::getPointMethods(true))) {
-            static::$pointMethodTieBreaker = $method;
-            return true;
-        }
-        return false;
-    }
 
     public function updatePointMethodCalcul(bool $tieBreaker = false)
     {
@@ -356,7 +301,7 @@ class RankingDuel extends AbstractRanking
         if ($this->combinedRankings >= 1) {
             return;
         }
-        $method = $tieBreaker ? static::$pointMethodTieBreaker : static::$pointMethod;
+        $method = $tieBreaker ? $this->rankingsHolder->getDuelTieBreakerMethod() : $this->rankingsHolder->getDuelPointMethod();
         switch ($method) {
             case self::POINT_METHOD_SCOREFOR:
                 $points = $this->getScoreFor(); break;
@@ -461,10 +406,10 @@ class RankingDuel extends AbstractRanking
         return count($this->gameResults);
     }
 
-    public static function getPointsForWon(bool $inMethod = false): int
+    public function getPointsForWon(bool $inMethod = false): int
     {
-        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_WON);
-        switch (static::$pointMethod) {
+        if (!$inMethod) return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_WON);
+        switch ($this->rankingsHolder->getDuelPointMethod()) {
             case self::POINT_METHOD_SCOREFOR:
             case self::POINT_METHOD_SCOREDIFF:
             case self::POINT_METHOD_CUMULATIVE:
@@ -475,14 +420,14 @@ class RankingDuel extends AbstractRanking
                 return -1;
             case self::POINT_METHOD_BASE:
             default:
-                return static::getPointsForResult(GameDuel::RESULT_WON);
+                return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_WON);
         }
     }
 
-    public static function getPointsForDrawn(bool $inMethod = false): int
+    public function getPointsForDrawn(bool $inMethod = false): int
     {
-        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_DRAWN);
-        switch (static::$pointMethod) {
+        if (!$inMethod) return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_DRAWN);
+        switch ($this->rankingsHolder->getDuelPointMethod()) {
             case self::POINT_METHOD_SCOREFOR:
             case self::POINT_METHOD_SCOREDIFF:
             case self::POINT_METHOD_CUMULATIVE:
@@ -493,14 +438,14 @@ class RankingDuel extends AbstractRanking
                 return -1;
             case self::POINT_METHOD_BASE:
             default:
-                return static::getPointsForResult(GameDuel::RESULT_DRAWN);
+                return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_DRAWN);
         }
     }
 
-    public static function getPointsForLoss(bool $inMethod = false): int
+    public function getPointsForLoss(bool $inMethod = false): int
     {
-        if (!$inMethod) return static::getPointsForResult(GameDuel::RESULT_LOSS);
-        switch (static::$pointMethod) {
+        if (!$inMethod) return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_LOSS);
+        switch ($this->rankingsHolder->getDuelPointMethod()) {
             case self::POINT_METHOD_SCOREFOR:
             case self::POINT_METHOD_SCOREDIFF:
             case self::POINT_METHOD_CUMULATIVE:
@@ -508,12 +453,12 @@ class RankingDuel extends AbstractRanking
                 // is variable
                 return -1;
             case self::POINT_METHOD_SONNEBORNBERGER:
-                return static::getPointsForResult(GameDuel::RESULT_LOSS) ** 2;
+                return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_LOSS) ** 2;
             case self::POINT_METHOD_ROUNDREACHADD:
                 return 0;
             case self::POINT_METHOD_BASE:
             default:
-                return static::getPointsForResult(GameDuel::RESULT_LOSS);
+                return $this->rankingsHolder->getPointsForResult(GameDuel::RESULT_LOSS);
         }
     }
 
@@ -539,11 +484,11 @@ class RankingDuel extends AbstractRanking
         // from last cumul, add points for last game
         // if forfeit or bye, count adjusted point as draw
         if ($isForfeit || $isBye || $result == GameDuel::RESULT_DRAWN) {
-            $cumul += static::getPointsForDrawn();
+            $cumul += $this->getPointsForDrawn();
         } else if ($result == GameDuel::RESULT_WON) {
-            $cumul += static::getPointsForWon();
+            $cumul += $this->getPointsForWon();
         } else if ($result == GameDuel::RESULT_LOSS) {
-            $cumul += static::getPointsForLoss();
+            $cumul += $this->getPointsForLoss();
         }
         $this->cumulativeAdjustedPoints[] = $cumul;
     }
@@ -701,49 +646,49 @@ class RankingDuel extends AbstractRanking
     }
 
     /**
+     * @param RankingDuel $rankingToCompare
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
+    public function compareToRanking(AbstractRanking $rankingToCompare): int
     {
-        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
-        if ($rankingA->getPointsInMethod() > $rankingB->getPointsInMethod()) return 1;
-        if ($rankingA->getPointsInMethod() < $rankingB->getPointsInMethod()) return -1;
+        if ($this->getPointsInMethod() > $rankingToCompare->getPointsInMethod()) return 1;
+        if ($this->getPointsInMethod() < $rankingToCompare->getPointsInMethod()) return -1;
         // then compare points with tiebreaker method: more points is first
-        if ($rankingA->getPointsInMethod(true) > $rankingB->getPointsInMethod(true)) return 1;
-        if ($rankingA->getPointsInMethod(true) < $rankingB->getPointsInMethod(true)) return -1;
+        if ($this->getPointsInMethod(true) > $rankingToCompare->getPointsInMethod(true)) return 1;
+        if ($this->getPointsInMethod(true) < $rankingToCompare->getPointsInMethod(true)) return -1;
         // won games: more won is first
-        if ($rankingA->getWon() > $rankingB->getWon()) return 1;
-        if ($rankingA->getWon() < $rankingB->getWon()) return -1;
+        if ($this->getWon() > $rankingToCompare->getWon()) return 1;
+        if ($this->getWon() < $rankingToCompare->getWon()) return -1;
         // won bye games: less won for bye game is first
-        if ($rankingA->getWonBye() < $rankingB->getWonBye()) return 1;
-        if ($rankingA->getWonBye() > $rankingB->getWonBye()) return -1;
+        if ($this->getWonBye() < $rankingToCompare->getWonBye()) return 1;
+        if ($this->getWonBye() > $rankingToCompare->getWonBye()) return -1;
         // round reach: higher round reach is first
-        if ($rankingA->getMaxRoundReached() > $rankingB->getMaxRoundReached()) return 1;
-        if ($rankingA->getMaxRoundReached() < $rankingB->getMaxRoundReached()) return -1;
+        if ($this->getMaxRoundReached() > $rankingToCompare->getMaxRoundReached()) return 1;
+        if ($this->getMaxRoundReached() < $rankingToCompare->getMaxRoundReached()) return -1;
 
         // then compare direct confrontations
-        $directRanking = $rankingA->orderDirectDuelsAgainst($rankingB->getEntityKey());
+        $directRanking = $this->orderDirectDuelsAgainst($rankingToCompare->getEntityKey());
         if ($directRanking !== 0) return $directRanking;
 
         // then compare performances if declared
-        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        $perfRanking = $this->rankingsHolder->orderRankingsByPerformances($this, $rankingToCompare);
         if ($perfRanking !== 0) return $perfRanking;
 
         // played games: less played is first
-        if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
-        if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
+        if ($this->getPlayed() < $rankingToCompare->getPlayed()) return 1;
+        if ($this->getPlayed() > $rankingToCompare->getPlayed()) return -1;
         // last case, first registered entity is first
-        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
+        if ($this->getEntitySeed() < $rankingToCompare->getEntitySeed()) return 1;
         return -1;
     }
 
     /**
      * @param RankingDuel[] $rankings
      */
-    public function combinedRankings(array $rankings)
+    public function combineRankings(array $rankings)
     {
-        parent::combinedRankings($rankings);
+        parent::combineRankings($rankings);
         foreach ($rankings as $ranking) {
             $this->wonByForfeit += $ranking->getWonByForfeit();
             $this->lossByForfeit += $ranking->getLossByForfeit();

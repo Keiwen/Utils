@@ -24,7 +24,6 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
      */
     public function __construct(array $players, array $performanceTypesToSum = array(), array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
     {
-        if (empty($performanceTypesToSum)) $performanceTypesToSum = RankingPerformances::getPerformanceTypesToRank();
         if (empty($performanceTypesToSum)) throw new CompetitionException('Cannot create competition without performance to sum');
         $this->performanceTypesToSum = $performanceTypesToSum;
 
@@ -71,14 +70,9 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
         return $this->performanceTypesToSum;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingPerformances
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    protected function initializeRankingsHolder(): RankingsHolder
     {
-        return new RankingPerformances($playerKey, $playerSeed);
+        return RankingPerformances::generateDefaultRankingsHolder();
     }
 
 
@@ -155,7 +149,10 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
     {
         $results = $game->getResults();
         foreach ($results as $playerKey => $result)  {
-            ($this->rankings[$playerKey])->saveGame($game);
+            $ranking = $this->rankingsHolder->getRanking($playerKey);
+            if ($ranking) {
+                $ranking->saveGame($game);
+            }
         }
     }
 
@@ -212,13 +209,13 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
 
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
         return -1;
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
         return 0;
     }

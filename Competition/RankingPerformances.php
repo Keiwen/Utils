@@ -14,29 +14,16 @@ class RankingPerformances extends AbstractRanking
     protected $sumPerformance = 0;
     protected $lastRoundPoints = 0;
 
-    protected static $pointByResult = array(
-        GamePerformances::RESULT_WON => 0,
-        GamePerformances::RESULT_LOSS => 0,
-    );
 
-    protected static $rankMethod = self::RANK_METHOD_SUM;
-
-    /**
-     * @param string $rankMethod
-     * @return bool true if set
-     */
-    public static function setRankMethod(string $rankMethod): bool
+    public static function generateDefaultRankingsHolder(): RankingsHolder
     {
-        if (in_array($rankMethod, static::getRankMethods())) {
-            static::$rankMethod = $rankMethod;
-            return true;
-        }
-        return false;
-    }
-
-    public static function getRankMethod(): string
-    {
-        return static::$rankMethod;
+        $holder = new RankingsHolder(static::class);
+        $holder->setPointsAttributionForResult(GamePerformances::RESULT_WON, 0);
+        $holder->setPointsAttributionForResult(GamePerformances::RESULT_LOSS, 0);
+        $holder->setPointsByBonus(0);
+        $holder->setPointsByMalus(0);
+        $holder->setPerfRankMethod(self::RANK_METHOD_SUM);
+        return $holder;
     }
 
     /**
@@ -53,61 +40,20 @@ class RankingPerformances extends AbstractRanking
         );
     }
 
-
-    public static function setPointsAttribution(array $points): bool
-    {
-        return false;
-    }
-
-    public static function setPointsAttributionForResult($result, int $points): bool
-    {
-        return false;
-    }
-
-    public static function getPointsForResult($result): int
-    {
-        return 0;
-    }
-
-    public static function setPointsByBonus(int $points): bool
-    {
-        return false;
-    }
-
-    public static function getPointsByBonus(): int
-    {
-        return 0;
-    }
-
-    public static function setPointsByMalus(int $points): bool
-    {
-        return false;
-    }
-
-    public static function getPointsByMalus(): int
-    {
-        return 0;
-    }
-
     public function getPoints(): int
     {
-        switch (static::$rankMethod) {
+        switch ($this->rankingsHolder->getPerfRankMethod()) {
             case self::RANK_METHOD_WON:
                 return $this->getWon();
-                break;
             case self::RANK_METHOD_AVERAGE:
                 return round($this->getAveragePerformance());
-                break;
             case self::RANK_METHOD_MAX:
                 return $this->getMaxPerformance();
-                break;
             case self::RANK_METHOD_LAST_ROUND_RANK:
                 return $this->getLastRoundPoints();
-                break;
             case self::RANK_METHOD_SUM:
             default:
                 return $this->getPerformancesSum();
-                break;
         }
     }
 
@@ -196,42 +142,42 @@ class RankingPerformances extends AbstractRanking
     }
 
     /**
+     * @param RankingPerformances $rankingToCompare
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
+    public function compareToRanking(AbstractRanking $rankingToCompare): int
     {
-        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points (depending on rank method): more points is first
-        if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
-        if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
+        if ($this->getPoints() > $rankingToCompare->getPoints()) return 1;
+        if ($this->getPoints() < $rankingToCompare->getPoints()) return -1;
         // compare perf sum: best sum is first
-        if ($rankingA->getPerformancesSum() > $rankingB->getPerformancesSum()) return 1;
-        if ($rankingA->getPerformancesSum() < $rankingB->getPerformancesSum()) return -1;
+        if ($this->getPerformancesSum() > $rankingToCompare->getPerformancesSum()) return 1;
+        if ($this->getPerformancesSum() < $rankingToCompare->getPerformancesSum()) return -1;
         // average perf: best average is first
-        if ($rankingA->getAveragePerformance() > $rankingB->getAveragePerformance()) return 1;
-        if ($rankingA->getAveragePerformance() < $rankingB->getAveragePerformance()) return -1;
+        if ($this->getAveragePerformance() > $rankingToCompare->getAveragePerformance()) return 1;
+        if ($this->getAveragePerformance() < $rankingToCompare->getAveragePerformance()) return -1;
         // won games: more won is first
-        if ($rankingA->getWon() > $rankingB->getWon()) return 1;
-        if ($rankingA->getWon() < $rankingB->getWon()) return -1;
+        if ($this->getWon() > $rankingToCompare->getWon()) return 1;
+        if ($this->getWon() < $rankingToCompare->getWon()) return -1;
 
         // compare performances if declared
-        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        $perfRanking = $this->rankingsHolder->orderRankingsByPerformances($this, $rankingToCompare);
         if ($perfRanking !== 0) return $perfRanking;
 
         // played games: more played is first
-        if ($rankingA->getPlayed() > $rankingB->getPlayed()) return 1;
-        if ($rankingA->getPlayed() < $rankingB->getPlayed()) return -1;
+        if ($this->getPlayed() > $rankingToCompare->getPlayed()) return 1;
+        if ($this->getPlayed() < $rankingToCompare->getPlayed()) return -1;
         // last case, first registered entity is first
-        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
+        if ($this->getEntitySeed() < $rankingToCompare->getEntitySeed()) return 1;
         return -1;
     }
 
     /**
      * @param RankingPerformances[] $rankings
      */
-    public function combinedRankings(array $rankings)
+    public function combineRankings(array $rankings)
     {
-        parent::combinedRankings($rankings);
+        parent::combineRankings($rankings);
         foreach ($rankings as $ranking) {
             if ($ranking->maxPerformance > $this->maxPerformance) $this->maxPerformance = $ranking->getMaxPerformance();
             $this->sumPerformance += $ranking->getPerformancesSum();

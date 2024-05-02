@@ -18,14 +18,9 @@ class CompetitionChampionshipRace extends AbstractCompetition
         return 2;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingRace
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    protected function initializeRankingsHolder(): RankingsHolder
     {
-        return new RankingRace($playerKey, $playerSeed);
+        return RankingRace::generateDefaultRankingsHolder();
     }
 
 
@@ -84,18 +79,21 @@ class CompetitionChampionshipRace extends AbstractCompetition
     {
         $positions = $game->getPositions();
         foreach ($positions as $position => $playerKey)  {
-            ($this->rankings[$playerKey])->saveGame($game);
+            $ranking = $this->rankingsHolder->getRanking($playerKey);
+            if ($ranking) {
+                $ranking->saveGame($game);
+            }
         }
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
-        return RankingRace::getPointsForResult(1);
+        return $this->rankingsHolder->getPointsForResult(1);
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
         return 0;
     }

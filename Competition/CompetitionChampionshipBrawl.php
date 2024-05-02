@@ -18,16 +18,11 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
         return 3;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingBrawl
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
-    {
-        return new RankingBrawl($playerKey, $playerSeed);
-    }
 
+    protected function initializeRankingsHolder(): RankingsHolder
+    {
+        return RankingBrawl::generateDefaultRankingsHolder();
+    }
 
     /**
      * get game with a given number
@@ -83,20 +78,29 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     {
         $results = $game->getResults();
         foreach ($results as $playerKey => $result)  {
-            ($this->rankings[$playerKey])->saveGame($game);
+            $ranking = $this->rankingsHolder->getRanking($playerKey);
+            if ($ranking) {
+                $ranking->saveGame($game);
+            }
         }
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
-        return RankingBrawl::getPointsForWon();
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return -1;
+        return $firstRanking->getPointsForWon(true);
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
-        return RankingBrawl::getPointsForLoss();
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return 0;
+        return $firstRanking->getPointsForLoss(true);
     }
 
 

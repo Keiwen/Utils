@@ -8,12 +8,17 @@ class RankingBrawl extends AbstractRanking
     const PERF_TOTAL_BRAWL_COUNT_WON = 'totalBrawlCountWon';
     const PERF_TOTAL_BRAWL_COUNT_LOSS = 'totalBrawlCountLoss';
 
-    protected static $performanceTypesToRank = array(self::PERF_TOTAL_BRAWL_COUNT_WON, self::PERF_TOTAL_BRAWL_COUNT_LOSS);
 
-    protected static $pointByResult = array(
-        GameBrawl::RESULT_WON => 1,
-        GameBrawl::RESULT_LOSS => 0,
-    );
+    public static function generateDefaultRankingsHolder(): RankingsHolder
+    {
+        $holder = new RankingsHolder(static::class);
+        $holder->setPointsAttributionForResult(GameBrawl::RESULT_WON, 1);
+        $holder->setPointsAttributionForResult(GameBrawl::RESULT_LOSS, 0);
+        $holder->addPerformanceTypeToRank(self::PERF_TOTAL_BRAWL_COUNT_WON);
+        $holder->addPerformanceTypeToRank(self::PERF_TOTAL_BRAWL_COUNT_LOSS);
+        return $holder;
+    }
+
 
     public function getWon(): int
     {
@@ -25,14 +30,14 @@ class RankingBrawl extends AbstractRanking
         return $this->getPlayedByResult(GameBrawl::RESULT_LOSS);
     }
 
-    public static function getPointsForWon(): int
+    public function getPointsForWon(): int
     {
-        return static::getPointsForResult(GameBrawl::RESULT_WON);
+        return $this->rankingsHolder->getPointsForResult(GameBrawl::RESULT_WON);
     }
 
-    public static function getPointsForLoss(): int
+    public function getPointsForLoss(): int
     {
-        return static::getPointsForResult(GameBrawl::RESULT_LOSS);
+        return $this->rankingsHolder->getPointsForResult(GameBrawl::RESULT_LOSS);
     }
 
     public function getBrawlCountWon(): int
@@ -92,27 +97,27 @@ class RankingBrawl extends AbstractRanking
     }
 
     /**
+     * @param RankingBrawl $rankingToCompare
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
+    public function compareToRanking(AbstractRanking $rankingToCompare): int
     {
-        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
-        if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
-        if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
+        if ($this->getPoints() > $rankingToCompare->getPoints()) return 1;
+        if ($this->getPoints() < $rankingToCompare->getPoints()) return -1;
         // won games: more won is first
-        if ($rankingA->getWon() > $rankingB->getWon()) return 1;
-        if ($rankingA->getWon() < $rankingB->getWon()) return -1;
+        if ($this->getWon() > $rankingToCompare->getWon()) return 1;
+        if ($this->getWon() < $rankingToCompare->getWon()) return -1;
 
         // compare performances if declared
-        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        $perfRanking = $this->rankingsHolder->orderRankingsByPerformances($this, $rankingToCompare);
         if ($perfRanking !== 0) return $perfRanking;
 
         // played games: more played is first
-        if ($rankingA->getPlayed() > $rankingB->getPlayed()) return 1;
-        if ($rankingA->getPlayed() < $rankingB->getPlayed()) return -1;
+        if ($this->getPlayed() > $rankingToCompare->getPlayed()) return 1;
+        if ($this->getPlayed() < $rankingToCompare->getPlayed()) return -1;
         // last case, first registered entity is first
-        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
+        if ($this->getEntitySeed() < $rankingToCompare->getEntitySeed()) return 1;
         return -1;
     }
 
@@ -120,9 +125,9 @@ class RankingBrawl extends AbstractRanking
     /**
      * @param RankingBrawl[] $rankings
      */
-    public function combinedRankings(array $rankings)
+    public function combineRankings(array $rankings)
     {
-        parent::combinedRankings($rankings);
+        parent::combineRankings($rankings);
     }
 
 

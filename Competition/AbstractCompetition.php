@@ -31,12 +31,8 @@ abstract class AbstractCompetition
     protected $gameRepository = array();
     protected $nextGameNumber = 1;
 
-    /** @var AbstractRanking[] $rankings */
-    protected $rankings = array();
-    /** @var AbstractRanking[] $orderedRankings */
-    protected $orderedRankings = array();
-    /** @var AbstractRanking[] $teamRankings */
-    protected $teamRankings = array();
+    /** @var RankingsHolder $rankingsHolder */
+    protected $rankingsHolder;
 
     protected $playerEloAccess = '';
     protected $usingEloRating = false;
@@ -48,9 +44,7 @@ abstract class AbstractCompetition
         if (count($players) < static::getMinPlayerCount()) throw new CompetitionException(sprintf('Cannot create competition with less than %d players', static::getMinPlayerCount()));
         $this->initializePlayers($players);
         // initialize rankings;
-        $this->initializeRanking();
-        $this->orderedRankings = $this->orderRankings($this->rankings);
-        $this->teamRankings = $this->computeTeamRankings();
+        $this->initializeRankings();
     }
 
     protected function initializePlayers(array $players)
@@ -60,14 +54,31 @@ abstract class AbstractCompetition
         $this->playersSeeds = array_combine(array_keys($players), range(1, count($players)));
     }
 
-    protected function initializeRanking()
+    abstract protected function initializeRankingsHolder(): RankingsHolder;
+
+    protected function initializeRankings()
     {
+        $this->rankingsHolder = $this->initializeRankingsHolder();
         foreach ($this->playersSeeds as $key => $seed) {
-            $this->rankings[$key] = $this->initializePlayerRanking($key, $seed);
+            $this->rankingsHolder->addRanking($key, $seed);
         }
+        $this->rankingsHolder->computeRankingsOrder();
     }
 
-    abstract protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking;
+    public function getRankingsHolder(): RankingsHolder
+    {
+        return $this->rankingsHolder;
+    }
+
+
+    public function setRankingHolder(RankingsHolder $rankingsHolder)
+    {
+        foreach ($this->rankingsHolder->getAllRankings() as $ranking) {
+            $rankingsHolder->integrateRanking($ranking);
+        }
+        $rankingsHolder->computeRankingsOrder();
+        $this->rankingsHolder = $rankingsHolder;
+    }
 
     abstract public static function getMinPlayerCount(): int;
 
@@ -87,7 +98,6 @@ abstract class AbstractCompetition
     public function setTeamComposition(array $teamComp)
     {
         $this->teamComp = $teamComp;
-        $this->teamRankings = $this->computeTeamRankings();
     }
 
     /**
@@ -589,36 +599,7 @@ abstract class AbstractCompetition
             $this->updateRankingsForGame($game);
             $this->updateEloForGame($game);
         }
-        $this->orderedRankings = $this->orderRankings($this->rankings);
-        $this->teamRankings = $this->computeTeamRankings();
-    }
-
-    /**
-     * @param AbstractRanking[] $rankings
-     * @param bool $byExpenses
-     * @return AbstractRanking[]
-     */
-    protected function orderRankings(array $rankings, bool $byExpenses = false): array
-    {
-        $rankings = array_values($rankings);
-        if (!empty($rankings)) {
-            $firstRanking = reset($rankings);
-            $rankingClass = get_class($firstRanking);
-
-            if ($firstRanking instanceof RankingDuel && !$byExpenses) {
-                // update point method before actually order
-                foreach ($rankings as $ranking) {
-                    /** @var RankingDuel $ranking */
-                    $ranking->updatePointMethodCalcul(false);
-                    $ranking->updatePointMethodCalcul(true);
-                }
-            }
-
-            $rankingMethod = $byExpenses ? 'orderRankingsByExpenses' : 'orderRankings';
-            usort($rankings, array($rankingClass, $rankingMethod));
-            $rankings = array_reverse($rankings);
-        }
-        return $rankings;
+        $this->rankingsHolder->computeRankingsOrder();
     }
 
     abstract protected function updateRankingsForGame($game);
@@ -648,10 +629,7 @@ abstract class AbstractCompetition
      */
     public function getRankings(bool $byExpenses = false): array
     {
-        if ($byExpenses) {
-            return $this->orderRankings($this->rankings, $byExpenses);
-        }
-        return $this->orderedRankings;
+        return $byExpenses ? $this->rankingsHolder->getRankingsByExpenses() : $this->rankingsHolder->getRankings();
     }
 
     /**
@@ -660,43 +638,15 @@ abstract class AbstractCompetition
      */
     public function getPlayerRanking($playerKey): ?AbstractRanking
     {
-        return $this->rankings[$playerKey] ?? null;
+        return $this->rankingsHolder->getRanking($playerKey);
     }
 
     /**
-     * @param bool $byExpenses
      * @return AbstractRanking[] first to last
      */
-    public function getTeamRankings(bool $byExpenses = false): array
+    public function getTeamRankings(): array
     {
-        if ($byExpenses) {
-            return $this->orderRankings($this->teamRankings, $byExpenses);
-        }
-        return $this->teamRankings;
-    }
-
-
-    /**
-     * @param bool $byExpenses
-     * @return AbstractRanking[] first to last
-     */
-    public function computeTeamRankings(): array
-    {
-        $teamRankings = array();
-        $teamSeed = 1;
-        foreach ($this->teamComp as $teamKey => $playerKeys) {
-            $teamRanking = $this->initializePlayerRanking($teamKey, $teamSeed);
-            $playerRankings = array();
-            foreach ($playerKeys as $playerKey) {
-                $playerRankings[] = $this->rankings[$playerKey];
-            }
-            $teamRanking->combinedRankings($playerRankings);
-
-            $teamRankings[$teamKey] = $teamRanking;
-            $teamSeed++;
-        }
-
-        return $this->orderRankings($teamRankings);
+        return $this->rankingsHolder->getTeamRankings($this->teamComp);
     }
 
     /**
@@ -715,8 +665,8 @@ abstract class AbstractCompetition
      */
     public function canPlayerReachRank($playerKey, int $rank): bool
     {
-        $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerKey] ?? null;
+        $rankRanking = $this->rankingsHolder->getRank($rank);
+        $playerRanking = $this->getPlayerRanking($playerKey);
         if (empty($rankRanking) || empty($playerRanking)) return false;
         return $this->canRankingReachRanking($playerRanking, $rankRanking);
     }
@@ -728,8 +678,8 @@ abstract class AbstractCompetition
      */
     public function canPlayerDropToRank($playerKey, int $rank): bool
     {
-        $rankRanking = $this->orderedRankings[$rank - 1] ?? null;
-        $playerRanking = $this->rankings[$playerKey] ?? null;
+        $rankRanking = $this->rankingsHolder->getRank($rank);
+        $playerRanking = $this->getPlayerRanking($playerKey);
         if (empty($rankRanking) || empty($playerRanking)) return false;
         return $this->canRankingReachRanking($rankRanking, $playerRanking);
     }
@@ -746,12 +696,12 @@ abstract class AbstractCompetition
         if ($this->getPlayerEliminationRound($rankingA->getEntityKey()) > 0) return false;
 
         // if we do not know how many max point we can score, it's still reachable!
-        if (static::getMaxPointForAGame() === -1) return true;
+        if ($this->getMaxPointForAGame() === -1) return true;
 
         $toBePlayedA = $this->getMaxGameCountByPlayer($rankingA->getEntityKey()) - $rankingA->getPlayed();
-        $maxPointsA = $rankingA->getPoints() + $toBePlayedA * static::getMaxPointForAGame();
+        $maxPointsA = $rankingA->getPoints() + $toBePlayedA * $this->getMaxPointForAGame();
         $toBePlayedB = $this->getMaxGameCountByPlayer($rankingB->getEntityKey()) - $rankingB->getPlayed();
-        $minPointsB = $rankingB->getPoints() + $toBePlayedB * static::getMinPointForAGame();
+        $minPointsB = $rankingB->getPoints() + $toBePlayedB * $this->getMinPointForAGame();
         return $maxPointsA >= $minPointsB;
     }
 
@@ -778,25 +728,10 @@ abstract class AbstractCompetition
      * @param int|string $playerKey
      * @return int 0 if not found
      */
-    public function getPlayerRank($playerKey): int
-    {
-        $rank = 0;
-        foreach ($this->orderedRankings as $ranking) {
-            $rank++;
-            if ($ranking->getEntityKey() === $playerKey) return $rank;
-        }
-        return 0;
-    }
-
-
-    /**
-     * @param int|string $playerKey
-     * @return int 0 if not found
-     */
     public function getPlayerMaxReachableRank($playerKey): int
     {
         if ($this->canPlayerWin($playerKey)) return 1;
-        $playerRank = $this->getPlayerRank($playerKey);
+        $playerRank = $this->rankingsHolder->getEntityRank($playerKey);
         if (empty($playerRank)) return 0;
         for ($rank = $playerRank - 1; $rank > 1; $rank--) {
             if (!$this->canPlayerReachRank($playerKey, $rank)) return ($rank + 1);
@@ -811,7 +746,7 @@ abstract class AbstractCompetition
     public function getPlayerMaxDroppableRank($playerKey): int
     {
         if ($this->canPlayerBeLast($playerKey)) return $this->getPlayerCount();
-        $playerRank = $this->getPlayerRank($playerKey);
+        $playerRank = $this->rankingsHolder->getEntityRank($playerKey);
         if (empty($playerRank)) return 0;
         for ($rank = $playerRank + 1; $rank < $this->getPlayerCount(); $rank++) {
             if (!$this->canPlayerDropToRank($playerKey, $rank)) return ($rank - 1);
@@ -826,7 +761,7 @@ abstract class AbstractCompetition
     public function getTeamRank($teamKey): int
     {
         $rank = 0;
-        foreach ($this->teamRankings as $ranking) {
+        foreach ($this->getTeamRankings() as $ranking) {
             $rank++;
             if ($ranking->getEntityKey() === $teamKey) return $rank;
         }
@@ -835,8 +770,8 @@ abstract class AbstractCompetition
 
 
     /** @return int -1 if no max defined */
-    abstract public static function getMaxPointForAGame(): int;
-    abstract public static function getMinPointForAGame(): int;
+    abstract public function getMaxPointForAGame(): int;
+    abstract public function getMinPointForAGame(): int;
 
 
     /**

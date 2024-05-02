@@ -11,7 +11,6 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 
     public function __construct(array $players, array $performanceTypesToSum = array())
     {
-        if (empty($performanceTypesToSum)) $performanceTypesToSum = RankingPerformances::getPerformanceTypesToRank();
         $this->performanceTypesToSum = $performanceTypesToSum;
 
         parent::__construct($players);
@@ -22,14 +21,9 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
         return 2;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingPerformances
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    protected function initializeRankingsHolder(): RankingsHolder
     {
-        return new RankingPerformances($playerKey, $playerSeed);
+        return RankingPerformances::generateDefaultRankingsHolder();
     }
 
 
@@ -94,18 +88,21 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
     {
         $results = $game->getResults();
         foreach ($results as $playerKey => $result)  {
-            ($this->rankings[$playerKey])->saveGame($game);
+            $ranking = $this->rankingsHolder->getRanking($playerKey);
+            if ($ranking) {
+                $ranking->saveGame($game);
+            }
         }
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
         return -1;
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
         return 0;
     }

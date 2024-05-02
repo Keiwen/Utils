@@ -16,118 +16,30 @@ abstract class AbstractRanking
     protected $malusCount = 0;
 
     protected $combinedRankings = 0;
-
-    protected static $performanceTypesToRank = array();
-    protected static $expensesTypesToRank = array();
-
-    protected static $pointByResult = array();
-    protected static $startingCapitals = array();
-    protected static $pointByBonus = 1;
-    protected static $pointByMalus = 1;
+    /** @var RankingsHolder $rankingsHolder */
+    protected $rankingsHolder;
 
     public function __construct($entityKey, int $entitySeed = 0)
     {
         $this->entityKey = $entityKey;
         $this->entitySeed = $entitySeed;
         // initialize game by result
-        $this->gameByResult = array_fill_keys(array_keys(static::$pointByResult), 0);
+        $this->rankingsHolder = static::generateDefaultRankingsHolder();
+        $this->gameByResult = array_fill_keys(array_keys($this->rankingsHolder->getPointsByResult()), 0);
     }
 
 
-    /**
-     * @param mixed $result
-     * @param int $points
-     * @return bool true if set
-     */
-    public static function setPointsAttributionForResult($result, int $points): bool
-    {
-        static::$pointByResult[$result] = $points;
-        return true;
-    }
+    abstract public static function generateDefaultRankingsHolder(): RankingsHolder;
 
-    /**
-     * @param array $points
-     * @return bool true if set
-     */
-    public static function setPointsAttribution(array $points): bool
+    public function setRankingsHolder(RankingsHolder $rankingsHolder)
     {
-        if (count($points) != count(static::$pointByResult)) return false;
-        $loopIndex = 0;
-        foreach (static::$pointByResult as $result => $resultPoints) {
-            if (is_int($points[$loopIndex])) {
-                static::setPointsAttributionForResult($result, $points[$loopIndex]);
-            }
-            $loopIndex++;
+        $this->rankingsHolder = $rankingsHolder;
+
+        // check if we have new results type, initiate in gameByResult
+        $results = array_keys($this->rankingsHolder->getPointsByResult());
+        foreach($results as $result) {
+            if (!isset($this->gameByResult[$result])) $this->gameByResult[$result] = 0;
         }
-        return true;
-    }
-
-    public static function getPointsForResult($result): int
-    {
-        return static::$pointByResult[$result] ?? 0;
-    }
-
-    /**
-     * @param string $expenseType
-     * @param int $startingCapital
-     * @return bool true if set
-     */
-    public static function setStartingCapitalForExpense(string $expenseType, int $startingCapital): bool
-    {
-        static::$startingCapitals[$expenseType] = $startingCapital;
-        return true;
-    }
-
-    /**
-     * @param array $capitals
-     * @return bool true if set
-     */
-    public static function setStartingCapitals(array $capitals): bool
-    {
-        if (count($capitals) != count(static::$startingCapitals)) return false;
-        $loopIndex = 0;
-        foreach (static::$startingCapitals as $expense => $startingCapital) {
-            if (is_int($capitals[$loopIndex])) {
-                static::setStartingCapitalForExpense($expense, $capitals[$loopIndex]);
-            }
-            $loopIndex++;
-        }
-        return true;
-    }
-
-    public static function getStartingCapitalForExpense(string $expenseType): int
-    {
-        return static::$startingCapitals[$expenseType] ?? 0;
-    }
-
-    /**
-     * @param int $points
-     * @return bool true if set
-     */
-    public static function setPointsByBonus(int $points): bool
-    {
-        static::$pointByBonus = $points;
-        return true;
-    }
-
-    public static function getPointsByBonus(): int
-    {
-        return static::$pointByBonus;
-    }
-
-    /**
-     * @param int $points set as positive value, these points will be substracted from total points
-     * @return bool true if set
-     */
-    public static function setPointsByMalus(int $points): bool
-    {
-        static::$pointByMalus = $points;
-        return true;
-    }
-
-    public static function getPointsByMalus(): int
-    {
-        return static::$pointByMalus;
     }
 
     public function getEntitySeed(): int
@@ -169,7 +81,8 @@ abstract class AbstractRanking
     public function getPoints(): int
     {
         $points = 0;
-        foreach (static::$pointByResult as $result => $resultPoints) {
+        $pointsByResult = $this->rankingsHolder->getPointsByResult();
+        foreach ($pointsByResult as $result => $resultPoints) {
             $points += $resultPoints * $this->getPlayedByResult($result);
         }
         $points = $points + $this->getBonusPoints() - $this->getMalusPoints();
@@ -188,12 +101,12 @@ abstract class AbstractRanking
 
     public function getBonusPoints(): int
     {
-        return $this->bonusCount * static::$pointByBonus;
+        return $this->bonusCount * $this->rankingsHolder->getPointsByBonus();
     }
 
     public function getMalusPoints(): int
     {
-        return $this->malusCount * static::$pointByMalus;
+        return $this->malusCount * $this->rankingsHolder->getPointsByMalus();
     }
 
     /**
@@ -222,50 +135,12 @@ abstract class AbstractRanking
     public function getRemainingCapital(string $expenseType): int
     {
         if ($this->combinedRankings <= 1) {
-            return (static::getStartingCapitalForExpense($expenseType) - $this->getExpenseTotal($expenseType));
+            return ($this->rankingsHolder->getStartingCapitalForExpense($expenseType) - $this->getExpenseTotal($expenseType));
         }
-        $totalCapital = $this->combinedRankings * static::getStartingCapitalForExpense($expenseType);
+        $totalCapital = $this->combinedRankings * $this->rankingsHolder->getStartingCapitalForExpense($expenseType);
         return $totalCapital - $this->getExpenseTotal($expenseType);
     }
 
-
-    /**
-     * add a performance type that should be taken into account when ranking.
-     * the first added will be prioritized
-     * @param string $performanceType
-     */
-    public static function addPerformanceTypeToRank(string $performanceType, bool $reverse = false)
-    {
-        if ($reverse) $performanceType = '-'.$performanceType;
-        static::$performanceTypesToRank[] = $performanceType;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getPerformanceTypesToRank(): array
-    {
-        return static::$performanceTypesToRank;
-    }
-
-    /**
-     * add an expense type that should be taken into account when ranking.
-     * the first added will be prioritized. Less expense will have best rank
-     * @param string $expenseType
-     */
-    public static function addExpenseTypeToRank(string $expenseType, bool $reverse = false)
-    {
-        if ($reverse) $expenseType = '-'.$expenseType;
-        static::$expensesTypesToRank[] = $expenseType;
-    }
-
-    /**
-     * @return array
-     */
-    public static function getExpenseTypesToRank(): array
-    {
-        return static::$expensesTypesToRank;
-    }
 
 
     /**
@@ -310,92 +185,38 @@ abstract class AbstractRanking
         return true;
     }
 
+
     /**
+     * @param AbstractRanking $rankingToCompare
      * @return int
      */
-    public static function orderRankings(self $rankingA, self $rankingB): int
+    public function compareToRanking(AbstractRanking $rankingToCompare): int
     {
-        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
-        if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
-        if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
+        if ($this->getPoints() > $rankingToCompare->getPoints()) return 1;
+        if ($this->getPoints() < $rankingToCompare->getPoints()) return -1;
 
         // then compare performances if declared
-        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        $perfRanking = $this->rankingsHolder->orderRankingsByPerformances($this, $rankingToCompare);
         if ($perfRanking !== 0) return $perfRanking;
         // then compare expenses if declared
-        $expenseRanking = static::orderRankingsByExpenses($rankingA, $rankingB);
+        $expenseRanking = $this->rankingsHolder->orderRankingsByExpenses($this, $rankingToCompare);
         if ($expenseRanking !== 0) return $expenseRanking;
 
         // played games: less played is first
-        if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
-        if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
+        if ($this->getPlayed() < $rankingToCompare->getPlayed()) return 1;
+        if ($this->getPlayed() > $rankingToCompare->getPlayed()) return -1;
         // last case, first registered entity is first
-        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
+        if ($this->getEntitySeed() < $rankingToCompare->getEntitySeed()) return 1;
         return -1;
     }
 
-    /**
-     * @return int
-     */
-    public static function orderRankingsByPerformances(self $rankingA, self $rankingB): int
-    {
-        static::checkStaticRankingClass($rankingA, $rankingB);
-        foreach (static::$performanceTypesToRank as $performanceType) {
-            if (strpos($performanceType, '-') === 0) {
-                $performanceType = substr($performanceType, 1);
-                // if minus found before the name, remove it and prioritize the lowest
-                if ($rankingA->getPerformanceTotal($performanceType) < $rankingB->getPerformanceTotal($performanceType)) return 1;
-                if ($rankingA->getPerformanceTotal($performanceType) > $rankingB->getPerformanceTotal($performanceType)) return -1;
-            } else {
-                // greater value win
-                if ($rankingA->getPerformanceTotal($performanceType) > $rankingB->getPerformanceTotal($performanceType)) return 1;
-                if ($rankingA->getPerformanceTotal($performanceType) < $rankingB->getPerformanceTotal($performanceType)) return -1;
-            }
-            // equal on this performance, go to the next
-        }
-        // all performances are equal, cannot decide
-        return 0;
-    }
-
-    /**
-     * @return int
-     */
-    public static function orderRankingsByExpenses(self $rankingA, self $rankingB): int
-    {
-        static::checkStaticRankingClass($rankingA, $rankingB);
-        foreach (static::$expensesTypesToRank as $expenseType) {
-            if (strpos($expenseType, '-') === 0) {
-                $expenseType = substr($expenseType, 1);
-                // if minus found before the name, remove it and prioritize the highest
-                if ($rankingA->getExpenseTotal($expenseType) > $rankingB->getExpenseTotal($expenseType)) return 1;
-                if ($rankingA->getExpenseTotal($expenseType) < $rankingB->getExpenseTotal($expenseType)) return -1;
-            } else {
-                // lower value win
-                if ($rankingA->getExpenseTotal($expenseType) < $rankingB->getExpenseTotal($expenseType)) return 1;
-                if ($rankingA->getExpenseTotal($expenseType) > $rankingB->getExpenseTotal($expenseType)) return -1;
-            }
-            // equal on this expense, go to the next
-        }
-        // all expenses are equal, cannot decide
-        return 0;
-    }
-
-    protected static function checkStaticRankingClass(self $rankingA, self $rankingB)
-    {
-        if (!$rankingA instanceof static) {
-            throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', static::class, get_class($rankingA)));
-        }
-        if (!$rankingB instanceof static) {
-            throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', static::class, get_class($rankingB)));
-        }
-    }
 
     /**
      * Used for team ranking. Create a brand new rankings and combine all players rankings
      * @param AbstractRanking[] $rankings players rankings to combine
      */
-    public function combinedRankings(array $rankings)
+    public function combineRankings(array $rankings)
     {
         $this->combinedRankings += count($rankings);
         foreach ($rankings as $ranking) {
@@ -406,11 +227,11 @@ abstract class AbstractRanking
             $this->bonusCount += $ranking->getBonusCount();
             $this->malusCount += $ranking->getMalusCount();
 
-            foreach (static::getPerformanceTypesToRank() as $type) {
+            foreach ($this->rankingsHolder->getPerformanceTypesToRank() as $type) {
                 if (!isset($this->performances[$type])) $this->performances[$type] = 0;
                 $this->performances[$type] += $ranking->getPerformanceTotal($type);
             }
-            foreach (static::getExpenseTypesToRank() as $type) {
+            foreach ($this->rankingsHolder->getExpenseTypesToRank() as $type) {
                 if (!isset($this->expenses[$type])) $this->expenses[$type] = 0;
                 $this->expenses[$type] += $ranking->getExpenseTotal($type);
             }

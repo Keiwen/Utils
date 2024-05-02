@@ -42,17 +42,11 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
         return $playersCount;
     }
 
-    /**
-     * @param int|string $playerKey
-     * @param int $playerSeed
-     * @return RankingDuel
-     */
-    protected function initializePlayerRanking($playerKey, int $playerSeed = 0): AbstractRanking
+    protected function initializeRankingsHolder(): RankingsHolder
     {
-        $ranking = new RankingDuel($playerKey, $playerSeed);
-        $ranking->affectTo($this);
-        return $ranking;
+        return RankingDuel::generateDefaultRankingsHolder();
     }
+
 
     public function getMinGameCountByPlayer(): int
     {
@@ -143,35 +137,35 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
      */
     protected function updateRankingsForGame($game)
     {
-        if (isset($this->rankings[$game->getKeyHome()])) {
-            ($this->rankings[$game->getKeyHome()])->saveGame($game);
+        $rankingHome = $this->rankingsHolder->getRanking($game->getKeyHome());
+        if ($rankingHome) {
+            $rankingHome->saveGame($game);
         }
-        if (isset($this->rankings[$game->getKeyAway()])) {
-            ($this->rankings[$game->getKeyAway()])->saveGame($game);
+        $rankingAway = $this->rankingsHolder->getRanking($game->getKeyAway());
+        if ($rankingAway) {
+            $rankingAway->saveGame($game);
         }
     }
 
 
     /**
-     * @param RankingDuel[] $rankings
      * @param bool $byExpenses
-     * @return RankingDuel[]
+     * @return RankingDuel[] first to last
      */
-    protected function orderRankings(array $rankings, bool $byExpenses = false): array
+    public function getRankings(bool $byExpenses = false): array
     {
-        if ($byExpenses) return parent::orderRankings($rankings, true);
-        // do not use classic rankings orderings: rank by player seeds instead
-        return $this->orderRankingsBySeed($rankings);
+        // do not use classic rankings computing: rank by player seed instead
+        return $byExpenses ? $this->rankingsHolder->getRankingsByExpenses() : $this->rankingsHolder->getRankingsBySeed($this->getPlayerKeysSeeded());
     }
 
 
     /**
-     * @return RankingDuel[]
+     * @return AbstractRanking[] first to last
      */
-    public function computeTeamRankings(): array
+    public function getTeamRankings(): array
     {
         // do not use classic rankings computing: rank by average players seeds instead
-        return $this->computeTeamRankingsBySeed();
+        return $this->rankingsHolder->getTeamRankingsByAverageSeed($this->teamComp, $this->getPlayerKeysSeeded());
     }
 
 
@@ -200,13 +194,13 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
     }
 
 
-    public static function getMaxPointForAGame(): int
+    public function getMaxPointForAGame(): int
     {
         return 1;
     }
 
 
-    public static function getMinPointForAGame(): int
+    public function getMinPointForAGame(): int
     {
         return 0;
     }

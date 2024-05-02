@@ -5,14 +5,18 @@ namespace Keiwen\Utils\Competition;
 class RankingRace extends AbstractRanking
 {
 
-    protected static $pointByResult = array(
-        1 => 10,
-        2 => 7,
-        3 => 5,
-        4 => 3,
-        5 => 2,
-        6 => 1,
-    );
+    public static function generateDefaultRankingsHolder(): RankingsHolder
+    {
+        $holder = new RankingsHolder(static::class);
+        $holder->setPointsAttributionForResult(1, 10);
+        $holder->setPointsAttributionForResult(2, 7);
+        $holder->setPointsAttributionForResult(3, 5);
+        $holder->setPointsAttributionForResult(4, 3);
+        $holder->setPointsAttributionForResult(5, 2);
+        $holder->setPointsAttributionForResult(6, 1);
+        return $holder;
+    }
+
 
     public function getWon(): int
     {
@@ -48,48 +52,42 @@ class RankingRace extends AbstractRanking
     }
 
     /**
+     * @param RankingRace $rankingToCompare
      * @return int
      */
-    public static function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
+    public function compareToRanking(AbstractRanking $rankingToCompare): int
     {
-        static::checkStaticRankingClass($rankingA, $rankingB);
         // first compare points: more points is first
-        if ($rankingA->getPoints() > $rankingB->getPoints()) return 1;
-        if ($rankingA->getPoints() < $rankingB->getPoints()) return -1;
+        if ($this->getPoints() > $rankingToCompare->getPoints()) return 1;
+        if ($this->getPoints() < $rankingToCompare->getPoints()) return -1;
         // won games: more won is first
-        if ($rankingA->getWon() > $rankingB->getWon()) return 1;
-        if ($rankingA->getWon() < $rankingB->getWon()) return -1;
+        if ($this->getWon() > $rankingToCompare->getWon()) return 1;
+        if ($this->getWon() < $rankingToCompare->getWon()) return -1;
         // 2nd games: more 2 is first
-        if ($rankingA->getPlayedByResult(2) > $rankingB->getPlayedByResult(2)) return 1;
-        if ($rankingA->getPlayedByResult(2) < $rankingB->getPlayedByResult(2)) return -1;
+        if ($this->getPlayedByResult(2) > $rankingToCompare->getPlayedByResult(2)) return 1;
+        if ($this->getPlayedByResult(2) < $rankingToCompare->getPlayedByResult(2)) return -1;
         // 3rd games: more 3 is first
-        if ($rankingA->getPlayedByResult(3) > $rankingB->getPlayedByResult(3)) return 1;
-        if ($rankingA->getPlayedByResult(3) < $rankingB->getPlayedByResult(3)) return -1;
+        if ($this->getPlayedByResult(3) > $rankingToCompare->getPlayedByResult(3)) return 1;
+        if ($this->getPlayedByResult(3) < $rankingToCompare->getPlayedByResult(3)) return -1;
 
         // then compare performances if declared
-        $perfRanking = static::orderRankingsByPerformances($rankingA, $rankingB);
+        $perfRanking = $this->rankingsHolder->orderRankingsByPerformances($this, $rankingToCompare);
         if ($perfRanking !== 0) return $perfRanking;
 
         // played games: less played is first
-        if ($rankingA->getPlayed() < $rankingB->getPlayed()) return 1;
-        if ($rankingA->getPlayed() > $rankingB->getPlayed()) return -1;
+        if ($this->getPlayed() < $rankingToCompare->getPlayed()) return 1;
+        if ($this->getPlayed() > $rankingToCompare->getPlayed()) return -1;
         // last case, first registered entity is first
-        if ($rankingA->getEntitySeed() < $rankingB->getEntitySeed()) return 1;
+        if ($this->getEntitySeed() < $rankingToCompare->getEntitySeed()) return 1;
         return -1;
-    }
-
-
-    public static function resetPointAttribution()
-    {
-        static::$pointByResult = array();
     }
 
     /**
      * @param RankingRace[] $rankings
      */
-    public function combinedRankings(array $rankings)
+    public function combineRankings(array $rankings)
     {
-        parent::combinedRankings($rankings);
+        parent::combineRankings($rankings);
     }
 
 }
