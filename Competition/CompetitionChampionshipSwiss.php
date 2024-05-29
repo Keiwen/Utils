@@ -48,7 +48,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
 
         // if odd player, the last has a bye (if not already received)
         if (Divisibility::isNumberOdd(count($rankings))) {
-            for ($i = (count($rankings) - 1); $i > 0; $i++) {
+            for ($i = (count($rankings) - 1); $i > 0; $i--) {
                 // check if player had already received a bye
                 if (($rankings[$i])->getWonBye() > 0) continue;
 
