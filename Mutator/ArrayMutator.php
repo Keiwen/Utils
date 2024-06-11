@@ -302,4 +302,30 @@ class ArrayMutator
         return $shuffled;
     }
 
+    /**
+     * @param array $data
+     * @param int $part number of part, must be 1 or greater
+     * @return array one value per part, each part containing array of resulting element (keys are preserved)
+     */
+    public static function deal(array $data, int $part): array
+    {
+        if ($part < 2) return array();
+        $deal = array();
+        $currentPart = 0;
+        $initialKeys = array_keys($data);
+        $elementCount = 0;
+        while(!empty($data)) {
+            $key = $initialKeys[$elementCount];
+            $element = array_shift($data);
+            $deal[$currentPart][$key] = $element;
+            $currentPart++;
+            $elementCount++;
+            //if all parts filled, start over
+            if($currentPart >= $part) {
+                $currentPart = 0;
+            }
+        }
+        return $deal;
+    }
+
 }
