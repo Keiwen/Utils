@@ -156,6 +156,13 @@ abstract class AbstractCompetition
         return $this->gameRepository;
     }
 
+    /**
+     * @param int $round
+     * @return AbstractGame[]
+     */
+    abstract public function getGamesByRound(int $round): array;
+
+
     public function getRoundCount(): int
     {
         return $this->roundCount;

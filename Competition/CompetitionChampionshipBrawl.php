@@ -36,6 +36,18 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
 
     /**
+     * @param int $round
+     * @return GameBrawl[]
+     */
+    public function getGamesByRound(int $round): array
+    {
+        // for this kind of competition, round = game number
+        $game = $this->getGameByNumber($round);
+        return $game ? array($game) : array();
+    }
+
+
+    /**
      * @return GameBrawl
      * @throws CompetitionException
      */

@@ -43,6 +43,17 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
         return parent::getGameByNumber($gameNumber);
     }
 
+    /**
+     * @param int $round
+     * @return GamePerformances[]
+     */
+    public function getGamesByRound(int $round): array
+    {
+        // for this kind of competition, round = game number
+        $game = $this->getGameByNumber($round);
+        return $game ? array($game) : array();
+    }
+
 
     /**
      * @param bool $playerCanSkipGame

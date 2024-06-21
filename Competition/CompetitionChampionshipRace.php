@@ -36,6 +36,18 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
 
     /**
+     * @param int $round
+     * @return GameRace[]
+     */
+    public function getGamesByRound(int $round): array
+    {
+        // for this kind of competition, round = game number
+        $game = $this->getGameByNumber($round);
+        return $game ? array($game) : array();
+    }
+
+
+    /**
      * @return GameRace
      * @throws CompetitionException
      */
