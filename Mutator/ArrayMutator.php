@@ -309,7 +309,10 @@ class ArrayMutator
      */
     public static function deal(array $data, int $part): array
     {
-        if ($part < 2) return array();
+        if ($part < 1) return array();
+        if ($part == 1) {
+            return array(0 => array_values($data));
+        }
         $deal = array();
         $currentPart = 0;
         $initialKeys = array_keys($data);
