@@ -21,8 +21,8 @@ abstract class AbstractCompetition
     /** @var array $teamComp team key => array of player keys */
     protected $teamComp = array();
 
-    protected $promotionSpots = 0;
-    protected $relegationSpots = 0;
+    protected $qualificationSpots = 0;
+    protected $eliminationSpots = 0;
 
     /** @var array $playerEliminationRound key => round on which player has been eliminated */
     protected $playerEliminationRound = array();
@@ -810,28 +810,28 @@ abstract class AbstractCompetition
     }
 
 
-    public function setPromotionSpots(int $spots)
+    public function setQualificationSpots(int $spots)
     {
-        $this->promotionSpots = $spots;
+        $this->qualificationSpots = $spots;
     }
 
     /**
-     * Get how many spots are opened for a promotion at the end of the competition
+     * Get how many spots are opened for a qualification at the end of the competition
      * @return int
      */
-    public function getPromotionSpots(): int
+    public function getQualificationSpots(): int
     {
-        return $this->promotionSpots;
+        return $this->qualificationSpots;
     }
 
     /**
      * @return int[]|string[]
      */
-    public function getPlayerKeysForPromotion(): array
+    public function getPlayerKeysForQualification(): array
     {
         $rankedKeys = array();
         $rankings = $this->getRankings();
-        $rankings = array_slice($rankings, 0, $this->getPromotionSpots());
+        $rankings = array_slice($rankings, 0, $this->getQualificationSpots());
         foreach ($rankings as $ranking) {
             $nextPlayerKey = $ranking->getEntityKey();
             if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
@@ -840,29 +840,29 @@ abstract class AbstractCompetition
     }
 
 
-    public function setRelegationSpots(int $spots)
+    public function setEliminationSpots(int $spots)
     {
-        $this->relegationSpots = $spots;
+        $this->eliminationSpots = $spots;
     }
 
     /**
-     * Get how many spots are opened for a relegation at the end of the competition
+     * Get how many spots are opened for a elimination at the end of the competition
      * @return int
      */
-    public function getRelegationSpots(): int
+    public function getEliminationSpots(): int
     {
-        return $this->relegationSpots;
+        return $this->eliminationSpots;
     }
 
     /**
      * @return int[]|string[]
      */
-    public function getPlayerKeysForRelegation(): array
+    public function getPlayerKeysForElimination(): array
     {
-        if ($this->getRelegationSpots() == 0) return array();
+        if ($this->getEliminationSpots() == 0) return array();
         $rankedKeys = array();
         $rankings = $this->getRankings();
-        $rankings = array_slice($rankings, -($this->getRelegationSpots()));
+        $rankings = array_slice($rankings, -($this->getEliminationSpots()));
         foreach ($rankings as $ranking) {
             $nextPlayerKey = $ranking->getEntityKey();
             if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
@@ -877,9 +877,9 @@ abstract class AbstractCompetition
     {
         $rankedKeys = array();
         $rankings = $this->getRankings();
-        $stagnationCount = $this->playerCount - $this->getPromotionSpots() - $this->getRelegationSpots();
+        $stagnationCount = $this->playerCount - $this->getQualificationSpots() - $this->getEliminationSpots();
         if ($stagnationCount <= 0) return array();
-        $rankings = array_slice($rankings, $this->getPromotionSpots(), $stagnationCount);
+        $rankings = array_slice($rankings, $this->getQualificationSpots(), $stagnationCount);
         foreach ($rankings as $ranking) {
             $nextPlayerKey = $ranking->getEntityKey();
             if ($nextPlayerKey !== null) $rankedKeys[] = $nextPlayerKey;
