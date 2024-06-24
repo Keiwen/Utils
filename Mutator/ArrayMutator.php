@@ -311,7 +311,7 @@ class ArrayMutator
     {
         if ($part < 1) return array();
         if ($part == 1) {
-            return array(0 => array_values($data));
+            return array(0 => $data);
         }
         $deal = array();
         $currentPart = 0;
