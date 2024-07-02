@@ -107,8 +107,8 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
         if ($numberOfPlayersLeft == 3 && $this->includeThirdPlaceGame()) {
             // we just played third place game, so 3 winners: both finalists with bye game
             // and winner of third place.
-            // get players of third game and set their elimination round
-            $this->setPlayerEliminationRound($previousLosers[2], $this->currentRound - 1);
+            // get looser set their elimination round (as we had bye on first 2 games, we have only one looser defined)
+            $this->setPlayerEliminationRound($previousLosers[0], $this->currentRound - 1);
             $this->setPlayerEliminationRound($previousWinners[2], $this->currentRound);
             // Keep the first 2 winners and set the final round
             $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
