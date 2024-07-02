@@ -565,7 +565,13 @@ abstract class AbstractCompetition
     {
         $gameNumber = $this->nextGameNumber;
         // check first if championship already done
-        if ($gameNumber == -1) return;
+        if ($gameNumber == -1) {
+            $this->currentRound = -1;
+            return;
+        }
+        if ($gameNumber == 1) {
+            $this->currentRound = 1;
+        }
         do {
             $nextGamePlayed = false;
             $game = $this->getGameByNumber($gameNumber);
