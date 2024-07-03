@@ -45,7 +45,7 @@ class CompetitionBuilder
     const OPTION_ELIMINATION_SPOTS = 'elimination_spots';
 
 
-    protected $name;
+    protected $name = '';
     protected $type;
     protected $typeFQNClass;
     protected $options = array(
