@@ -51,7 +51,7 @@ class CompetitionBuilderTree
     }
 
     /**
-     * @return CompetitionTreePhase[]
+     * @return CompetitionBuilderPhase[]
      */
     public function getPhases(): array
     {
