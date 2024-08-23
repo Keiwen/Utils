@@ -251,6 +251,28 @@ class CompetitionBuilder
     }
 
 
+    public static function getDefaultRankingHolderForType(string $type): RankingsHolder
+    {
+        switch ($type) {
+            case self::TYPE_CHAMPIONSHIP_RACE:
+                $defaultRankingHolder = RankingRace::generateDefaultRankingsHolder();
+                break;
+            case self::TYPE_CHAMPIONSHIP_BRAWL:
+                $defaultRankingHolder = RankingBrawl::generateDefaultRankingsHolder();
+                break;
+            case self::TYPE_CHAMPIONSHIP_PERF:
+            case self::TYPE_ELIMINATION_CONTEST:
+            case self::TYPE_ELIMINATION_THRESHOLD:
+                $defaultRankingHolder = RankingPerformances::generateDefaultRankingsHolder();
+                break;
+            default:
+                $defaultRankingHolder = RankingDuel::generateDefaultRankingsHolder();
+                break;
+        }
+        return $defaultRankingHolder;
+    }
+
+
     public static function checkOptionValue(string $optionName, &$optionValue)
     {
         switch ($optionName) {
