@@ -62,9 +62,11 @@ class CompetitionBuilderTree
     /**
      * @param array $players
      * @param string $iterationName
+     * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
+     * @param array $teamComposition $teamKey => list of players keys
      * @return CompetitionTree|null
      */
-    public function startIteration(array $players, string $iterationName = ''): ?CompetitionTree
+    public function startIteration(array $players, string $iterationName = '', string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTree
     {
         if (empty($this->builderPhases)) return null;
 

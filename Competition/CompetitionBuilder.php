@@ -76,9 +76,6 @@ class CompetitionBuilder
     protected $performances = array();
     protected $expenses = array();
 
-    protected $teamComposition = array();
-    protected $playerEloAccess = '';
-
     public function __construct(string $type, array $options = array())
     {
         $this->type = $type;
@@ -332,10 +329,13 @@ class CompetitionBuilder
     }
 
     /**
+     * @param array $playersList
+     * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
+     * @param array $teamComposition $teamKey => list of players keys
      * @return AbstractCompetition
      * @throws CompetitionException
      */
-    public function buildForPlayers(array $playersList): AbstractCompetition
+    public function buildForPlayers(array $playersList, string $playerEloAccess = '', array $teamComposition = array()): AbstractCompetition
     {
 
         if ($this->getOptionValue(self::OPTION_SHUFFLE_PLAYER)) {
@@ -386,8 +386,8 @@ class CompetitionBuilder
         $competition->setQualificationSpots($this->getOptionValue(self::OPTION_QUALIFICATION_SPOTS));
         $competition->setEliminationSpots($this->getOptionValue(self::OPTION_ELIMINATION_SPOTS));
 
-        $competition->setTeamComposition($this->teamComposition);
-        $competition->setPlayerEloAccess($this->playerEloAccess);
+        $competition->setTeamComposition($teamComposition);
+        $competition->setPlayerEloAccess($playerEloAccess);
 
         // adjust rankings rules
         $rankingHolder = $competition->getRankingsHolder();
@@ -531,43 +531,6 @@ class CompetitionBuilder
     public function addExpense(string $expense, int $startingCapital = 0): self
     {
         $this->expenses[$expense] = $startingCapital;
-        return $this;
-    }
-
-
-    /**
-     * @return array
-     */
-    public function getTeamComposition(): array
-    {
-        return $this->teamComposition;
-    }
-
-    /**
-     * @param array $teamComposition $teamKey => list of players keys
-     * @return $this
-     */
-    public function setTeamComposition(array $teamComposition): self
-    {
-        $this->teamComposition = $teamComposition;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPlayerEloAccess(): string
-    {
-        return $this->playerEloAccess;
-    }
-
-    /**
-     * @param string $playerEloAccess method to access elo in object or field name to access elo in array
-     * @return $this
-     */
-    public function setPlayerEloAccess(string $playerEloAccess): self
-    {
-        $this->playerEloAccess = $playerEloAccess;
         return $this;
     }
 

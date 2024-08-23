@@ -15,14 +15,24 @@ class CompetitionTree
     protected $players = array();
     protected $unusedPlayers = array();
     protected $lastPhaseNameCompleted;
+    protected $playerEloAccess = '';
+    protected $teamComposition = array();
 
-
-    public function __construct(CompetitionBuilderTree $builderTree, array $players, string $iterationName = '')
+    /**
+     * @param CompetitionBuilderTree $builderTree
+     * @param array $players
+     * @param string $iterationName
+     * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
+     * @param array $teamComposition $teamKey => list of players keys
+     */
+    public function __construct(CompetitionBuilderTree $builderTree, array $players, string $iterationName = '', string $playerEloAccess = '', array $teamComposition = array())
     {
         $this->builderTree = $builderTree;
         $this->players = $players;
         $this->unusedPlayers = $players;
         $this->iterationName = $iterationName;
+        $this->playerEloAccess = $playerEloAccess;
+        $this->teamComposition = $teamComposition;
 
         $builderPhases = $builderTree->getPhases();
         $firstPhase = reset($builderPhases);
@@ -103,11 +113,28 @@ class CompetitionTree
             $playersForPhase[$playerKey] = $this->players[$playerKey];
         }
         // start new phase
-        $phase = $builderPhase->startPhase($playersForPhase);
+        $phase = $builderPhase->startPhase($playersForPhase, $this->playerEloAccess, $this->teamComposition);
         $this->phases[$builderPhase->getName()] = $phase;
         return $phase;
     }
 
+    public function getPlayerEloAccess(): string
+    {
+        return $this->playerEloAccess;
+    }
+
+    /**
+     * @return array $teamKey => list of players keys
+     */
+    public function getTeamComposition(): array
+    {
+        return $this->teamComposition;
+    }
+
+    public function getPlayers(): array
+    {
+        return $this->players;
+    }
 
     /**
      * @param CompetitionBuilderPhase $builderPhase

@@ -120,7 +120,14 @@ class CompetitionBuilderPhase
     }
 
 
-    public function startPhase(array $players): ?CompetitionTreePhase
+    /**
+     * @param array $players
+     * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
+     * @param array $teamComposition $teamKey => list of players keys
+     * @return CompetitionTreePhase|null
+     * @throws CompetitionException
+     */
+    public function startPhase(array $players, string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTreePhase
     {
         if (empty($this->builderGroups)) return null;
         $playersDispatch = $this->dispatchPlayers($players);
@@ -128,7 +135,7 @@ class CompetitionBuilderPhase
         $groupCount = 0;
         $competitions = array();
         foreach ($this->builderGroups as $name => $builder) {
-            $competition = $builder->buildForPlayers($playersDispatch[$groupCount]);
+            $competition = $builder->buildForPlayers($playersDispatch[$groupCount], $playerEloAccess, $teamComposition);
             $competitions[$name] = $competition;
             $groupCount++;
         }
