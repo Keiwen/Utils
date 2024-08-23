@@ -53,6 +53,10 @@ class CompetitionBuilderPhase
         return true;
     }
 
+    public function getGroup(string $name): ?CompetitionBuilder
+    {
+        return $this->builderGroups[$name] ?? null;
+    }
 
     /**
      * @return CompetitionBuilder[]
