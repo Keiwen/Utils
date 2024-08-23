@@ -70,7 +70,7 @@ class CompetitionBuilderTree
     {
         if (empty($this->builderPhases)) return null;
 
-        $iteration = new CompetitionTree($this, $players, $iterationName);
+        $iteration = new CompetitionTree($this, $players, $iterationName, $playerEloAccess, $teamComposition);
         $this->iterations[$iterationName] = $iteration;
         return $iteration;
     }
