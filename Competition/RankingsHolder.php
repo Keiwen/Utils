@@ -209,6 +209,7 @@ class RankingsHolder
      * add a performance type that should be taken into account when ranking.
      * the first added will be prioritized
      * @param string $performanceType
+     * @param bool $reverse if true, lowest value in this performance will rank higher
      */
     public function addPerformanceTypeToRank(string $performanceType, bool $reverse = false)
     {
