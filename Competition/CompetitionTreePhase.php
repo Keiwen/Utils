@@ -62,17 +62,22 @@ class CompetitionTreePhase
     }
 
 
-    public function getNextGame(): ?AbstractGame
+    /**
+     * @param string|null $groupName if next game found, set with group name
+     * @return AbstractGame|null
+     */
+    public function getNextGame(string &$groupName = null): ?AbstractGame
     {
         if ($this->completed) return null;
         $nextRound = -1;
         $nextGameCandidate = null;
-        foreach ($this->groups as $group) {
+        foreach ($this->groups as $name => $group) {
             $nextGameInGroup = $group->getNextGame();
             if (empty($nextGameInGroup)) continue;
             if ($nextRound == -1 || $nextRound > $nextGameInGroup->getCompetitionRound()) {
                 $nextRound = $nextGameInGroup->getCompetitionRound();
                 $nextGameCandidate = $nextGameInGroup;
+                $groupName = $name;
             }
         }
         if ($nextGameCandidate === null) {
@@ -103,6 +108,22 @@ class CompetitionTreePhase
             $sum += $group->getGameCount();
         }
         return $sum;
+    }
+
+    public function getGamesCompletedCount(): int
+    {
+        $sum = 0;
+        foreach ($this->groups as $group) {
+            $sum += $group->getGamesCompletedCount();
+        }
+        return $sum;
+    }
+
+    public function getGamesToPlayCount(): int
+    {
+        $gameCount = $this->getGameCount();
+        if ($gameCount) return 0;
+        return $gameCount - $this->getGamesCompletedCount();
     }
 
     public function getRoundCount(): int
