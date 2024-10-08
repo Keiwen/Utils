@@ -425,8 +425,9 @@ class CompetitionBuilder
         foreach ($this->getPerformancesTypes() as $type) {
             $rankingHolder->addPerformanceTypeToRank($type);
         }
-        foreach ($this->getExpensesTypes() as $type) {
+        foreach ($this->expenses as $type => $startingCapital) {
             $rankingHolder->addExpenseTypeToRank($type);
+            $rankingHolder->setStartingCapitalForExpense($type, $startingCapital);
         }
 
         // update game played will finish to initialize competition (at least compute current round to 1)
