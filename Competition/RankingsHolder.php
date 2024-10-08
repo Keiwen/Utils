@@ -175,6 +175,14 @@ class RankingsHolder
     }
 
     /**
+     * @return int[] expense type => capital
+     */
+    public function getStartingCapitals(): array
+    {
+        return $this->startingCapitals;
+    }
+
+    /**
      * @param int $points
      * @return bool true if set
      */
