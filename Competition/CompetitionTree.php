@@ -123,6 +123,11 @@ class CompetitionTree
         return $this->playerEloAccess;
     }
 
+    public function isUsingElo(): bool
+    {
+        return !empty($this->playerEloAccess);
+    }
+
     /**
      * @return array $teamKey => list of players keys
      */
@@ -131,9 +136,23 @@ class CompetitionTree
         return $this->teamComposition;
     }
 
+    public function isUsingTeam(): bool
+    {
+        return !empty($this->teamComposition);
+    }
+
     public function getPlayers(): array
     {
         return $this->players;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @return mixed|null if found, player data
+     */
+    public function getPlayer($playerKey)
+    {
+        return $this->players[$playerKey] ?? null;
     }
 
     /**
