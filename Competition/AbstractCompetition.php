@@ -876,6 +876,11 @@ abstract class AbstractCompetition
         return $rankedKeys;
     }
 
+    public function getFirstEliminationRank(): int
+    {
+        return $this->getPlayerCount() - $this->getEliminationSpots() + 1;
+    }
+
     /**
      * @return int[]|string[]
      */
