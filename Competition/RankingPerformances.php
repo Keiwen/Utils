@@ -20,6 +20,9 @@ class RankingPerformances extends AbstractRanking
         $holder = new RankingsHolder(static::class);
         $holder->setPointsAttributionForResult(GamePerformances::RESULT_WON, 0);
         $holder->setPointsAttributionForResult(GamePerformances::RESULT_LOSS, 0);
+        foreach (static::getDefaultPerformanceTypesToRank() as $performanceType) {
+            $holder->addPerformanceTypeToRank($performanceType);
+        }
         $holder->setPointsByBonus(0);
         $holder->setPointsByMalus(0);
         $holder->setPerfRankMethod(self::RANK_METHOD_SUM);

@@ -14,6 +14,9 @@ class RankingRace extends AbstractRanking
         $holder->setPointsAttributionForResult(4, 3);
         $holder->setPointsAttributionForResult(5, 2);
         $holder->setPointsAttributionForResult(6, 1);
+        foreach (static::getDefaultPerformanceTypesToRank() as $performanceType) {
+            $holder->addPerformanceTypeToRank($performanceType);
+        }
         return $holder;
     }
 

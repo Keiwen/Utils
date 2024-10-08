@@ -31,6 +31,14 @@ abstract class AbstractRanking
 
     abstract public static function generateDefaultRankingsHolder(): RankingsHolder;
 
+    /**
+     * @return string[]
+     */
+    public static function getDefaultPerformanceTypesToRank(): array
+    {
+        return array();
+    }
+
     public function setRankingsHolder(RankingsHolder $rankingsHolder)
     {
         $this->rankingsHolder = $rankingsHolder;

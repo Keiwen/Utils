@@ -14,9 +14,15 @@ class RankingBrawl extends AbstractRanking
         $holder = new RankingsHolder(static::class);
         $holder->setPointsAttributionForResult(GameBrawl::RESULT_WON, 1);
         $holder->setPointsAttributionForResult(GameBrawl::RESULT_LOSS, 0);
-        $holder->addPerformanceTypeToRank(self::PERF_TOTAL_BRAWL_COUNT_WON);
-        $holder->addPerformanceTypeToRank(self::PERF_TOTAL_BRAWL_COUNT_LOSS);
+        foreach (static::getDefaultPerformanceTypesToRank() as $performanceType) {
+            $holder->addPerformanceTypeToRank($performanceType);
+        }
         return $holder;
+    }
+
+    public static function getDefaultPerformanceTypesToRank(): array
+    {
+        return array(self::PERF_TOTAL_BRAWL_COUNT_WON, self::PERF_TOTAL_BRAWL_COUNT_LOSS);
     }
 
 

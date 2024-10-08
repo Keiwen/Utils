@@ -44,12 +44,17 @@ class RankingDuel extends AbstractRanking
         $holder->setPointsAttributionForResult(GameDuel::RESULT_WON, 3);
         $holder->setPointsAttributionForResult(GameDuel::RESULT_DRAWN, 1);
         $holder->setPointsAttributionForResult(GameDuel::RESULT_LOSS, 0);
-        $holder->addPerformanceTypeToRank(self::PERF_SCORE_DIFF);
-        $holder->addPerformanceTypeToRank(self::PERF_SCORE_FOR);
-        $holder->addPerformanceTypeToRank(self::PERF_SCORE_AGAINST);
+        foreach (static::getDefaultPerformanceTypesToRank() as $performanceType) {
+            $holder->addPerformanceTypeToRank($performanceType);
+        }
         $holder->setDuelPointMethod(self::POINT_METHOD_BASE);
         $holder->setDuelTieBreakerMethod(self::POINT_METHOD_BASE);
         return $holder;
+    }
+
+    public static function getDefaultPerformanceTypesToRank(): array
+    {
+        return array(self::PERF_SCORE_DIFF, self::PERF_SCORE_FOR, self::PERF_SCORE_AGAINST);
     }
 
     /**
