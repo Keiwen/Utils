@@ -31,6 +31,26 @@ class RankingsHolder
     }
 
 
+    public function duplicateEmptyHolder(): self
+    {
+        $duplicate = new static($this->rankingClassName);
+        foreach ($this->getPerformanceTypesToRank() as $performanceType) {
+            $duplicate->addPerformanceTypeToRank($performanceType);
+        }
+        foreach ($this->getExpenseTypesToRank() as $expenseType) {
+            $duplicate->addExpenseTypeToRank($expenseType);
+        }
+        $duplicate->setPointsAttribution($this->getPointsByResult());
+        $duplicate->setStartingCapitals($this->getStartingCapitals());
+        $duplicate->setPointsByBonus($this->getPointsByBonus());
+        $duplicate->setPointsByMalus($this->getPointsByMalus());
+        $duplicate->setPerfRankMethod($this->getPerfRankMethod());
+        $duplicate->setDuelPointMethod($this->getDuelPointMethod());
+        $duplicate->setDuelTieBreakerMethod($this->getDuelTieBreakerMethod());
+
+        return $duplicate;
+    }
+
     /**
      * @param int|string $entityKey
      * @param int $entitySeed
@@ -447,12 +467,15 @@ class RankingsHolder
         $teamSeed = 1;
         foreach ($teamComposition as $teamKey => $playerKeys) {
             if (!is_array($playerKeys)) continue;
+            /** @var AbstractRanking $teamRanking */
             $teamRanking = new ($this->rankingClassName)($teamKey, $teamSeed);
             $playerRankings = array();
             foreach ($playerKeys as $playerKey) {
                 $playerRanking = $this->getRanking($playerKey);
                 if ($playerRanking) $playerRankings[] = $playerRanking;
             }
+
+            $teamRanking->setRankingsHolder($this->duplicateEmptyHolder());
             $teamRanking->combineRankings($playerRankings);
 
             $teamRankings[$teamKey] = $teamRanking;
@@ -481,6 +504,7 @@ class RankingsHolder
         // first get combined rankings while computing average seed of the team
         foreach ($teamComposition as $teamKey => $playerInTeamKeys) {
             if (!is_array($playerInTeamKeys)) continue;
+            /** @var AbstractRanking $teamRanking */
             $teamRanking = new ($this->rankingClassName)($teamKey, $teamSeed);
             if (!$teamRanking instanceof RankingDuel) continue;
             $playerRankings = array();
@@ -492,6 +516,8 @@ class RankingsHolder
                     $sumSeeds += $playerIndexes[$playerKey] + 1;
                 }
             }
+
+            $teamRanking->setRankingsHolder($this->duplicateEmptyHolder());
             $teamRanking->combineRankings($playerRankings);
 
             $teamRankings[$teamKey] = $teamRanking;
