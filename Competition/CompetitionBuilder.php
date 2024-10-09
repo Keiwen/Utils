@@ -388,6 +388,9 @@ class CompetitionBuilder
 
         $competition->setTeamComposition($teamComposition);
         $competition->setPlayerEloAccess($playerEloAccess);
+        if ($this->getOptionValue(self::OPTION_SHUFFLE_PLAYER)) {
+            $competition->setHasPlayersShuffled(true);
+        }
 
         // adjust rankings rules
         $rankingHolder = $competition->getRankingsHolder();

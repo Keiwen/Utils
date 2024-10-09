@@ -38,6 +38,7 @@ abstract class AbstractCompetition
     protected $usingEloRating = false;
     protected $usingEloInt = false;
     protected $usingEloArray = false;
+    protected $hasPlayersShuffled = false;
 
     public function __construct(array $players)
     {
@@ -398,6 +399,16 @@ abstract class AbstractCompetition
     public function isUsingElo(): bool
     {
         return !empty($this->playerEloAccess);
+    }
+
+    public function hasPlayersShuffled(): bool
+    {
+        return !empty($this->hasPlayersShuffled);
+    }
+
+    public function setHasPlayersShuffled(bool $hasPlayersShuffled)
+    {
+        $this->hasPlayersShuffled = $hasPlayersShuffled;
     }
 
 
