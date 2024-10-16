@@ -105,6 +105,12 @@ class CompetitionTree
         return $phaseCandidate;
     }
 
+    public function getLastPhase(): ?CompetitionTreePhase
+    {
+        $lastPhase = end($this->phases);
+        return $lastPhase;
+    }
+
 
     protected function startPhaseInTree(CompetitionBuilderPhase $builderPhase): CompetitionTreePhase
     {
