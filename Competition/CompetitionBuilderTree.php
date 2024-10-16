@@ -44,7 +44,7 @@ class CompetitionBuilderTree
         // if given phase not found, nothing after
         if ($searchIndex === false) return null;
         // if next index out of bond, means that no further phase
-        if (count($phaseNames) < ($searchIndex + 1)) return null;
+        if (count($phaseNames) <= ($searchIndex + 1)) return null;
 
         $nextPhaseName = $phaseNames[$searchIndex + 1];
         return $this->getPhase($nextPhaseName);
