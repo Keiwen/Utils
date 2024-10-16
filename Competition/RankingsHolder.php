@@ -63,9 +63,13 @@ class RankingsHolder
 
     /**
      * @param AbstractRanking $ranking
+     * @throws CompetitionException if ranking class mismatch
      */
     public function integrateRanking(AbstractRanking $ranking)
     {
+        if (!$ranking instanceof $this->rankingClassName) {
+            throw new CompetitionException(sprintf('Ranking class %s must extends class %s set in ranking holder', get_class($ranking), $this->rankingClassName));
+        }
         $ranking->setRankingsHolder($this);
         $this->rankings[$ranking->getEntityKey()] = $ranking;
     }
