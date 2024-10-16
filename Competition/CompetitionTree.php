@@ -46,6 +46,11 @@ class CompetitionTree
         return $this->builderTree->getName() . ' ' . $this->iterationName;
     }
 
+    public function getIterationName(): string
+    {
+        return $this->iterationName;
+    }
+
     public function getBuilderTree(): CompetitionBuilderTree
     {
         return $this->builderTree;
