@@ -163,7 +163,7 @@ class CompetitionTreePhase
      */
     protected function mixGroupRankings(bool $forTeam = false, bool $byExpenses = false): array
     {
-        $allRankings = ($forTeam) ? $this->getRankings() : $this->getTeamRankings();
+        $allRankings = ($forTeam) ? $this->getTeamRankings() : $this->getRankings();
         if (empty($allRankings)) return array();
         $firstGroupRankings = reset($allRankings);
         $firstGroupName = array_key_first($allRankings);

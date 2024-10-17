@@ -276,7 +276,7 @@ class CompetitionTree
                     }
                 }
             } else {
-                $phaseRankings = $phase->getTeamRankings();
+                $phaseRankings = ($forTeams) ? $phase->getTeamRankings() : $phase->getRankings($byExpenses);
                 foreach ($phaseRankings as $groupRankings) {
                     foreach ($groupRankings as $ranking) {
                         /** @var AbstractRanking $ranking */
