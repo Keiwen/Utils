@@ -195,6 +195,22 @@ abstract class AbstractCompetition
     }
 
 
+    /**
+     * @param string[] $gameNames
+     */
+    public function renameGames(array $gameNames)
+    {
+        $gameNames = array_values($gameNames);
+        foreach ($gameNames as $index => $gameName) {
+            $game = $this->getGameByNumber($index + 1);
+            if ($game) {
+                $game->setName($gameName);
+            } else {
+                break;
+            }
+        }
+    }
+
 
     /**
      * get games for given round
