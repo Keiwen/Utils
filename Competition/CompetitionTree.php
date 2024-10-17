@@ -244,19 +244,89 @@ class CompetitionTree
     }
 
 
-
-    public function getRankings(bool $byExpenses = false): array
+    /**
+     * @param bool $forTeams
+     * @param bool $mixGroups
+     * @param bool $byExpenses
+     * @return string[] entityKey => name of the last phase reach
+     */
+    protected function getRankedEntityKeys(bool $forTeams = false, bool $mixGroups = true, bool $byExpenses = false): array
     {
-        return array();
-        // TODO rankings
+        $ranked = array();
+        $entities = ($forTeams) ? $this->getTeamComposition() : $this->getPlayers();
+        // entities array is entity key => entity value, we'll just check if entity key is set we'll not use value
+        $phases = $this->getPhases();
+        // reverse phase order to consider the latest phases first
+        $phases = array_reverse($phases);
+        foreach ($phases as $phaseName => $phase) {
+            if ($mixGroups) {
+                try {
+                    $phaseMixRankings = ($forTeams) ? $phase->getMixedTeamRankings() : $phase->getMixedRankings($byExpenses);
+                } catch (CompetitionException $e) {
+                    // ignore issue with mixed rankings in here
+                    $phaseMixRankings = array();
+                }
+                foreach ($phaseMixRankings as $ranking) {
+                    /** @var AbstractRanking $ranking */
+                    $entityKey = $ranking->getEntityKey();
+                    // take first ranking found, ignore potential others
+                    if (isset($entities[$entityKey])) {
+                        $ranked[$entityKey] = $phaseName;
+                        unset($entities[$entityKey]);
+                    }
+                }
+            } else {
+                $phaseRankings = $phase->getTeamRankings();
+                foreach ($phaseRankings as $groupRankings) {
+                    foreach ($groupRankings as $ranking) {
+                        /** @var AbstractRanking $ranking */
+                        $entityKey = $ranking->getEntityKey();
+                        // take first ranking found, ignore potential others
+                        if (isset($entities[$entityKey])) {
+                            $ranked[$entityKey] = $phaseName;
+                            unset($entities[$entityKey]);
+                        }
+                    }
+                }
+            }
+
+            // if all entities found, ignore previous phases that should come next in this loop
+            if (empty($entities)) break;
+        }
+
+        // we may have entities left: these should be on top as planed for future phases that did not occurs yet
+        if (!empty($entities)) {
+            $leftEntities = array();
+            foreach (array_keys($entities) as $entityKey) {
+                $leftEntities[$entityKey] = null;
+            }
+            $ranked = array_merge($leftEntities, $ranked);
+        }
+
+        return $ranked;
     }
 
-    public function getTeamRankings(): array
+
+
+    /**
+     * @param bool $mixGroups
+     * @param bool $byExpenses
+     * @return string[] playerKey => name of the last phase reach
+     */
+    public function getRankedPlayerKeys(bool $mixGroups = true, bool $byExpenses = false): array
     {
-        return array();
-        // TODO rankings
+        return $this->getRankedEntityKeys(false, $mixGroups, $byExpenses);
     }
 
+
+    /**
+     * @param bool $mixGroups
+     * @return string[] teamKey => name of the last phase reach
+     */
+    public function getRankedTeamKeys(bool $mixGroups = true): array
+    {
+        return $this->getRankedEntityKeys(true, $mixGroups);
+    }
 
 
 
