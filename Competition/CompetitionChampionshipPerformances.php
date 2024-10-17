@@ -27,7 +27,7 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
     protected function generateCalendar(): void
     {
         for ($round = 1; $round <= $this->roundCount; $round++) {
-            $this->addGame($round, false);
+            $this->addGame($round);
         }
     }
 
@@ -81,13 +81,11 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
 
     /**
      * @param int $round
-     * @param bool $playerCanSkipGame
      * @return GamePerformances
      */
-    protected function addGame(int $round, bool $playerCanSkipGame = true): AbstractGame
+    protected function addGame(int $round): AbstractGame
     {
-        // TODO $playerCanSkipGame should be a competition parameter, not here
-        $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), $playerCanSkipGame);
+        $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), false);
         $game->setCompetitionRound($round);
         $this->calendar[$round][] = $game;
         return $game;
