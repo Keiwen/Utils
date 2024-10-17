@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
+class CompetitionChampionshipBubble extends AbstractCompetition
 {
 
     /** @var GameDuel[] $gameRepository */
@@ -67,19 +67,19 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
 
         if ($startFromSeed == 2) {
             // if first player left aside, set a bye for him
-            $byeGame = $this->addGame($this->getPlayerKeyOnSeed(1), null, $this->currentRound);
+            $byeGame = $this->addGame($this->currentRound, $this->getPlayerKeyOnSeed(1), null);
             $byeGame->setEndOfBye();
         }
 
         // each seed will duel vs following seed
         // note that last seed is left aside one on two rounds (depend on player count odd/even)
         for ($homeSeed = $startFromSeed; $homeSeed <= ($this->playerCount - 1); $homeSeed += 2) {
-            $this->addGame($this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($homeSeed + 1), $this->currentRound);
+            $this->addGame($this->currentRound, $this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($homeSeed + 1));
         }
 
         if ($homeSeed == ($this->playerCount)) {
             // if last player left aside, set a bye for him
-            $byeGame = $this->addGame($this->getPlayerKeyOnSeed(($this->playerCount)), null, $this->currentRound);
+            $byeGame = $this->addGame($this->currentRound, $this->getPlayerKeyOnSeed(($this->playerCount)), null);
             $byeGame->setEndOfBye();
         }
 
@@ -118,13 +118,13 @@ class CompetitionChampionshipBubble extends AbstractFixedCalendarCompetition
 
 
     /**
+     * @param int $round
      * @param int|string $keyHome
      * @param int|string $keyAway
-     * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
+    protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
         $gameDuel = new GameDuel($keyHome, $keyAway);
         $gameDuel->setCompetitionRound($round);

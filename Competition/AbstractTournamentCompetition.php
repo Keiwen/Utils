@@ -3,7 +3,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompetition
+abstract class AbstractTournamentCompetition extends AbstractCompetition
 {
     protected $bestSeedAlwaysHome = false;
     protected $preRoundShuffle = false;
@@ -125,7 +125,7 @@ abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompet
     {
         $playerKeys = array_values($playerKeys);
         for ($i = 0; $i < count($playerKeys); $i += 2) {
-            $this->addGame($playerKeys[$i], $playerKeys[$i + 1], $this->currentRound);
+            $this->addGame($this->currentRound, $playerKeys[$i], $playerKeys[$i + 1]);
         }
     }
 
@@ -176,13 +176,13 @@ abstract class AbstractTournamentCompetition extends AbstractFixedCalendarCompet
     }
 
     /**
+     * @param int $round
      * @param int|string $keyHome
      * @param int|string $keyAway
-     * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
+    protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
         if ($keyAway !== null && $this->isBestSeedAlwaysHome()) {
             $seedHome = $this->getPlayerSeed($keyHome);

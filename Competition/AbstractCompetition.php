@@ -29,7 +29,10 @@ abstract class AbstractCompetition
 
     /** @var AbstractGame[] $gameRepository */
     protected $gameRepository = array();
+    /** @var array $calendar */
+    protected $calendar;
     protected $nextGameNumber = 1;
+    protected $nextRoundNumber = 1;
 
     /** @var RankingsHolder $rankingsHolder */
     protected $rankingsHolder;
@@ -46,7 +49,38 @@ abstract class AbstractCompetition
         $this->initializePlayers($players);
         // initialize rankings;
         $this->initializeRankings();
+        $this->generateCalendar();
+        $this->consolidateCalendar();
     }
+
+    abstract protected function generateCalendar();
+
+
+    protected function consolidateCalendar()
+    {
+        $gameNumber = 1;
+        foreach ($this->calendar as $round => $gamesOfTheRound) {
+            foreach ($gamesOfTheRound as $index => $game) {
+                // for each game, give a number to order it
+                /** @var AbstractGame $game */
+                $game->affectTo($this, $gameNumber);
+                $this->gameRepository[$gameNumber] = array(
+                    'round' => $round,
+                    'index' => $index,
+                );
+                $gameNumber++;
+            }
+        }
+    }
+
+    /**
+     * @return array round => [games in this round]
+     */
+    public function getCalendar(): array
+    {
+        return $this->calendar;
+    }
+
 
     protected function initializePlayers(array $players)
     {
@@ -148,20 +182,41 @@ abstract class AbstractCompetition
         return $this->playerEliminationRound[$playerKey] ?? 0;
     }
 
-
     /**
      * @return AbstractGame[]
      */
     public function getGames(): array
     {
-        return $this->gameRepository;
+        $games = array();
+        for ($i = 1; $i <= $this->getGameCount(); $i++) {
+            $games[] = $this->getGameByNumber($i);
+        }
+        return $games;
     }
 
+
+
     /**
+     * get games for given round
      * @param int $round
-     * @return AbstractGame[]
+     * @return AbstractGame[] games of the round
      */
-    abstract public function getGamesByRound(int $round): array;
+    public function getGamesByRound(int $round): array
+    {
+        return $this->calendar[$round] ?? array();
+    }
+
+
+
+    /**
+     * @param int $gameNumber
+     * @return int|null round number if found
+     */
+    public function getGameRound(int $gameNumber): ?int
+    {
+        if (!isset($this->gameRepository[$gameNumber])) return null;
+        return $this->gameRepository[$gameNumber]['round'] ?? null;
+    }
 
 
     public function getRoundCount(): int
@@ -553,7 +608,12 @@ abstract class AbstractCompetition
      */
     public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
-        return $this->gameRepository[$gameNumber - 1] ?? null;
+        if (!isset($this->gameRepository[$gameNumber])) return null;
+        $round = $this->gameRepository[$gameNumber]['round'] ?? 0;
+        $index = $this->gameRepository[$gameNumber]['index'] ?? 0;
+        if (empty($round)) return null;
+        if (!isset($this->calendar[$round])) return null;
+        return $this->calendar[$round][$index] ?? null;
     }
 
 
@@ -610,6 +670,8 @@ abstract class AbstractCompetition
             // set to -1 if out of bounds
             $this->nextGameNumber = -1;
         }
+        $this->nextRoundNumber = $this->getGameRound($gameNumber);
+        if (empty($this->nextRoundNumber)) $this->nextRoundNumber = -1;
     }
 
     /**
@@ -637,15 +699,38 @@ abstract class AbstractCompetition
     }
 
 
-    abstract protected function addGame(): AbstractGame;
+    protected function roundGapInCalendar(int $currentRound, int $roundGap): int
+    {
+        $nextRound = $currentRound + $roundGap;
+        if ($nextRound > $this->roundCount) $nextRound -= $this->roundCount;
+        if ($nextRound < 1) $nextRound += $this->roundCount;
+        return $nextRound;
+    }
+
+
 
     /**
-     * @return bool
+     * Call this method if players needs to be re-seeded after completing a round
+     * Only if GameDuel are used
      */
-    public function canGameBeAdded(): bool
+    protected function reseedPlayers()
     {
-        return true;
+        $lastRoundGames = $this->getGamesByRound($this->currentRound);
+        foreach ($lastRoundGames as $game) {
+            if (!($game instanceof GameDuel)) continue;
+            if ($game->hasAwayWon()) {
+                // switch both seeds
+                $homeSeed = $this->getPlayerSeed($game->getKeyHome());
+                $this->playersSeeds[$game->getKeyHome()] = $homeSeed + 1;
+                $this->playersSeeds[$game->getKeyAway()] = $homeSeed;
+            }
+        }
+        // call back order rankings
+        $this->rankingsHolder->computeRankingsOrder();
     }
+
+
+    abstract protected function addGame(int $round): AbstractGame;
 
     /**
      * @param bool $byExpenses
@@ -777,6 +862,40 @@ abstract class AbstractCompetition
         }
         return $rank - 1;
     }
+
+
+    /**
+     * @param int|string $playerKey
+     * @param int $seed
+     * @return bool
+     */
+    public function canPlayerReachSeed($playerKey, int $seed): bool
+    {
+        // in re-seeding competitions, you can reach seed if you have enough games
+        $playerRanking = $this->rankingsHolder->getRanking($playerKey);
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->rankingsHolder->getEntityRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $canReach = ($toBePlayedForPlayer >= ($playerRank - $seed));
+        return $canReach;
+    }
+
+    /**
+     * @param int|string $playerKey
+     * @param int $seed
+     * @return bool
+     */
+    public function canPlayerDropToSeed($playerKey, int $seed): bool
+    {
+        // in re-seeding competitions, you can reach seed if you have enough games
+        $playerRanking = $this->rankingsHolder->getRanking($playerKey);
+        if (empty($playerRanking)) return false;
+        $playerRank = $this->rankingsHolder->getEntityRank($playerKey);
+        $toBePlayedForPlayer = $this->getMaxGameCountByPlayer($playerKey) - $playerRanking->getPlayed();
+        $canDrop = ($toBePlayedForPlayer >= ($seed - $playerRank));
+        return $canDrop;
+    }
+
 
     /**
      * @param int|string $teamKey

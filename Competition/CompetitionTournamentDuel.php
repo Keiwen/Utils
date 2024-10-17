@@ -73,9 +73,10 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
             // beware if we had a play-in: we must consider reseeding from this round
             // + now it's round 2 not one
             $this->addGame(
+                $firstFinalRound,
                 $this->getPlayerKeyOnSeed($duel['seedHome'], true),
                 $this->getPlayerKeyOnSeed($duel['seedAway'], true),
-                $firstFinalRound);
+                );
         }
     }
 
@@ -111,7 +112,7 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
             $this->setPlayerEliminationRound($previousLosers[0], $this->currentRound - 1);
             $this->setPlayerEliminationRound($previousWinners[2], $this->currentRound);
             // Keep the first 2 winners and set the final round
-            $this->addGame($previousWinners[0], $previousWinners[1], $this->currentRound);
+            $this->addGame($this->currentRound, $previousWinners[0], $previousWinners[1]);
             $this->consolidateCalendar();
             return;
         }
@@ -122,13 +123,13 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
         if ($numberOfPlayersLeft == 2 && $this->includeThirdPlaceGame()) {
             // we have 2 finalists but a third place game is required!
             // add bye for previous winners
-            $byeGame = $this->addGame($previousWinners[0], null, $this->currentRound);
+            $byeGame = $this->addGame($this->currentRound, $previousWinners[0], null);
             $byeGame->setEndOfBye();
-            $byeGame = $this->addGame($previousWinners[1], null, $this->currentRound);
+            $byeGame = $this->addGame($this->currentRound, $previousWinners[1], null);
             $byeGame->setEndOfBye();
 
             // add the 3rd place game
-            $this->addGame($previousLosers[0], $previousLosers[1], $this->currentRound);
+            $this->addGame($this->currentRound, $previousLosers[0], $previousLosers[1]);
             $this->consolidateCalendar();
             return;
         }
@@ -173,14 +174,14 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
         // give a bye to players that does not need play-in
         $lastQualifiedSeed = $this->playerCount - $playinPlayerCount;
         for ($i = 1; $i <= $lastQualifiedSeed; $i++) {
-            $byeGame = $this->addGame($this->getPlayerKeyOnSeed($i), null, 1);
+            $byeGame = $this->addGame(1, $this->getPlayerKeyOnSeed($i), null);
             $byeGame->setEndOfBye();
         }
         // all the other goes through play-in
         for ($i = 1; $i <= $playinPlayerCount / 2; $i++) {
             $homeSeed = $lastQualifiedSeed + $i;
             $awaySeed = $this->playerCount - $i + 1;
-            $this->addGame($this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($awaySeed), 1);
+            $this->addGame(1, $this->getPlayerKeyOnSeed($homeSeed), $this->getPlayerKeyOnSeed($awaySeed));
         }
     }
 

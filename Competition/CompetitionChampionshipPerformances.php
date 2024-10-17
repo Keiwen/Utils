@@ -9,12 +9,28 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
     protected $performanceTypesToSum = array();
 
 
-    public function __construct(array $players, array $performanceTypesToSum = array())
+    /**
+     * @param array $players
+     * @param int $roundCount cannot be less than 1
+     * @param array $performanceTypesToSum
+     * @throws CompetitionException
+     */
+    public function __construct(array $players, int $roundCount, array $performanceTypesToSum = array())
     {
+        if ($roundCount < 1) throw new CompetitionException('Cannot create competition with less than 1 round');
+        $this->roundCount = $roundCount;
         $this->performanceTypesToSum = $performanceTypesToSum;
 
         parent::__construct($players);
     }
+
+    protected function generateCalendar(): void
+    {
+        for ($round = 1; $round <= $this->roundCount; $round++) {
+            $this->addGame($round, false);
+        }
+    }
+
 
     public static function getMinPlayerCount(): int
     {
@@ -43,53 +59,38 @@ class CompetitionChampionshipPerformances extends AbstractCompetition
         return parent::getGameByNumber($gameNumber);
     }
 
+
+    /**
+     * @return GamePerformances[]
+     */
+    public function getGames(): array
+    {
+        return parent::getGames();
+    }
+
+
     /**
      * @param int $round
      * @return GamePerformances[]
      */
     public function getGamesByRound(int $round): array
     {
-        // for this kind of competition, round = game number
-        $game = $this->getGameByNumber($round);
-        return $game ? array($game) : array();
+        return parent::getGamesByRound($round);
     }
 
 
     /**
+     * @param int $round
      * @param bool $playerCanSkipGame
      * @return GamePerformances
      */
-    protected function addGame(bool $playerCanSkipGame = true): AbstractGame
+    protected function addGame(int $round, bool $playerCanSkipGame = true): AbstractGame
     {
+        // TODO $playerCanSkipGame should be a competition parameter, not here
         $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), $playerCanSkipGame);
-        $gameNumber = count($this->gameRepository) + 1;
-        $game->affectTo($this, $gameNumber);
-        $game->setCompetitionRound($gameNumber);
-        $this->roundCount = $gameNumber;
-        $this->gameRepository[] = $game;
-        // if competition was considered as done, this new game became the next
-        if ($this->nextGameNumber == -1) $this->setNextGame($gameNumber);
+        $game->setCompetitionRound($round);
+        $this->calendar[$round][] = $game;
         return $game;
-    }
-
-    /**
-     * @param string $name
-     * @param bool $playerCanSkipGame
-     */
-    public function addPerformancesGame(string $name = '', bool $playerCanSkipGame = true)
-    {
-        $this->addGame($playerCanSkipGame)->setName($name);
-    }
-
-
-    /**
-     * @param int $count
-     */
-    public function addPerformancesGames(int $count)
-    {
-        for ($i = 1; $i <= $count; $i++) {
-            $this->addPerformancesGame();
-        }
     }
 
     /**

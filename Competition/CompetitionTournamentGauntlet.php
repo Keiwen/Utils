@@ -43,7 +43,7 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
         $lastSeed = $this->playerCount - $eliminated;
 
         // on new round, last 2 seed face each other
-        $this->addGame($this->getPlayerKeyOnSeed($lastSeed - 1), $this->getPlayerKeyOnSeed($lastSeed), $this->currentRound);
+        $this->addGame($this->currentRound, $this->getPlayerKeyOnSeed($lastSeed - 1), $this->getPlayerKeyOnSeed($lastSeed));
 
         // consolidate calendar after each round games generation
         $this->consolidateCalendar();

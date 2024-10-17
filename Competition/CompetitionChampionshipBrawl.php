@@ -8,10 +8,26 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     protected $gameRepository = array();
 
 
-    public function __construct(array $players)
+    /**
+     * @param array $players
+     * @param int $roundCount cannot be less than 1
+     * @throws CompetitionException
+     */
+    public function __construct(array $players, int $roundCount)
     {
+        if ($roundCount < 1) throw new CompetitionException('Cannot create competition with less than 1 round');
+        $this->roundCount = $roundCount;
         parent::__construct($players);
     }
+
+
+    protected function generateCalendar(): void
+    {
+        for ($round = 1; $round <= $this->roundCount; $round++) {
+            $this->addGame($round);
+        }
+    }
+
 
     public static function getMinPlayerCount(): int
     {
@@ -36,51 +52,35 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
 
     /**
+     * @return GameBrawl[]
+     */
+    public function getGames(): array
+    {
+        return parent::getGames();
+    }
+
+
+    /**
      * @param int $round
      * @return GameBrawl[]
      */
     public function getGamesByRound(int $round): array
     {
-        // for this kind of competition, round = game number
-        $game = $this->getGameByNumber($round);
-        return $game ? array($game) : array();
+        return parent::getGamesByRound($round);
     }
 
 
     /**
+     * @param int $round
      * @return GameBrawl
      * @throws CompetitionException
      */
-    protected function addGame(): AbstractGame
+    protected function addGame(int $round): AbstractGame
     {
         $brawl = new GameBrawl(array_keys($this->players));
-        $gameNumber = count($this->gameRepository) + 1;
-        $brawl->affectTo($this, $gameNumber);
-        $brawl->setCompetitionRound($gameNumber);
-        $this->roundCount = $gameNumber;
-        $this->gameRepository[] = $brawl;
-        // if competition was considered as done, this new game became the next
-        if ($this->nextGameNumber == -1) $this->setNextGame($gameNumber);
+        $brawl->setCompetitionRound($round);
+        $this->calendar[$round][] = $brawl;
         return $brawl;
-    }
-
-    /**
-     * @param string $name
-     * @throws CompetitionException
-     */
-    public function addBrawl(string $name = '')
-    {
-        $this->addGame()->setName($name);
-    }
-
-    /**
-     * @param int $count
-     */
-    public function addBrawls(int $count)
-    {
-        for ($i = 1; $i <= $count; $i++) {
-            $this->addBrawl();
-        }
     }
 
     /**

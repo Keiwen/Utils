@@ -3,7 +3,7 @@
 namespace Keiwen\Utils\Competition;
 
 
-class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
+class CompetitionEliminationThreshold extends AbstractCompetition
 {
     /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();
@@ -68,7 +68,7 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
     protected function generateCalendar(): void
     {
         $this->roundCount = 1;
-        $this->addGame(array_keys($this->players));
+        $this->addGame(1, array_keys($this->players));
     }
 
     /**
@@ -101,11 +101,11 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
 
 
     /**
-     * @param array $playerKeys
      * @param int $round
+     * @param array $playerKeys
      * @return AbstractGame
      */
-    protected function addGame(array $playerKeys = array(), int $round = 1): AbstractGame
+    protected function addGame(int $round, array $playerKeys = array()): AbstractGame
     {
         $gamePerf = new GamePerformances($playerKeys, $this->getPerformanceTypesToSum(), false);
         $gamePerf->setName($this->getMinPerformanceForRound($round));
@@ -162,7 +162,7 @@ class CompetitionEliminationThreshold extends AbstractFixedCalendarCompetition
                     $this->setPlayerEliminationRound($playerKey, $this->currentRound - 1);
                 }
             }
-            $newGame = $this->addGame($qualified, $potentialRound);
+            $newGame = $this->addGame($potentialRound, $qualified);
 
             // call back setNextGame
             $this->setNextGame($potentialRound);

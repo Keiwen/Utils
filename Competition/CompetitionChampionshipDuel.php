@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
+class CompetitionChampionshipDuel extends AbstractCompetition
 {
     protected $serieCount;
     protected $shuffleCalendar;
@@ -82,7 +82,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
         $this->roundCount = $this->playerCount - 1;
         // for each round, first player will encounter all other in ascending order
         for ($round = 1; $round <= $this->roundCount; $round++) {
-            $this->addGame($this->getPlayerKeyOnSeed(1), $this->getPlayerKeyOnSeed($round + 1), $round);
+            $this->addGame($round, $this->getPlayerKeyOnSeed(1), $this->getPlayerKeyOnSeed($round + 1));
         }
         // init round when match next player
         $roundWhenMatchNextPlayer = 1;
@@ -91,7 +91,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
             // first match is on round following the round when this player matched previous player
             $round = $this->roundGapInCalendar($roundWhenMatchNextPlayer, 1);
             // first match is with the last one
-            $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($this->playerCount), $round);
+            $this->addGame($round, $this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($this->playerCount));
 
             // then match in ascending order with all others, starting with next player
             // stop before the last one, as already matched just before (< instead of <= in loop condition)
@@ -99,7 +99,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
             $roundWhenMatchNextPlayer = $this->roundGapInCalendar($round, 1);
             for ($seedAway = $seedHome + 1; $seedAway < $this->playerCount; $seedAway++) {
                 $round = $this->roundGapInCalendar($round, 1);
-                $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway), $round);
+                $this->addGame($round, $this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway));
             }
         }
     }
@@ -122,7 +122,7 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
                 // If opponent seed is lower, means that this match should be already done
                 // in that case, advance to next step (next round next opponent)
                 if ($seedHome < $seedAway) {
-                    $this->addGame($this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway), $round);
+                    $this->addGame($round, $this->getPlayerKeyOnSeed($seedHome), $this->getPlayerKeyOnSeed($seedAway));
                 }
                 $round = $this->roundGapInCalendar($round, 1);
             }
@@ -152,9 +152,9 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
                         $reverse = Divisibility::isNumberEven($serie);
                     }
                     if ($reverse) {
-                        $this->addGame($game->getKeyAway(), $game->getKeyHome(), $round);
+                        $this->addGame($round, $game->getKeyAway(), $game->getKeyHome());
                     } else {
-                        $this->addGame($game->getKeyHome(), $game->getKeyAway(), $round);
+                        $this->addGame($round, $game->getKeyHome(), $game->getKeyAway());
                     }
                 }
                 $round++;
@@ -207,13 +207,13 @@ class CompetitionChampionshipDuel extends AbstractFixedCalendarCompetition
 
 
     /**
+     * @param int $round
      * @param int|string $keyHome
      * @param int|string $keyAway
-     * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
+    protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
         $gameDuel = new GameDuel($keyHome, $keyAway);
         $gameDuel->setCompetitionRound($round);

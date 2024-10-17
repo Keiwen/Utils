@@ -60,7 +60,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         foreach ($duelTable as $duel) {
             $keyHome = $this->getPlayerKeyOnSeed($duel['seedHome']);
             $keyAway = $this->getPlayerKeyOnSeed($duel['seedAway']);
-            $this->addGame($keyHome, $keyAway);
+            $this->addGame(1, $keyHome, $keyAway);
             $this->winnerBracketPlayerKeys[$keyHome] = true;
             $this->winnerBracketPlayerKeys[$keyAway] = true;
         }
@@ -190,7 +190,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
                 $winnersFromWB[] = $winnerKey;
             } else {
                 // set a bye for LB
-                $byeGame = $this->addGame($winnerKey, null, $this->currentRound);
+                $byeGame = $this->addGame($this->currentRound, $winnerKey, null);
                 $byeGame->setEndOfBye();
             }
         }
@@ -218,7 +218,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         $winnersFromLB = array();
         foreach ($winnerKeys as $winnerKey) {
             if ($this->isPlayerInWinnerBracket($winnerKey)) {
-                $byeGame = $this->addGame($winnerKey, null, $this->currentRound);
+                $byeGame = $this->addGame($this->currentRound, $winnerKey, null);
                 $byeGame->setEndOfBye();
             } else {
                 $winnersFromLB[] = $winnerKey;
@@ -245,7 +245,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         // note: as we may have shuffled loser array, loop on winner array to keep LB orders
         for ($i = 0; $i < count($winnersFromLB); $i ++) {
             // we let player from WB having home side
-            $this->addGame($losersKeyFromWB[$i], $winnersFromLB[$i], $this->currentRound);
+            $this->addGame($this->currentRound, $losersKeyFromWB[$i], $winnersFromLB[$i]);
         }
     }
 
@@ -265,7 +265,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         foreach ($winnerKeys as $winnerKey) {
             // set another bye for WB
             if ($this->isPlayerInWinnerBracket($winnerKey)) {
-                $byeGame = $this->addGame($winnerKey, null, $this->currentRound);
+                $byeGame = $this->addGame($this->currentRound, $winnerKey, null);
                 $byeGame->setEndOfBye();
             } else {
                 // track winners from LB
@@ -294,7 +294,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         $lastWBPlayer = reset($keysFromWB);
         $keysFromLB = array_keys($this->loserBracketPlayerKeys);
         $lastLBPlayer = reset($keysFromLB);
-        $this->addGame($lastWBPlayer, $lastLBPlayer, $this->currentRound);
+        $this->addGame($this->currentRound, $lastWBPlayer, $lastLBPlayer);
     }
 
     /**
@@ -311,7 +311,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         $keysFromLB = array_keys($this->loserBracketPlayerKeys);
         $lastLBPlayer = reset($keysFromLB);
         // as second final, player from LB won, so we give him the home spot this time
-        $this->addGame($lastLBPlayer, $lastWBPlayer, $this->currentRound);
+        $this->addGame($this->currentRound, $lastLBPlayer, $lastWBPlayer);
     }
 
 

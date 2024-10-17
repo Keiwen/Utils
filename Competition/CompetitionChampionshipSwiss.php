@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
+class CompetitionChampionshipSwiss extends AbstractCompetition
 {
 
     /** @var GameDuel[] $gameRepository */
@@ -53,7 +53,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
                 if (($rankings[$i])->getWonBye() > 0) continue;
 
                 // this player did not received any bye
-                $byeGame = $this->addGame(($rankings[$i])->getEntityKey(), null, $this->currentRound);
+                $byeGame = $this->addGame($this->currentRound, ($rankings[$i])->getEntityKey(), null);
                 $byeGame->setEndOfBye();
 
                 // remove for further duels
@@ -118,7 +118,7 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
             $awayRanking = $rankings[$i];
         }
 
-        $game = $this->addGame($homeRanking->getEntityKey(), $awayRanking->getEntityKey(), $this->currentRound);
+        $game = $this->addGame($this->currentRound, $homeRanking->getEntityKey(), $awayRanking->getEntityKey());
         unset($rankings[0], $rankings[$i]);
         return $game;
     }
@@ -153,13 +153,13 @@ class CompetitionChampionshipSwiss extends AbstractFixedCalendarCompetition
 
 
     /**
+     * @param int $round
      * @param int|string $keyHome
      * @param int|string $keyAway
-     * @param int $round
      * @return GameDuel
      * @throws CompetitionException
      */
-    protected function addGame($keyHome = 1, $keyAway = 2, int $round = 1): AbstractGame
+    protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
         $gameDuel = new GameDuel($keyHome, $keyAway);
         $gameDuel->setCompetitionRound($round);

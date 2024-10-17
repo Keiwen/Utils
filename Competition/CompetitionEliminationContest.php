@@ -4,7 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
+class CompetitionEliminationContest extends AbstractCompetition
 {
     /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();
@@ -88,7 +88,7 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
         } else {
             $this->roundCount = Divisibility::getPartFromTotal(count($this->players), $this->playerEliminatedPerRound);
         }
-        $this->addGame(array_keys($this->players));
+        $this->addGame(1, array_keys($this->players));
     }
 
     /**
@@ -121,11 +121,11 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
 
 
     /**
-     * @param array $playerKeys
      * @param int $round
+     * @param array $playerKeys
      * @return AbstractGame
      */
-    protected function addGame(array $playerKeys = array(), int $round = 1): AbstractGame
+    protected function addGame(int $round, array $playerKeys = array()): AbstractGame
     {
         $gamePerf = new GamePerformances($playerKeys, $this->getPerformanceTypesToSum(), false);
         $gamePerf->setCompetitionRound($round);
@@ -178,7 +178,7 @@ class CompetitionEliminationContest extends AbstractFixedCalendarCompetition
             foreach ($eliminatedKeys as $eliminatedKey) {
                 $this->setPlayerEliminationRound($eliminatedKey, $this->currentRound - 1);
             }
-            $newGame = $this->addGame($nextRoundKeys, $potentialRound);
+            $newGame = $this->addGame($potentialRound, $nextRoundKeys);
 
             // call back setNextGame
             $this->setNextGame($potentialRound);

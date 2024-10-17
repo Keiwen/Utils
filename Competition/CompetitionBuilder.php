@@ -176,11 +176,14 @@ class CompetitionBuilder
                 $optionsForType[] = self::OPTION_DUEL_TIE_BREAKER_METHOD;
                 break;
             case self::TYPE_CHAMPIONSHIP_RACE:
+                $optionsForType[] = self::OPTION_ROUNDS_COUNT;
                 $optionsForType[] = self::OPTION_POINTS_BY_POSITION;
                 break;
             case self::TYPE_CHAMPIONSHIP_BRAWL:
+                $optionsForType[] = self::OPTION_ROUNDS_COUNT;
                 break;
             case self::TYPE_CHAMPIONSHIP_PERF:
+                $optionsForType[] = self::OPTION_ROUNDS_COUNT;
                 $optionsForType[] = self::OPTION_PERF_RANK_METHOD;
                 break;
             case self::TYPE_ELIMINATION_CONTEST:
@@ -348,13 +351,13 @@ class CompetitionBuilder
                 $competition = new CompetitionChampionshipDuel($playersList, $this->getOptionValue(self::OPTION_SERIES_COUNT), $this->getOptionValue(self::OPTION_SHUFFLE_CALENDAR));
                 break;
             case self::TYPE_CHAMPIONSHIP_RACE:
-                $competition = new CompetitionChampionshipRace($playersList);
+                $competition = new CompetitionChampionshipRace($playersList, $this->getOptionValue(self::OPTION_ROUNDS_COUNT));
                 break;
             case self::TYPE_CHAMPIONSHIP_BRAWL:
-                $competition = new CompetitionChampionshipBrawl($playersList);
+                $competition = new CompetitionChampionshipBrawl($playersList, $this->getOptionValue(self::OPTION_ROUNDS_COUNT));
                 break;
             case self::TYPE_CHAMPIONSHIP_PERF:
-                $competition = new CompetitionChampionshipPerformances($playersList, $this->getPerformancesTypes(true));
+                $competition = new CompetitionChampionshipPerformances($playersList, $this->getOptionValue(self::OPTION_ROUNDS_COUNT), $this->getPerformancesTypes(true));
                 break;
             case self::TYPE_ELIMINATION_CONTEST:
                 $competition = new CompetitionEliminationContest($playersList, $this->getPerformancesTypes(true), $this->getOptionValue(self::OPTION_PLAYERS_PASSING_COUNT), $this->getOptionValue(self::OPTION_PLAYERS_ELIMINATED_PER_ROUND));
