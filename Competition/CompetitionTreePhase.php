@@ -154,6 +154,117 @@ class CompetitionTreePhase
         return $rankings;
     }
 
+
+    /**
+     * @param bool $forTeam false by default
+     * @param bool $byExpenses
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    protected function mixGroupRankings(bool $forTeam = false, bool $byExpenses = false): array
+    {
+        $allRankings = ($forTeam) ? $this->getRankings() : $this->getTeamRankings();
+        if (empty($allRankings)) return array();
+        $firstGroupRankings = reset($allRankings);
+        $firstGroupName = array_key_first($allRankings);
+        if (empty($firstGroupRankings)) return array();
+        /** @var AbstractRanking $firstRanking */
+        $firstRanking = reset($firstGroupRankings);
+        if (empty($firstRanking)) return array();
+        $firstGroup = $this->getGroup($firstGroupName);
+        if (empty($firstGroup)) return array();
+        $rankingHolder = $firstGroup->getRankingsHolder();
+        $mixedRankingHolder = $rankingHolder->duplicateEmptyHolder();
+        try {
+            foreach ($allRankings as $groupRankings) {
+                foreach ($groupRankings as $ranking) {
+                    /** @var AbstractRanking $ranking */
+                    $mixedRanking = clone $ranking;
+                    $mixedRankingHolder->integrateRanking($mixedRanking);
+                }
+            }
+        } catch (CompetitionException $e) {
+            throw new CompetitionException(sprintf('Cannot build mixed rankings: %s', $e->getMessage()));
+        }
+
+        $mixedRankingHolder->computeRankingsOrder();
+        // even for team we need to use getRankings here and not teamRankings
+        return ($byExpenses && !$forTeam) ? $mixedRankingHolder->getRankingsByExpenses() : $mixedRankingHolder->getRankings();
+    }
+
+
+
+    /**
+     * @param bool $byExpenses
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedRankings(bool $byExpenses = false): array
+    {
+        return $this->mixGroupRankings(false, $byExpenses);
+    }
+
+
+
+    /**
+     * @param string[]|int[] $keys
+     * @param bool $byExpenses
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedRankingsForKeys(array $keys, bool $byExpenses = false): array
+    {
+        $filtered = array();
+        $allMixed = $this->getMixedRankings($byExpenses);
+        foreach ($allMixed as $ranking) {
+            if (in_array($ranking->getEntityKey(), $keys)) {
+                $filtered[] = $ranking;
+            }
+        }
+        return $filtered;
+    }
+
+
+    /**
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedRankingsForQualification(): array
+    {
+        return $this->getMixedRankingsForKeys($this->getPlayerKeysForQualification());
+    }
+
+    /**
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedRankingsForStagnation(): array
+    {
+        return $this->getMixedRankingsForKeys($this->getPlayerKeysForStagnation());
+    }
+
+    /**
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedRankingsForElimination(): array
+    {
+        return $this->getMixedRankingsForKeys($this->getPlayerKeysForElimination());
+    }
+
+
+
+    /**
+     * @return AbstractRanking[]
+     * @throws CompetitionException
+     */
+    public function getMixedTeamRankings(): array
+    {
+        return $this->mixGroupRankings(true);
+    }
+
+
+
     /**
      * @return int[]|string[]
      */
