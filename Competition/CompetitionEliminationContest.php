@@ -86,7 +86,7 @@ class CompetitionEliminationContest extends AbstractCompetition
         if ($this->usePlayerPassingCount()) {
             $this->roundCount = count($this->playerPassingCount) + 1;
         } else {
-            $this->roundCount = Divisibility::getPartFromTotal(count($this->players), $this->playerEliminatedPerRound);
+            $this->roundCount = Divisibility::getPartFromTotal(count($this->players), $this->playerEliminatedPerRound) - 1;
         }
         $this->addGame(1, array_keys($this->players));
     }
@@ -165,8 +165,8 @@ class CompetitionEliminationContest extends AbstractCompetition
             // we run out of games, check if new game needed
             $potentialRound = $this->lastGameNumberAdded + 1;
             $playerCountExpected = $this->getPlayersCountToStartRound($potentialRound);
-            // if no player expected, it's done!
-            if ($playerCountExpected == 0) return;
+            // if no more than 1 player expected, it's done!
+            if ($playerCountExpected <= 1) return;
 
             $this->currentRound++;
 
