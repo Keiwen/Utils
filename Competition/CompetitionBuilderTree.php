@@ -65,6 +65,7 @@ class CompetitionBuilderTree
      * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
      * @param array $teamComposition $teamKey => list of players keys
      * @return CompetitionTree|null
+     * @throws CompetitionException
      */
     public function startIteration(array $players, string $iterationName = '', string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTree
     {
