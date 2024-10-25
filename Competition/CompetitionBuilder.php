@@ -47,7 +47,7 @@ class CompetitionBuilder
 
     protected $name = '';
     protected $type;
-    protected $typeFQNClass;
+    protected $typeFQCNlass;
     protected $options = array(
         self::OPTION_BONUS => 0,
         self::OPTION_MALUS => 0,
@@ -79,9 +79,9 @@ class CompetitionBuilder
     public function __construct(string $type, array $options = array())
     {
         $this->type = $type;
-        $this->typeFQNClass = static::getFQNClassForType($type);
-        if (!is_subclass_of($this->typeFQNClass, AbstractCompetition::class)) {
-            throw new CompetitionException(sprintf('Cannot create builder for competition type %s, associated class %s not found or not child of AbstractCompetition. Did you forget to declare it in getFQNClassForType() class?', $type, $this->typeFQNClass));
+        $this->typeFQCNlass = static::getFQCNlassForType($type);
+        if (!is_subclass_of($this->typeFQCNlass, AbstractCompetition::class)) {
+            throw new CompetitionException(sprintf('Cannot create builder for competition type %s, associated class %s not found or not child of AbstractCompetition. Did you forget to declare it in getFQCNlassForType() class?', $type, $this->typeFQCNlass));
         }
         $this->options = array_merge($this->options, $options);
         foreach ($this->options as $optionName => &$optionValue) {
@@ -138,7 +138,7 @@ class CompetitionBuilder
     }
 
 
-    public static function getFQNClassForType(string $type): ?string
+    public static function getFQCNlassForType(string $type): ?string
     {
         switch ($type) {
             case self::TYPE_CHAMPIONSHIP_DUEL: return CompetitionChampionshipDuel::class;
