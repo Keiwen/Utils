@@ -130,6 +130,12 @@ class CompetitionBuilderPhase
     public function startPhase(array $players, string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTreePhase
     {
         if (empty($this->builderGroups)) return null;
+
+        $computedMinPlayers = $this->computeMinPlayersCount();
+        if (count($players) < $computedMinPlayers) {
+            throw new CompetitionException(sprintf('Not enough players to start phase, at least %d required', $computedMinPlayers));
+        }
+
         $playersDispatch = $this->dispatchPlayers($players);
 
         $groupCount = 0;
@@ -159,5 +165,22 @@ class CompetitionBuilderPhase
         return $dispatch;
     }
 
+
+    /**
+     * compute minimum players count needed to build phase
+     * (= sum of minimum number of players in each group of this phase)
+     * @return int
+     */
+    public function computeMinPlayersCount(): int
+    {
+        $sum = 0;
+        foreach ($this->getGroups() as $group) {
+            $groupFQCN = CompetitionBuilder::getFQCNlassForType($group->getType());
+            if (method_exists($groupFQCN, 'getMinPlayerCount')) {
+                $sum += (int) ($groupFQCN)::getMinPlayerCount();
+            }
+        }
+        return $sum;
+    }
 
 }

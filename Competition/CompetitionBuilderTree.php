@@ -71,6 +71,11 @@ class CompetitionBuilderTree
     {
         if (empty($this->builderPhases)) return null;
 
+        $computedMinPlayers = $this->computeMinPlayersCount();
+        if (count($players) < $computedMinPlayers) {
+            throw new CompetitionException(sprintf('Not enough players to start tree, at least %d required', $computedMinPlayers));
+        }
+
         $iteration = new CompetitionTree($this, $players, $iterationName, $playerEloAccess, $teamComposition);
         $this->iterations[$iterationName] = $iteration;
         return $iteration;
@@ -94,5 +99,20 @@ class CompetitionBuilderTree
         return $this->name;
     }
 
+
+    /**
+     * compute minimum players count needed to build tree
+     * (= max of minimum number of players for a phase in tree)
+     * @return int
+     */
+    public function computeMinPlayersCount(): int
+    {
+        $minPlayersInPhase = array();
+        foreach ($this->getPhases() as $phase) {
+            $minPlayersInPhase[] = $phase->computeMinPlayersCount();
+        }
+        if (empty($minPlayersInPhase)) return 0;
+        return max($minPlayersInPhase);
+    }
 
 }
