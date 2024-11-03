@@ -1,8 +1,10 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\AbstractRanking;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\RankingDuel;
 use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionTournamentSwap extends AbstractTournamentCompetition

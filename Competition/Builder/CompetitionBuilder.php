@@ -3,20 +3,20 @@
 namespace Keiwen\Utils\Competition\Builder;
 
 
-use Keiwen\Utils\Competition\AbstractCompetition;
-use Keiwen\Utils\Competition\CompetitionChampionshipBrawl;
-use Keiwen\Utils\Competition\CompetitionChampionshipBubble;
-use Keiwen\Utils\Competition\CompetitionChampionshipDuel;
-use Keiwen\Utils\Competition\CompetitionChampionshipPerformances;
-use Keiwen\Utils\Competition\CompetitionChampionshipRace;
-use Keiwen\Utils\Competition\CompetitionChampionshipSwiss;
-use Keiwen\Utils\Competition\CompetitionEliminationContest;
-use Keiwen\Utils\Competition\CompetitionEliminationThreshold;
+use Keiwen\Utils\Competition\Type\AbstractCompetition;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipBrawl;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipBubble;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipDuel;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipPerformances;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipRace;
+use Keiwen\Utils\Competition\Type\CompetitionChampionshipSwiss;
+use Keiwen\Utils\Competition\Type\CompetitionEliminationContest;
+use Keiwen\Utils\Competition\Type\CompetitionEliminationThreshold;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\CompetitionTournamentDoubleElimination;
-use Keiwen\Utils\Competition\CompetitionTournamentDuel;
-use Keiwen\Utils\Competition\CompetitionTournamentGauntlet;
-use Keiwen\Utils\Competition\CompetitionTournamentSwap;
+use Keiwen\Utils\Competition\Type\CompetitionTournamentDoubleElimination;
+use Keiwen\Utils\Competition\Type\CompetitionTournamentDuel;
+use Keiwen\Utils\Competition\Type\CompetitionTournamentGauntlet;
+use Keiwen\Utils\Competition\Type\CompetitionTournamentSwap;
 use Keiwen\Utils\Competition\GameDuel;
 use Keiwen\Utils\Competition\RankingBrawl;
 use Keiwen\Utils\Competition\RankingDuel;

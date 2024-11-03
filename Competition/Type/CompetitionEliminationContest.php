@@ -1,54 +1,73 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Type;
 
-
+use Keiwen\Utils\Competition\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\GamePerformances;
+use Keiwen\Utils\Competition\RankingPerformances;
+use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Math\Divisibility;
 
-class CompetitionEliminationThreshold extends AbstractCompetition
+class CompetitionEliminationContest extends AbstractCompetition
 {
     /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();
 
     protected $lastGameNumberAdded = 0;
 
-    protected $minPerformanceFirstRound = 0;
-    protected $minPerformanceRoundStep = 1;
+    protected $playerPassingCount;
+    protected $playerEliminatedPerRound = 0;
     protected $performanceTypesToSum = array();
 
     /**
      * @param array $players
      * @param string[] $performanceTypesToSum performance type to consider on sum. Leave it empty to take all performance from rankings
-     * @param int $minPerformanceFirstRound total performance to reach to pass first round
-     * @param int $minPerformanceRoundStep increment to total performance to reach for each additional round
+     * @param int[] $playerPassingCount for each round, number of players to keep for next round
+     * @param int $playerEliminatedPerRound after each round, number of player to eliminate
      * @throws CompetitionException
      */
-    public function __construct(array $players, array $performanceTypesToSum = array(), int $minPerformanceFirstRound = 0, int $minPerformanceRoundStep = 1)
+    public function __construct(array $players, array $performanceTypesToSum = array(), array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
     {
         if (empty($performanceTypesToSum)) throw new CompetitionException('Cannot create competition without performance to sum');
         $this->performanceTypesToSum = $performanceTypesToSum;
 
-        if ($minPerformanceRoundStep < 1) {
-            throw new CompetitionException('Cannot create competition without performance step');
+        foreach ($playerPassingCount as $count) {
+            if (!is_int($count)) throw new CompetitionException('Cannot create competition with player passing count as non-integer value');
         }
-        $this->minPerformanceFirstRound = $minPerformanceFirstRound;
-        $this->minPerformanceRoundStep = $minPerformanceRoundStep;
+        $this->playerPassingCount = $playerPassingCount;
+        if (empty($playerPassingCount)) {
+            if ($playerEliminatedPerRound < 1) {
+                throw new CompetitionException('Cannot create competition without player elimination');
+            }
+            $this->playerEliminatedPerRound = $playerEliminatedPerRound;
+        }
         parent::__construct($players);
     }
 
     public static function getMinPlayerCount(): int
     {
-        return 2;
+        return 3;
     }
 
-    public function getMinPerformanceFirstRound(): array
+    public function getPlayerPassingCount(): array
     {
-        return $this->minPerformanceFirstRound;
+        return $this->playerPassingCount;
     }
 
-    public function getMinPerformanceRoundStep(): int
+    public function getPlayerEliminatedPerRound(): int
     {
-        return $this->minPerformanceRoundStep;
+        return $this->playerEliminatedPerRound;
+    }
+
+    public function usePlayerPassingCount(): bool
+    {
+        return !empty($this->playerPassingCount);
+    }
+
+    public function usePlayerEliminatedPerRound(): bool
+    {
+        return !empty($this->playerEliminatedPerRound);
     }
 
     public function getPerformanceTypesToSum(): array
@@ -69,7 +88,11 @@ class CompetitionEliminationThreshold extends AbstractCompetition
 
     protected function generateCalendar(): void
     {
-        $this->roundCount = 1;
+        if ($this->usePlayerPassingCount()) {
+            $this->roundCount = count($this->playerPassingCount) + 1;
+        } else {
+            $this->roundCount = Divisibility::getPartFromTotal(count($this->players), $this->playerEliminatedPerRound) - 1;
+        }
         $this->addGame(1, array_keys($this->players));
     }
 
@@ -110,7 +133,6 @@ class CompetitionEliminationThreshold extends AbstractCompetition
     protected function addGame(int $round, array $playerKeys = array()): AbstractGame
     {
         $gamePerf = new GamePerformances($playerKeys, $this->getPerformanceTypesToSum(), false);
-        $gamePerf->setName($this->getMinPerformanceForRound($round));
         $gamePerf->setCompetitionRound($round);
         $this->calendar[$round][] = $gamePerf;
         $gameNumber = $round;
@@ -148,23 +170,20 @@ class CompetitionEliminationThreshold extends AbstractCompetition
             // we run out of games, check if new game needed
             $potentialRound = $this->lastGameNumberAdded + 1;
             $playerCountExpected = $this->getPlayersCountToStartRound($potentialRound);
-            // if no player expected, it's done!
-            if ($playerCountExpected == 0) return;
+            // if no more than 1 player expected, it's done!
+            if ($playerCountExpected <= 1) return;
 
-            // else we need another round
-            $this->roundCount++;
             $this->currentRound++;
 
             $lastGame = $this->getGameByNumber($this->lastGameNumberAdded);
-            $qualified = $lastGame->getPlayersKeysThatReachedPerformance($this->getMinPerformanceForRound($this->lastGameNumberAdded));
+            $keysRanked = array_keys($lastGame->getGameRanks());
+            $nextRoundKeys = array_slice($keysRanked, 0, $playerCountExpected);
             // store elimination round
-            $alreadyEliminated = array_keys($this->playerEliminationRound);
-            foreach ($this->getPlayerKeysSeeded() as $playerKey) {
-                if (!in_array($playerKey, $qualified) && !in_array($playerKey, $alreadyEliminated)) {
-                    $this->setPlayerEliminationRound($playerKey, $this->currentRound - 1);
-                }
+            $eliminatedKeys = array_slice($keysRanked, $playerCountExpected);
+            foreach ($eliminatedKeys as $eliminatedKey) {
+                $this->setPlayerEliminationRound($eliminatedKey, $this->currentRound - 1);
             }
-            $newGame = $this->addGame($potentialRound, $qualified);
+            $newGame = $this->addGame($potentialRound, $nextRoundKeys);
 
             // call back setNextGame
             $this->setNextGame($potentialRound);
@@ -178,24 +197,19 @@ class CompetitionEliminationThreshold extends AbstractCompetition
      */
     public function getPlayersCountToStartRound(int $round): int
     {
-        // if empty round, 0 players expected
+        // if out of bonds, 0 players expected
+        if ($round > $this->roundCount) return 0;
         if ($round < 1) return 0;
         // for first round, all players
         if ($round == 1) return $this->playerCount;
-
-        $gameBefore = $this->getGameByNumber($round - 1);
-        $qualified = $gameBefore->getPlayersKeysThatReachedPerformance($this->getMinPerformanceForRound($round - 1));
-        return count($qualified);
-    }
-
-
-    /**
-     * @param int $round
-     * @return int min perf to reach to succeed given round
-     */
-    public function getMinPerformanceForRound(int $round): int
-    {
-        return $this->minPerformanceFirstRound + ($round - 1) * $this->minPerformanceRoundStep;
+        if ($this->usePlayerPassingCount()) {
+            // round X, so index is at -1: as we counting players passing
+            // at the end of round, so -1 again
+            return $this->playerPassingCount[$round - 2];
+        } else {
+            $eliminationCount = $this->playerEliminatedPerRound * ($round - 1);
+            return $this->playerCount - $eliminationCount;
+        }
     }
 
 
@@ -212,14 +226,14 @@ class CompetitionEliminationThreshold extends AbstractCompetition
     }
 
     /**
-     * @param CompetitionEliminationThreshold $competition
+     * @param CompetitionEliminationContest $competition
      * @param bool $ranked
-     * @return CompetitionEliminationThreshold
+     * @return CompetitionEliminationContest
      * @throws CompetitionException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        $newCompetition = new CompetitionEliminationThreshold($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getMinPerformanceFirstRound(), $competition->getMinPerformanceRoundStep());
+        $newCompetition = new CompetitionEliminationContest($competition->getPlayers($ranked), $competition->getPerformanceTypesToSum(), $competition->getPlayerPassingCount(), $competition->getPlayerEliminatedPerRound());
         $newCompetition->setTeamComposition($competition->getTeamComposition());
         return $newCompetition;
     }

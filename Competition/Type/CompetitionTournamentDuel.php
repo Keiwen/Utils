@@ -1,6 +1,6 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Type;
 
 use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Math\Divisibility;

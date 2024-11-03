@@ -4,6 +4,7 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Competition\Builder\CompetitionBuilderTree;
 use Keiwen\Utils\Competition\Builder\CompetitionBuilderPhase;
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 
 class CompetitionTree
 {

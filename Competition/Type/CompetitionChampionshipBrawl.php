@@ -1,12 +1,16 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\GameBrawl;
+use Keiwen\Utils\Competition\RankingBrawl;
+use Keiwen\Utils\Competition\RankingsHolder;
 
-class CompetitionChampionshipRace extends AbstractCompetition
+class CompetitionChampionshipBrawl extends AbstractCompetition
 {
-    /** @var GameRace[] $gameRepository */
+    /** @var GameBrawl[] $gameRepository */
     protected $gameRepository = array();
 
 
@@ -22,6 +26,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
         parent::__construct($players);
     }
 
+
     protected function generateCalendar(): void
     {
         for ($round = 1; $round <= $this->roundCount; $round++) {
@@ -29,21 +34,22 @@ class CompetitionChampionshipRace extends AbstractCompetition
         }
     }
 
+
     public static function getMinPlayerCount(): int
     {
-        return 2;
+        return 3;
     }
+
 
     protected function initializeRankingsHolder(): RankingsHolder
     {
-        return RankingRace::generateDefaultRankingsHolder();
+        return RankingBrawl::generateDefaultRankingsHolder();
     }
-
 
     /**
      * get game with a given number
      * @param int $gameNumber
-     * @return GameRace|null game if found
+     * @return GameBrawl|null game if found
      */
     public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
@@ -52,7 +58,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
 
     /**
-     * @return GameRace[]
+     * @return GameBrawl[]
      */
     public function getGames(): array
     {
@@ -62,7 +68,7 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
     /**
      * @param int $round
-     * @return GameRace[]
+     * @return GameBrawl[]
      */
     public function getGamesByRound(int $round): array
     {
@@ -72,24 +78,24 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
     /**
      * @param int $round
-     * @return GameRace
+     * @return GameBrawl
      * @throws CompetitionException
      */
     protected function addGame(int $round): AbstractGame
     {
-        $race = new GameRace(array_keys($this->players));
-        $race->setCompetitionRound($round);
-        $this->calendar[$round][] = $race;
-        return $race;
+        $brawl = new GameBrawl(array_keys($this->players));
+        $brawl->setCompetitionRound($round);
+        $this->calendar[$round][] = $brawl;
+        return $brawl;
     }
 
     /**
-     * @param GameRace $game
+     * @param GameBrawl $game
      */
     protected function updateRankingsForGame($game)
     {
-        $positions = $game->getPositions();
-        foreach ($positions as $position => $playerKey)  {
+        $results = $game->getResults();
+        foreach ($results as $playerKey => $result)  {
             $ranking = $this->rankingsHolder->getRanking($playerKey);
             if ($ranking) {
                 $ranking->saveGame($game);
@@ -100,20 +106,26 @@ class CompetitionChampionshipRace extends AbstractCompetition
 
     public function getMaxPointForAGame(): int
     {
-        return $this->rankingsHolder->getPointsForResult(1);
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return -1;
+        return $firstRanking->getPointsForWon(true);
     }
 
 
     public function getMinPointForAGame(): int
     {
-        return 0;
+        $rankings = $this->rankingsHolder->getAllRankings();
+        $firstRanking = reset($rankings);
+        if (empty($firstRanking)) return 0;
+        return $firstRanking->getPointsForLoss(true);
     }
 
 
     /**
-     * @param CompetitionChampionshipRace $competition
+     * @param CompetitionChampionshipBrawl $competition
      * @param bool $ranked
-     * @return CompetitionChampionshipRace
+     * @return CompetitionChampionshipBrawl
      * @throws CompetitionException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition

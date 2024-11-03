@@ -1,27 +1,34 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\GamePerformances;
+use Keiwen\Utils\Competition\RankingPerformances;
+use Keiwen\Utils\Competition\RankingsHolder;
 
-class CompetitionChampionshipBrawl extends AbstractCompetition
+class CompetitionChampionshipPerformances extends AbstractCompetition
 {
-    /** @var GameBrawl[] $gameRepository */
+    /** @var GamePerformances[] $gameRepository */
     protected $gameRepository = array();
+    protected $performanceTypesToSum = array();
 
 
     /**
      * @param array $players
      * @param int $roundCount cannot be less than 1
+     * @param array $performanceTypesToSum
      * @throws CompetitionException
      */
-    public function __construct(array $players, int $roundCount)
+    public function __construct(array $players, int $roundCount, array $performanceTypesToSum = array())
     {
         if ($roundCount < 1) throw new CompetitionException('Cannot create competition with less than 1 round');
         $this->roundCount = $roundCount;
+        $this->performanceTypesToSum = $performanceTypesToSum;
+
         parent::__construct($players);
     }
-
 
     protected function generateCalendar(): void
     {
@@ -33,19 +40,25 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     public static function getMinPlayerCount(): int
     {
-        return 3;
+        return 2;
     }
-
 
     protected function initializeRankingsHolder(): RankingsHolder
     {
-        return RankingBrawl::generateDefaultRankingsHolder();
+        return RankingPerformances::generateDefaultRankingsHolder();
     }
+
+
+    public function getPerformanceTypesToSum(): array
+    {
+        return $this->performanceTypesToSum;
+    }
+
 
     /**
      * get game with a given number
      * @param int $gameNumber
-     * @return GameBrawl|null game if found
+     * @return GamePerformances|null game if found
      */
     public function getGameByNumber(int $gameNumber): ?AbstractGame
     {
@@ -54,7 +67,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
 
     /**
-     * @return GameBrawl[]
+     * @return GamePerformances[]
      */
     public function getGames(): array
     {
@@ -64,7 +77,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     /**
      * @param int $round
-     * @return GameBrawl[]
+     * @return GamePerformances[]
      */
     public function getGamesByRound(int $round): array
     {
@@ -74,19 +87,18 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     /**
      * @param int $round
-     * @return GameBrawl
-     * @throws CompetitionException
+     * @return GamePerformances
      */
     protected function addGame(int $round): AbstractGame
     {
-        $brawl = new GameBrawl(array_keys($this->players));
-        $brawl->setCompetitionRound($round);
-        $this->calendar[$round][] = $brawl;
-        return $brawl;
+        $game = new GamePerformances(array_keys($this->players), $this->getPerformanceTypesToSum(), false);
+        $game->setCompetitionRound($round);
+        $this->calendar[$round][] = $game;
+        return $game;
     }
 
     /**
-     * @param GameBrawl $game
+     * @param GamePerformances $game
      */
     protected function updateRankingsForGame($game)
     {
@@ -102,31 +114,27 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     public function getMaxPointForAGame(): int
     {
-        $rankings = $this->rankingsHolder->getAllRankings();
-        $firstRanking = reset($rankings);
-        if (empty($firstRanking)) return -1;
-        return $firstRanking->getPointsForWon(true);
+        return -1;
     }
 
 
     public function getMinPointForAGame(): int
     {
-        $rankings = $this->rankingsHolder->getAllRankings();
-        $firstRanking = reset($rankings);
-        if (empty($firstRanking)) return 0;
-        return $firstRanking->getPointsForLoss(true);
+        return 0;
     }
 
-
     /**
-     * @param CompetitionChampionshipBrawl $competition
+     * @param CompetitionChampionshipPerformances $competition
      * @param bool $ranked
-     * @return CompetitionChampionshipBrawl
+     * @return CompetitionChampionshipPerformances
      * @throws CompetitionException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {
-        return parent::newCompetitionWithSamePlayers($competition, $ranked);
+        $newCompetition = new CompetitionChampionshipPerformances($competition->getPlayers($ranked), $competition->getRoundCount(), $competition->getPerformanceTypesToSum());
+        $newCompetition->setTeamComposition($competition->getTeamComposition());
+        return $newCompetition;
     }
+
 
 }
