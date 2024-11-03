@@ -2,6 +2,9 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Builder\CompetitionBuilderTree;
+use Keiwen\Utils\Competition\Builder\CompetitionBuilderPhase;
+
 class CompetitionTree
 {
 

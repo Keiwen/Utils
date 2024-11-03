@@ -1,6 +1,9 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Builder;
+
+use Keiwen\Utils\Competition\CompetitionException;
+use Keiwen\Utils\Competition\CompetitionTree;
 
 class CompetitionBuilderTree
 {

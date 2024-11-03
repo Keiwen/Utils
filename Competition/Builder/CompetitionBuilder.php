@@ -1,8 +1,28 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Builder;
 
 
+use Keiwen\Utils\Competition\AbstractCompetition;
+use Keiwen\Utils\Competition\CompetitionChampionshipBrawl;
+use Keiwen\Utils\Competition\CompetitionChampionshipBubble;
+use Keiwen\Utils\Competition\CompetitionChampionshipDuel;
+use Keiwen\Utils\Competition\CompetitionChampionshipPerformances;
+use Keiwen\Utils\Competition\CompetitionChampionshipRace;
+use Keiwen\Utils\Competition\CompetitionChampionshipSwiss;
+use Keiwen\Utils\Competition\CompetitionEliminationContest;
+use Keiwen\Utils\Competition\CompetitionEliminationThreshold;
+use Keiwen\Utils\Competition\CompetitionException;
+use Keiwen\Utils\Competition\CompetitionTournamentDoubleElimination;
+use Keiwen\Utils\Competition\CompetitionTournamentDuel;
+use Keiwen\Utils\Competition\CompetitionTournamentGauntlet;
+use Keiwen\Utils\Competition\CompetitionTournamentSwap;
+use Keiwen\Utils\Competition\GameDuel;
+use Keiwen\Utils\Competition\RankingBrawl;
+use Keiwen\Utils\Competition\RankingDuel;
+use Keiwen\Utils\Competition\RankingPerformances;
+use Keiwen\Utils\Competition\RankingRace;
+use Keiwen\Utils\Competition\RankingsHolder;
 use Keiwen\Utils\Mutator\ArrayMutator;
 
 class CompetitionBuilder
