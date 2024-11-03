@@ -2,11 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\AbstractGame;
+use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\GameDuel;
-use Keiwen\Utils\Competition\RankingDuel;
-use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Competition\Game\GameDuel;
+use Keiwen\Utils\Competition\Ranking\RankingDuel;
+use Keiwen\Utils\Competition\Ranking\RankingsHolder;
 use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionChampionshipDuel extends AbstractCompetition

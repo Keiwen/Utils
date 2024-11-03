@@ -2,11 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\AbstractGame;
+use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\GameBrawl;
-use Keiwen\Utils\Competition\RankingBrawl;
-use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Competition\Game\GameBrawl;
+use Keiwen\Utils\Competition\Ranking\RankingBrawl;
+use Keiwen\Utils\Competition\Ranking\RankingsHolder;
 
 class CompetitionChampionshipBrawl extends AbstractCompetition
 {

@@ -2,10 +2,9 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\AbstractRanking;
+use Keiwen\Utils\Competition\Ranking\AbstractRanking;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\RankingDuel;
-use Keiwen\Utils\Math\Divisibility;
+use Keiwen\Utils\Competition\Ranking\RankingDuel;
 
 class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
 {

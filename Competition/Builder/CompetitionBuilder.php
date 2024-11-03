@@ -17,12 +17,12 @@ use Keiwen\Utils\Competition\Type\CompetitionTournamentDoubleElimination;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentDuel;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentGauntlet;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentSwap;
-use Keiwen\Utils\Competition\GameDuel;
-use Keiwen\Utils\Competition\RankingBrawl;
-use Keiwen\Utils\Competition\RankingDuel;
-use Keiwen\Utils\Competition\RankingPerformances;
-use Keiwen\Utils\Competition\RankingRace;
-use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Competition\Game\GameDuel;
+use Keiwen\Utils\Competition\Ranking\RankingBrawl;
+use Keiwen\Utils\Competition\Ranking\RankingDuel;
+use Keiwen\Utils\Competition\Ranking\RankingPerformances;
+use Keiwen\Utils\Competition\Ranking\RankingRace;
+use Keiwen\Utils\Competition\Ranking\RankingsHolder;
 use Keiwen\Utils\Mutator\ArrayMutator;
 
 class CompetitionBuilder

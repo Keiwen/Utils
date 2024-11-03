@@ -1,6 +1,8 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Ranking;
+
+use Keiwen\Utils\Competition\Game\AbstractGame;
 
 abstract class AbstractRanking
 {

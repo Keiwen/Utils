@@ -1,6 +1,6 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Ranking;
 
 use Keiwen\Utils\Competition\Exception\CompetitionException;
 

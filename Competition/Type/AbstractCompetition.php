@@ -2,14 +2,14 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\AbstractGame;
-use Keiwen\Utils\Competition\AbstractRanking;
+use Keiwen\Utils\Competition\Game\AbstractGame;
+use Keiwen\Utils\Competition\Ranking\AbstractRanking;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\GameBrawl;
-use Keiwen\Utils\Competition\GameDuel;
-use Keiwen\Utils\Competition\GamePerformances;
-use Keiwen\Utils\Competition\GameRace;
-use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Competition\Game\GameBrawl;
+use Keiwen\Utils\Competition\Game\GameDuel;
+use Keiwen\Utils\Competition\Game\GamePerformances;
+use Keiwen\Utils\Competition\Game\GameRace;
+use Keiwen\Utils\Competition\Ranking\RankingsHolder;
 use Keiwen\Utils\Elo\EloBrawl;
 use Keiwen\Utils\Elo\EloDuel;
 use Keiwen\Utils\Elo\EloRace;

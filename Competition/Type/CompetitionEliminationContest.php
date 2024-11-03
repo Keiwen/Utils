@@ -2,11 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\AbstractGame;
+use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Exception\CompetitionException;
-use Keiwen\Utils\Competition\GamePerformances;
-use Keiwen\Utils\Competition\RankingPerformances;
-use Keiwen\Utils\Competition\RankingsHolder;
+use Keiwen\Utils\Competition\Game\GamePerformances;
+use Keiwen\Utils\Competition\Ranking\RankingPerformances;
+use Keiwen\Utils\Competition\Ranking\RankingsHolder;
 use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionEliminationContest extends AbstractCompetition

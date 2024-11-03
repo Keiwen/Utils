@@ -1,8 +1,10 @@
 <?php
 
-namespace Keiwen\Utils\Competition;
+namespace Keiwen\Utils\Competition\Ranking;
 
 use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Game\AbstractGame;
+use Keiwen\Utils\Competition\Game\GameBrawl;
 
 class RankingBrawl extends AbstractRanking
 {
