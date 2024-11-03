@@ -2,6 +2,8 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
+
 class RankingPerformances extends AbstractRanking
 {
     const RANK_METHOD_SUM = 'sum';

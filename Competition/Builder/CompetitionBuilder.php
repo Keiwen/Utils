@@ -12,7 +12,7 @@ use Keiwen\Utils\Competition\CompetitionChampionshipRace;
 use Keiwen\Utils\Competition\CompetitionChampionshipSwiss;
 use Keiwen\Utils\Competition\CompetitionEliminationContest;
 use Keiwen\Utils\Competition\CompetitionEliminationThreshold;
-use Keiwen\Utils\Competition\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\CompetitionTournamentDoubleElimination;
 use Keiwen\Utils\Competition\CompetitionTournamentDuel;
 use Keiwen\Utils\Competition\CompetitionTournamentGauntlet;

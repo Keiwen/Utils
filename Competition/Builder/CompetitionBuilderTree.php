@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Builder;
 
-use Keiwen\Utils\Competition\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\CompetitionTree;
 
 class CompetitionBuilderTree

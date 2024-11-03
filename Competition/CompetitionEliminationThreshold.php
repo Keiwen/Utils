@@ -3,6 +3,8 @@
 namespace Keiwen\Utils\Competition;
 
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
+
 class CompetitionEliminationThreshold extends AbstractCompetition
 {
     /** @var GamePerformances[] $gameRepository */

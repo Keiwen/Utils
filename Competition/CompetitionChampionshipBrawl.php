@@ -2,6 +2,8 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
+
 class CompetitionChampionshipBrawl extends AbstractCompetition
 {
     /** @var GameBrawl[] $gameRepository */

@@ -2,6 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionTournamentDuel extends AbstractTournamentCompetition

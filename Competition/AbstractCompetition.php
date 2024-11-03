@@ -2,6 +2,7 @@
 
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Elo\EloBrawl;
 use Keiwen\Utils\Elo\EloDuel;
 use Keiwen\Utils\Elo\EloRace;

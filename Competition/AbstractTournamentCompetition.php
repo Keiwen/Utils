@@ -1,6 +1,7 @@
 <?php
 namespace Keiwen\Utils\Competition;
 
+use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Math\Divisibility;
 
 abstract class AbstractTournamentCompetition extends AbstractCompetition
