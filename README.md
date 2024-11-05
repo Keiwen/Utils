@@ -46,10 +46,3 @@ Moving from a box in some direction will get the neighbor box.
 * Setup ELO system and configuration
 * Manage duels
 * Extends to multiplayer: races and brawls
-
-## Competition
-* Setup players in various types of games within a competition
-* Includes games type: duel, race, brawl, performance
-* Includes classic competition type (round robin, race championship, tournament, swiss round, ...)
-* and more exotic ones (gauntlet tournamenet, bubble championship, ...)
-* Support teams rankings and ELO
