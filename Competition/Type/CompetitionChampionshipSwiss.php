@@ -2,8 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRoundCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GameDuel;
 use Keiwen\Utils\Competition\Ranking\RankingDuel;
 use Keiwen\Utils\Competition\Ranking\RankingsHolder;
@@ -18,11 +21,14 @@ class CompetitionChampionshipSwiss extends AbstractCompetition
     /**
      * @param array $players
      * @param int $roundCount cannot be less than 2, neither equal or more than player count. Generally between 3 and 9.
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRoundCountException
+     * @throws CompetitionRankingException
      */
     public function __construct(array $players, int $roundCount)
     {
-        if ($roundCount < 2) throw new CompetitionException('Cannot create competition with less than 2 rounds');
-        if ($roundCount >= count($players)) throw new CompetitionException('Cannot create competition with more rounds than players');
+        if ($roundCount < 2) throw new CompetitionRoundCountException('to create competition', 2);
+        if ($roundCount >= count($players)) throw new CompetitionPlayerCountException('to create competition with more rounds than players', count($players));
         $this->roundCount = $roundCount;
         parent::__construct($players);
     }
@@ -32,6 +38,10 @@ class CompetitionChampionshipSwiss extends AbstractCompetition
         return 3;
     }
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankingsHolder(): RankingsHolder
     {
         return RankingDuel::generateDefaultRankingsHolder();
@@ -97,7 +107,7 @@ class CompetitionChampionshipSwiss extends AbstractCompetition
      * Be sure to remove both rankings from the list after matchmaking
      * @param RankingDuel[] $rankings
      * @return GameDuel|null
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function nextGameMatchmaking(array &$rankings): ?GameDuel
     {
@@ -162,7 +172,7 @@ class CompetitionChampionshipSwiss extends AbstractCompetition
      * @param int|string $keyHome
      * @param int|string $keyAway
      * @return GameDuel
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
@@ -228,7 +238,8 @@ class CompetitionChampionshipSwiss extends AbstractCompetition
      * @param CompetitionChampionshipSwiss $competition
      * @param bool $ranked
      * @return CompetitionChampionshipSwiss
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

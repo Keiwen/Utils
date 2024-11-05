@@ -2,8 +2,10 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRoundCountException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GameBrawl;
 use Keiwen\Utils\Competition\Ranking\RankingBrawl;
 use Keiwen\Utils\Competition\Ranking\RankingsHolder;
@@ -17,11 +19,13 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     /**
      * @param array $players
      * @param int $roundCount cannot be less than 1
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRoundCountException
+     * @throws CompetitionRankingException
      */
     public function __construct(array $players, int $roundCount)
     {
-        if ($roundCount < 1) throw new CompetitionException('Cannot create competition with less than 1 round');
+        if ($roundCount < 1) throw new CompetitionRoundCountException('to create competition', 1);
         $this->roundCount = $roundCount;
         parent::__construct($players);
     }
@@ -41,6 +45,10 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
     }
 
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankingsHolder(): RankingsHolder
     {
         return RankingBrawl::generateDefaultRankingsHolder();
@@ -78,8 +86,7 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
 
     /**
      * @param int $round
-     * @return GameBrawl
-     * @throws CompetitionException
+     * @return AbstractGame
      */
     protected function addGame(int $round): AbstractGame
     {
@@ -126,7 +133,8 @@ class CompetitionChampionshipBrawl extends AbstractCompetition
      * @param CompetitionChampionshipBrawl $competition
      * @param bool $ranked
      * @return CompetitionChampionshipBrawl
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

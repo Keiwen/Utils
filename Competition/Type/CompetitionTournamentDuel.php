@@ -2,7 +2,9 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Math\Divisibility;
 
 class CompetitionTournamentDuel extends AbstractTournamentCompetition
@@ -17,6 +19,9 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
      * @param bool $includeThirdPlaceGame set true to include a third place game
      * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
      * @param bool $preRoundShuffle set true to randomize matching before each round instead of following a fixed tree
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
+     * @throws CompetitionRuntimeException
      */
     public function __construct(array $players, bool $includeThirdPlaceGame = false, bool $bestSeedAlwaysHome = false, bool $preRoundShuffle = false)
     {
@@ -160,12 +165,13 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
      *
      * @param int $playinPlayerCount number of player in play-in phase (must be even)
      * @return void
+     * @throws CompetitionRuntimeException
      */
     protected function generatePlayIn(int $playinPlayerCount)
     {
         // check that we have a even number of players
         if (Divisibility::isNumberOdd($playinPlayerCount)) {
-            throw new CompetitionException(sprintf('Cannot create competition play-in with an odd number of players'));
+            throw new CompetitionRuntimeException(sprintf('Cannot create competition play-in with an odd number of players'));
         }
 
         // add a new round
@@ -189,7 +195,7 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
     /**
      * winners are matched 2 by 2
      * @param array $winnerKeys
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForClassicRound(array $winnerKeys)
     {
@@ -264,7 +270,9 @@ class CompetitionTournamentDuel extends AbstractTournamentCompetition
      * @param CompetitionTournamentDuel $competition
      * @param bool $ranked
      * @return CompetitionTournamentDuel
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRuntimeException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

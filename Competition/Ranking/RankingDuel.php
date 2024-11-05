@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Ranking;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Game\GameDuel;
 
@@ -42,6 +42,10 @@ class RankingDuel extends AbstractRanking
     protected $lastPointMethodTieBreakerCalcul = 0;
 
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     public static function generateDefaultRankingsHolder(): RankingsHolder
     {
         $holder = new RankingsHolder(static::class);
@@ -503,10 +507,15 @@ class RankingDuel extends AbstractRanking
     }
 
 
+    /**
+     * @param AbstractGame $game
+     * @return bool
+     * @throws CompetitionRankingException
+     */
     public function saveGame(AbstractGame $game): bool
     {
         if (!$game instanceof GameDuel) {
-            throw new CompetitionException(sprintf('Ranking duel require %s as game, %s given', GameDuel::class, get_class($game)));
+            throw new CompetitionRankingException(sprintf('Ranking duel require %s as game, %s given', GameDuel::class, get_class($game)));
         }
         $isHome = $isAway = false;
         if ($game->getKeyHome() == $this->getEntityKey()) $isHome = true;

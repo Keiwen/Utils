@@ -1,8 +1,9 @@
 <?php
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GameDuel;
 use Keiwen\Utils\Competition\Ranking\RankingDuel;
 use Keiwen\Utils\Competition\Ranking\RankingsHolder;
@@ -32,14 +33,14 @@ abstract class AbstractTournamentCompetition extends AbstractCompetition
      * @param int $numberOfPlayers
      * @param int $round
      * @return void
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function checkPowerOf2NumberOfPlayer(int $numberOfPlayers, int $round)
     {
         $remainder = 0;
         Divisibility::getHighestPowerOf($numberOfPlayers, 2, $remainder);
         if ($remainder > 0) {
-            throw new CompetitionException(sprintf('Cannot create next round with a number of players that is not a power of 2, %d given on round %d', $numberOfPlayers, $round));
+            throw new CompetitionRuntimeException(sprintf('Cannot create next round with a number of players that is not a power of 2, %d given on round %d', $numberOfPlayers, $round));
         }
     }
 
@@ -48,7 +49,7 @@ abstract class AbstractTournamentCompetition extends AbstractCompetition
      * encounters last seeds. Furthermore, dispatch first seeds among this table
      * @param int $playersCount
      * @return array list of duel (array with 'seedHome' and 'seedAway' keys)
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateDuelTable(int $playersCount): array
     {
@@ -124,7 +125,7 @@ abstract class AbstractTournamentCompetition extends AbstractCompetition
      * add games by matching given players 2 by 2, in received order
      *
      * @param array $playerKeys
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function matchPlayers2By2(array $playerKeys)
     {
@@ -146,6 +147,10 @@ abstract class AbstractTournamentCompetition extends AbstractCompetition
     }
 
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankingsHolder(): RankingsHolder
     {
         return RankingDuel::generateDefaultRankingsHolder();
@@ -185,7 +190,7 @@ abstract class AbstractTournamentCompetition extends AbstractCompetition
      * @param int|string $keyHome
      * @param int|string $keyAway
      * @return GameDuel
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {

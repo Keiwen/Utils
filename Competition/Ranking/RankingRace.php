@@ -2,13 +2,17 @@
 
 namespace Keiwen\Utils\Competition\Ranking;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Game\GameRace;
 
 class RankingRace extends AbstractRanking
 {
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     public static function generateDefaultRankingsHolder(): RankingsHolder
     {
         $holder = new RankingsHolder(static::class);
@@ -40,10 +44,15 @@ class RankingRace extends AbstractRanking
     }
 
 
+    /**
+     * @param AbstractGame $game
+     * @return bool
+     * @throws CompetitionRankingException
+     */
     public function saveGame(AbstractGame $game): bool
     {
         if (!$game instanceof GameRace) {
-            throw new CompetitionException(sprintf('Ranking race require %s as game, %s given', GameRace::class, get_class($game)));
+            throw new CompetitionRankingException(sprintf('Ranking race require %s as game, %s given', GameRace::class, get_class($game)));
         }
 
         $this->saveGamePerformances($game);

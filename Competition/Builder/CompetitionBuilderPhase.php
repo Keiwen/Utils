@@ -2,8 +2,10 @@
 
 namespace Keiwen\Utils\Competition\Builder;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\CompetitionTreePhase;
+use Keiwen\Utils\Competition\Exception\CompetitionBuilderOptionException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionTypeException;
 use Keiwen\Utils\Mutator\ArrayMutator;
 
 class CompetitionBuilderPhase
@@ -39,6 +41,14 @@ class CompetitionBuilderPhase
     }
 
 
+    /**
+     * @param string $type
+     * @param array $options
+     * @param string $name
+     * @return bool
+     * @throws CompetitionBuilderOptionException
+     * @throws CompetitionTypeException
+     */
     public function addGroup(string $type, array $options = array(), string $name = ''): bool
     {
         if (empty($name)) $name = (string) count($this->builderGroups);
@@ -127,7 +137,7 @@ class CompetitionBuilderPhase
      * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
      * @param array $teamComposition $teamKey => list of players keys
      * @return CompetitionTreePhase|null
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
      */
     public function startPhase(array $players, string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTreePhase
     {
@@ -135,7 +145,7 @@ class CompetitionBuilderPhase
 
         $computedMinPlayers = $this->computeMinPlayersCount();
         if (count($players) < $computedMinPlayers) {
-            throw new CompetitionException(sprintf('Not enough players to start phase, at least %d required', $computedMinPlayers));
+            throw new CompetitionPlayerCountException('to start phase', $computedMinPlayers);
         }
 
         $playersDispatch = $this->dispatchPlayers($players);

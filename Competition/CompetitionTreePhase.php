@@ -3,7 +3,7 @@
 namespace Keiwen\Utils\Competition;
 
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
 use Keiwen\Utils\Competition\Type\AbstractCompetition;
@@ -164,7 +164,7 @@ class CompetitionTreePhase
      * @param bool $forTeam false by default
      * @param bool $byExpenses
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     protected function mixGroupRankings(bool $forTeam = false, bool $byExpenses = false): array
     {
@@ -188,8 +188,8 @@ class CompetitionTreePhase
                     $mixedRankingHolder->integrateRanking($mixedRanking);
                 }
             }
-        } catch (CompetitionException $e) {
-            throw new CompetitionException(sprintf('Cannot build mixed rankings: %s', $e->getMessage()));
+        } catch (CompetitionRankingException $e) {
+            throw new CompetitionRankingException(sprintf('Cannot build mixed rankings: %s', $e->getMessage()));
         }
 
         $mixedRankingHolder->computeRankingsOrder();
@@ -202,7 +202,7 @@ class CompetitionTreePhase
     /**
      * @param bool $byExpenses
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedRankings(bool $byExpenses = false): array
     {
@@ -215,7 +215,7 @@ class CompetitionTreePhase
      * @param string[]|int[] $keys
      * @param bool $byExpenses
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedRankingsForKeys(array $keys, bool $byExpenses = false): array
     {
@@ -232,7 +232,7 @@ class CompetitionTreePhase
 
     /**
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedRankingsForQualification(): array
     {
@@ -241,7 +241,7 @@ class CompetitionTreePhase
 
     /**
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedRankingsForStagnation(): array
     {
@@ -250,7 +250,7 @@ class CompetitionTreePhase
 
     /**
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedRankingsForElimination(): array
     {
@@ -261,7 +261,7 @@ class CompetitionTreePhase
 
     /**
      * @return AbstractRanking[]
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
      */
     public function getMixedTeamRankings(): array
     {

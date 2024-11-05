@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Ranking;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Game\GameBrawl;
 
@@ -13,6 +13,10 @@ class RankingBrawl extends AbstractRanking
     const PERF_TOTAL_BRAWL_COUNT_LOSS = 'totalBrawlCountLoss';
 
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     public static function generateDefaultRankingsHolder(): RankingsHolder
     {
         $holder = new RankingsHolder(static::class);
@@ -84,10 +88,15 @@ class RankingBrawl extends AbstractRanking
     }
 
 
+    /**
+     * @param AbstractGame $game
+     * @return bool
+     * @throws CompetitionRankingException
+     */
     public function saveGame(AbstractGame $game): bool
     {
         if (!$game instanceof GameBrawl) {
-            throw new CompetitionException(sprintf('Ranking brawl require %s as game, %s given', GameBrawl::class, get_class($game)));
+            throw new CompetitionRankingException(sprintf('Ranking brawl require %s as game, %s given', GameBrawl::class, get_class($game)));
         }
 
         $this->saveGamePerformances($game);

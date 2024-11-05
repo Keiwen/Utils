@@ -3,6 +3,14 @@
 namespace Keiwen\Utils\Competition\Builder;
 
 
+use Keiwen\Utils\Competition\Exception\CompetitionBuilderOptionException;
+use Keiwen\Utils\Competition\Exception\CompetitionParameterException;
+use Keiwen\Utils\Competition\Exception\CompetitionPerformanceToSumException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRoundCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
+use Keiwen\Utils\Competition\Exception\CompetitionTypeException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Type\AbstractCompetition;
 use Keiwen\Utils\Competition\Type\CompetitionChampionshipBrawl;
 use Keiwen\Utils\Competition\Type\CompetitionChampionshipBubble;
@@ -12,7 +20,6 @@ use Keiwen\Utils\Competition\Type\CompetitionChampionshipRace;
 use Keiwen\Utils\Competition\Type\CompetitionChampionshipSwiss;
 use Keiwen\Utils\Competition\Type\CompetitionEliminationContest;
 use Keiwen\Utils\Competition\Type\CompetitionEliminationThreshold;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentDoubleElimination;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentDuel;
 use Keiwen\Utils\Competition\Type\CompetitionTournamentGauntlet;
@@ -96,12 +103,18 @@ class CompetitionBuilder
     protected $performances = array();
     protected $expenses = array();
 
+    /**
+     * @param string $type
+     * @param array $options
+     * @throws CompetitionBuilderOptionException
+     * @throws CompetitionTypeException
+     */
     public function __construct(string $type, array $options = array())
     {
         $this->type = $type;
         $this->typeFQCNlass = static::getFQCNlassForType($type);
         if (!is_subclass_of($this->typeFQCNlass, AbstractCompetition::class)) {
-            throw new CompetitionException(sprintf('Cannot create builder for competition type %s, associated class %s not found or not child of AbstractCompetition. Did you forget to declare it in getFQCNlassForType() class?', $type, $this->typeFQCNlass));
+            throw new CompetitionTypeException($type);
         }
         $this->options = array_merge($this->options, $options);
         foreach ($this->options as $optionName => &$optionValue) {
@@ -271,6 +284,11 @@ class CompetitionBuilder
     }
 
 
+    /**
+     * @param string $type
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     public static function getDefaultRankingHolderForType(string $type): RankingsHolder
     {
         switch ($type) {
@@ -293,31 +311,37 @@ class CompetitionBuilder
     }
 
 
+    /**
+     * @param string $optionName
+     * @param mixed $optionValue
+     * @return void
+     * @throws CompetitionBuilderOptionException
+     */
     public static function checkOptionValue(string $optionName, &$optionValue)
     {
         switch ($optionName) {
             case self::OPTION_POINTS_BY_POSITION:
             case self::OPTION_PLAYERS_PASSING_COUNT:
                 if (!is_array($optionValue)) {
-                    throw new CompetitionException(sprintf('Option %s must be given as array of integer', $optionName));
+                    throw new CompetitionBuilderOptionException('must be given as array of integer', $optionName);
                 }
                 break;
             case self::OPTION_PERF_RANK_METHOD:
                 if (!in_array($optionValue, static::getPerfRankMethods())) {
-                    throw new CompetitionException(sprintf('Option %s is invalid. Possible values are: %s', $optionName,
-                        implode(', ', static::getPerfRankMethods())));
+                    $possibleOptions = implode(', ', static::getPerfRankMethods());
+                    throw new CompetitionBuilderOptionException(sprintf('possible values are: %s', $possibleOptions), $optionName);
                 }
                 break;
             case self::OPTION_DUEL_POINT_METHOD:
                 if (!in_array($optionValue, static::getDuelPointsMethods())) {
-                    throw new CompetitionException(sprintf('Option %s is invalid. Possible values are: %s', $optionName,
-                        implode(', ', static::getDuelPointsMethods())));
+                    $possibleOptions = implode(', ', static::getDuelPointsMethods());
+                    throw new CompetitionBuilderOptionException(sprintf('possible values are: %s', $possibleOptions), $optionName);
                 }
                 break;
             case self::OPTION_DUEL_TIE_BREAKER_METHOD:
                 if (!in_array($optionValue, static::getDuelPointsMethods(true))) {
-                    throw new CompetitionException(sprintf('Option %s is invalid. Possible values are: %s', $optionName,
-                        implode(', ', static::getDuelPointsMethods(true))));
+                    $possibleOptions = implode(', ', static::getDuelPointsMethods(true));
+                    throw new CompetitionBuilderOptionException(sprintf('possible values are: %s', $possibleOptions), $optionName);
                 }
                 break;
             case self::OPTION_SHUFFLE_CALENDAR:
@@ -345,7 +369,7 @@ class CompetitionBuilder
             case self::OPTION_QUALIFICATION_SPOTS:
             case self::OPTION_ELIMINATION_SPOTS:
                 if (!is_int($optionValue)) {
-                    throw new CompetitionException(sprintf('Option %s must be given as integer', $optionName));
+                    throw new CompetitionBuilderOptionException('must be given as integer', $optionName);
                 }
                 break;
         }
@@ -356,7 +380,13 @@ class CompetitionBuilder
      * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
      * @param array $teamComposition $teamKey => list of players keys
      * @return AbstractCompetition
-     * @throws CompetitionException
+     * @throws CompetitionRankingException
+     * @throws CompetitionTypeException
+     * @throws CompetitionParameterException
+     * @throws CompetitionPerformanceToSumException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRoundCountException
+     * @throws CompetitionRuntimeException
      */
     public function buildForPlayers(array $playersList, string $playerEloAccess = '', array $teamComposition = array()): AbstractCompetition
     {
@@ -404,7 +434,7 @@ class CompetitionBuilder
                 $competition = new CompetitionTournamentGauntlet($playersList);
                 break;
             default:
-                throw new CompetitionException('Cannot build competition for type ' . $this->getType());
+                throw new CompetitionTypeException($this->getType());
         }
         $competition->setQualificationSpots($this->getOptionValue(self::OPTION_QUALIFICATION_SPOTS));
         $competition->setEliminationSpots($this->getOptionValue(self::OPTION_ELIMINATION_SPOTS));

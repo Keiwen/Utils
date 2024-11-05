@@ -2,7 +2,9 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Game\GameDuel;
 use Keiwen\Utils\Math\Divisibility;
 
@@ -24,6 +26,9 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * @param array $players
      * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
      * @param bool $preRoundShuffle set true to randomize matching before each round instead of following a fixed tree
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRuntimeException
+     * @throws CompetitionRankingException
      */
     public function __construct(array $players, bool $bestSeedAlwaysHome = false, bool $preRoundShuffle = false)
     {
@@ -180,7 +185,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * winners from WB are matched 2 by 2
      * winners from LB gets a bye game
      * @param array $winnerKeys include winners from both WB and LB
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForWinnerBracket(array $winnerKeys)
     {
@@ -212,7 +217,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * losers from WB are matched against winners from LB
      * @param array $winnerKeys include winners from both WB and LB
      * @param array $losersKeyFromWB include losers from WB only, as we should not have LB round before
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForLoserBracketMajor(array $winnerKeys, array $losersKeyFromWB)
     {
@@ -228,7 +233,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
         }
         // check consistency: we must have same between WB losers and LB winners
         if (count($losersKeyFromWB) != count($winnersFromLB)) {
-            throw new CompetitionException(sprintf('Cannot create loser bracket major round with %d losers and %d winners (round %d)', count($losersKeyFromWB), count($winnersFromLB), $this->currentRound));
+            throw new CompetitionRuntimeException(sprintf('Cannot create loser bracket major round with %d losers and %d winners (round %d)', count($losersKeyFromWB), count($winnersFromLB), $this->currentRound));
         }
 
         // we could just match first loser against first winner and so on here
@@ -258,7 +263,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * winners from WB gets a bye game
      * winners from LB are matched 2 by 2
      * @param array $winnerKeys include winners from both WB and LB
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForLoserBracketMinor(array $winnerKeys)
     {
@@ -287,7 +292,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
     /**
      * First final aims to match the last WB player vs the last LB player
      *
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForFirstFinal()
     {
@@ -303,7 +308,7 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * Second final aims to match the last LB player vs the last WB player
      * given that WB player lost the first final
      *
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function generateNextRoundForSecondFinal()
     {
@@ -364,7 +369,9 @@ class CompetitionTournamentDoubleElimination extends AbstractTournamentCompetiti
      * @param CompetitionTournamentDoubleElimination $competition
      * @param bool $ranked
      * @return CompetitionTournamentDoubleElimination
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRuntimeException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

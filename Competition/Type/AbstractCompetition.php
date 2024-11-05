@@ -2,9 +2,10 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GameBrawl;
 use Keiwen\Utils\Competition\Game\GameDuel;
 use Keiwen\Utils\Competition\Game\GamePerformances;
@@ -51,9 +52,14 @@ abstract class AbstractCompetition
     protected $usingEloArray = false;
     protected $hasPlayersShuffled = false;
 
+    /**
+     * @param array $players
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
+     */
     public function __construct(array $players)
     {
-        if (count($players) < static::getMinPlayerCount()) throw new CompetitionException(sprintf('Cannot create competition with less than %d players', static::getMinPlayerCount()));
+        if (count($players) < static::getMinPlayerCount()) throw new CompetitionPlayerCountException('to create competition', static::getMinPlayerCount());
         $this->initializePlayers($players);
         // initialize rankings;
         $this->initializeRankings();
@@ -97,8 +103,16 @@ abstract class AbstractCompetition
         $this->playersSeeds = array_combine(array_keys($players), range(1, count($players)));
     }
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     abstract protected function initializeRankingsHolder(): RankingsHolder;
 
+    /**
+     * @return void
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankings()
     {
         $this->rankingsHolder = $this->initializeRankingsHolder();
@@ -1057,6 +1071,8 @@ abstract class AbstractCompetition
      * @param AbstractCompetition $competition
      * @param bool $ranked
      * @return static
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

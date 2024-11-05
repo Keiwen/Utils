@@ -2,8 +2,8 @@
 
 namespace Keiwen\Utils\Competition\Builder;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\CompetitionTree;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
 
 class CompetitionBuilderTree
 {
@@ -68,7 +68,7 @@ class CompetitionBuilderTree
      * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
      * @param array $teamComposition $teamKey => list of players keys
      * @return CompetitionTree|null
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
      */
     public function startIteration(array $players, string $iterationName = '', string $playerEloAccess = '', array $teamComposition = array()): ?CompetitionTree
     {
@@ -76,7 +76,7 @@ class CompetitionBuilderTree
 
         $computedMinPlayers = $this->computeMinPlayersCount();
         if (count($players) < $computedMinPlayers) {
-            throw new CompetitionException(sprintf('Not enough players to start tree, at least %d required', $computedMinPlayers));
+            throw new CompetitionPlayerCountException('to start tree', $computedMinPlayers);
         }
 
         $iteration = new CompetitionTree($this, $players, $iterationName, $playerEloAccess, $teamComposition);

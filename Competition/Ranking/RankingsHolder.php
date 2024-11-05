@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Ranking;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 
 class RankingsHolder
 {
@@ -24,10 +24,14 @@ class RankingsHolder
     protected $duelTieBreakerMethod = RankingDuel::POINT_METHOD_BASE;
 
 
+    /**
+     * @param string $rankingClassName
+     * @throws CompetitionRankingException
+     */
     public function __construct(string $rankingClassName)
     {
         if (!is_subclass_of($rankingClassName, AbstractRanking::class)) {
-            throw new CompetitionException('Ranking class %s must extends AbstractRanking', $rankingClassName);
+            throw new CompetitionRankingException('Ranking class %s must extends AbstractRanking', $rankingClassName);
         }
         $this->rankingClassName = $rankingClassName;
     }
@@ -65,12 +69,12 @@ class RankingsHolder
 
     /**
      * @param AbstractRanking $ranking
-     * @throws CompetitionException if ranking class mismatch
+     * @throws CompetitionRankingException if ranking class mismatch
      */
     public function integrateRanking(AbstractRanking $ranking)
     {
         if (!$ranking instanceof $this->rankingClassName) {
-            throw new CompetitionException(sprintf('Ranking class %s must extends class %s set in ranking holder', get_class($ranking), $this->rankingClassName));
+            throw new CompetitionRankingException(sprintf('Ranking class %s must extends class %s set in ranking holder', get_class($ranking), $this->rankingClassName));
         }
         $ranking->setRankingsHolder($this);
         $this->rankings[$ranking->getEntityKey()] = $ranking;
@@ -279,16 +283,22 @@ class RankingsHolder
     }
 
 
+    /**
+     * @param AbstractRanking $ranking
+     * @return void
+     * @throws CompetitionRankingException
+     */
     protected function checkRankingClass(AbstractRanking $ranking)
     {
         if (!$ranking instanceof $this->rankingClassName) {
-            throw new CompetitionException(sprintf('Ranking ordering require %s as ranking, %s given', $this->rankingClassName, get_class($ranking)));
+            throw new CompetitionRankingException(sprintf('Ranking ordering require %s as ranking, %s given', $this->rankingClassName, get_class($ranking)));
         }
     }
 
 
     /**
      * @return int
+     * @throws CompetitionRankingException
      */
     public function orderRankings(AbstractRanking $rankingA, AbstractRanking $rankingB): int
     {
@@ -301,6 +311,7 @@ class RankingsHolder
 
     /**
      * @return int
+     * @throws CompetitionRankingException
      */
     public function orderRankingsByPerformances(AbstractRanking $rankingA, AbstractRanking $rankingB): int
     {
@@ -325,6 +336,7 @@ class RankingsHolder
 
     /**
      * @return int
+     * @throws CompetitionRankingException
      */
     public function orderRankingsByExpenses(AbstractRanking $rankingA, AbstractRanking $rankingB): int
     {

@@ -2,12 +2,26 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Ranking\RankingDuel;
 
 class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
 {
+
+    /**
+     * @param array $players
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
+     * @throws CompetitionRuntimeException
+     */
+    public function __construct(array $players)
+    {
+        parent::__construct($players);
+    }
+
 
     /**
      * always false, by competition definition
@@ -28,6 +42,10 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
     }
 
 
+    /**
+     * @return void
+     * @throws CompetitionRuntimeException
+     */
     protected function generateCalendar(): void
     {
         $this->roundCount = $this->playerCount - 1;
@@ -36,6 +54,10 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
     }
 
 
+    /**
+     * @return void
+     * @throws CompetitionRuntimeException
+     */
     protected function generateNextRoundGames()
     {
         $this->currentRound++;
@@ -146,7 +168,9 @@ class CompetitionTournamentGauntlet extends AbstractTournamentCompetition
      * @param CompetitionTournamentGauntlet $competition
      * @param bool $ranked
      * @return CompetitionTournamentGauntlet
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRuntimeException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

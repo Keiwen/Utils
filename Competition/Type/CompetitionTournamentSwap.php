@@ -2,8 +2,10 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Ranking\RankingDuel;
 use Keiwen\Utils\Math\Divisibility;
 
@@ -13,6 +15,9 @@ class CompetitionTournamentSwap extends AbstractTournamentCompetition
     /**
      * @param array $players
      * @param bool $bestSeedAlwaysHome set true to always give higher seed the home spot
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
+     * @throws CompetitionRuntimeException
      */
     public function __construct(array $players, bool $bestSeedAlwaysHome = false)
     {
@@ -31,10 +36,14 @@ class CompetitionTournamentSwap extends AbstractTournamentCompetition
     }
 
 
+    /**
+     * @return void
+     * @throws CompetitionRuntimeException
+     */
     protected function generateCalendar(): void
     {
         if (Divisibility::isNumberOdd($this->playerCount)) {
-            throw new CompetitionException('Cannot create tournament swap with a odd number of players');
+            throw new CompetitionRuntimeException('Cannot create tournament swap with a odd number of players');
         }
         $this->roundCount = $this->playerCount / 2;
 
@@ -170,7 +179,9 @@ class CompetitionTournamentSwap extends AbstractTournamentCompetition
      * @param CompetitionTournamentSwap $competition
      * @param bool $ranked
      * @return CompetitionTournamentSwap
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRuntimeException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

@@ -2,9 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GameDuel;
 use Keiwen\Utils\Competition\Ranking\RankingDuel;
 use Keiwen\Utils\Competition\Ranking\RankingsHolder;
@@ -19,6 +21,8 @@ class CompetitionChampionshipBubble extends AbstractCompetition
     /**
      * @param array $players
      * @param int $roundCount leave empty to use default round count
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public function __construct(array $players, int $roundCount = 0)
     {
@@ -48,6 +52,10 @@ class CompetitionChampionshipBubble extends AbstractCompetition
         return $playersCount;
     }
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankingsHolder(): RankingsHolder
     {
         return RankingDuel::generateDefaultRankingsHolder();
@@ -128,7 +136,7 @@ class CompetitionChampionshipBubble extends AbstractCompetition
      * @param int|string $keyHome
      * @param int|string $keyAway
      * @return GameDuel
-     * @throws CompetitionException
+     * @throws CompetitionRuntimeException
      */
     protected function addGame(int $round, $keyHome = 1, $keyAway = 2): AbstractGame
     {
@@ -236,7 +244,8 @@ class CompetitionChampionshipBubble extends AbstractCompetition
      * @param CompetitionChampionshipBubble $competition
      * @param bool $ranked
      * @return CompetitionChampionshipBubble
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

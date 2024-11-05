@@ -4,7 +4,8 @@ namespace Keiwen\Utils\Competition;
 
 use Keiwen\Utils\Competition\Builder\CompetitionBuilderTree;
 use Keiwen\Utils\Competition\Builder\CompetitionBuilderPhase;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Ranking\AbstractRanking;
 
 class CompetitionTree
@@ -29,7 +30,7 @@ class CompetitionTree
      * @param string $iterationName
      * @param string $playerEloAccess method to access ELO in object or field name to access elo in array (leave empty if ELO is not used)
      * @param array $teamComposition $teamKey => list of players keys
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
      */
     public function __construct(CompetitionBuilderTree $builderTree, array $players, string $iterationName = '', string $playerEloAccess = '', array $teamComposition = array())
     {
@@ -77,6 +78,10 @@ class CompetitionTree
     }
 
 
+    /**
+     * @return bool
+     * @throws CompetitionPlayerCountException
+     */
     public function isCompleted(): bool
     {
         if ($this->completed) return true;
@@ -85,6 +90,10 @@ class CompetitionTree
     }
 
 
+    /**
+     * @return CompetitionTreePhase|null
+     * @throws CompetitionPlayerCountException
+     */
     public function getCurrentPhase(): ?CompetitionTreePhase
     {
         if ($this->completed) return null;
@@ -121,7 +130,7 @@ class CompetitionTree
     /**
      * @param CompetitionBuilderPhase $builderPhase
      * @return CompetitionTreePhase
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
      */
     protected function startPhaseInTree(CompetitionBuilderPhase $builderPhase): CompetitionTreePhase
     {
@@ -273,7 +282,7 @@ class CompetitionTree
             if ($mixGroups) {
                 try {
                     $phaseMixRankings = ($forTeams) ? $phase->getMixedTeamRankings() : $phase->getMixedRankings($byExpenses);
-                } catch (CompetitionException $e) {
+                } catch (CompetitionRankingException $e) {
                     // ignore issue with mixed rankings in here
                     $phaseMixRankings = array();
                 }

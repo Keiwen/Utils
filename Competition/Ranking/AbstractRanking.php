@@ -2,6 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Ranking;
 
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
 
 abstract class AbstractRanking
@@ -21,6 +22,11 @@ abstract class AbstractRanking
     /** @var RankingsHolder $rankingsHolder */
     protected $rankingsHolder;
 
+    /**
+     * @param $entityKey
+     * @param int $entitySeed
+     * @throws CompetitionRankingException
+     */
     public function __construct($entityKey, int $entitySeed = 0)
     {
         $this->entityKey = $entityKey;
@@ -31,6 +37,10 @@ abstract class AbstractRanking
     }
 
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     abstract public static function generateDefaultRankingsHolder(): RankingsHolder;
 
     /**
@@ -156,6 +166,7 @@ abstract class AbstractRanking
     /**
      * @param AbstractGame $game
      * @return bool true if saved
+     * @throws CompetitionRankingException
      */
     abstract public function saveGame(AbstractGame $game): bool;
 

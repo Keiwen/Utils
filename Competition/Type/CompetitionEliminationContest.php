@@ -2,8 +2,11 @@
 
 namespace Keiwen\Utils\Competition\Type;
 
+use Keiwen\Utils\Competition\Exception\CompetitionPerformanceToSumException;
+use Keiwen\Utils\Competition\Exception\CompetitionPlayerCountException;
+use Keiwen\Utils\Competition\Exception\CompetitionParameterException;
+use Keiwen\Utils\Competition\Exception\CompetitionRankingException;
 use Keiwen\Utils\Competition\Game\AbstractGame;
-use Keiwen\Utils\Competition\Exception\CompetitionException;
 use Keiwen\Utils\Competition\Game\GamePerformances;
 use Keiwen\Utils\Competition\Ranking\RankingPerformances;
 use Keiwen\Utils\Competition\Ranking\RankingsHolder;
@@ -22,23 +25,26 @@ class CompetitionEliminationContest extends AbstractCompetition
 
     /**
      * @param array $players
-     * @param string[] $performanceTypesToSum performance type to consider on sum. Leave it empty to take all performance from rankings
+     * @param string[] $performanceTypesToSum performance type to consider on sum
      * @param int[] $playerPassingCount for each round, number of players to keep for next round
      * @param int $playerEliminatedPerRound after each round, number of player to eliminate
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionPerformanceToSumException
+     * @throws CompetitionParameterException
+     * @throws CompetitionRankingException
      */
     public function __construct(array $players, array $performanceTypesToSum = array(), array $playerPassingCount = array(), int $playerEliminatedPerRound = 0)
     {
-        if (empty($performanceTypesToSum)) throw new CompetitionException('Cannot create competition without performance to sum');
+        if (empty($performanceTypesToSum)) throw new CompetitionPerformanceToSumException();
         $this->performanceTypesToSum = $performanceTypesToSum;
 
         foreach ($playerPassingCount as $count) {
-            if (!is_int($count)) throw new CompetitionException('Cannot create competition with player passing count as non-integer value');
+            if (!is_int($count)) throw new CompetitionParameterException('required as a list of integer values', 'player passing count');
         }
         $this->playerPassingCount = $playerPassingCount;
         if (empty($playerPassingCount)) {
             if ($playerEliminatedPerRound < 1) {
-                throw new CompetitionException('Cannot create competition without player elimination');
+                throw new CompetitionParameterException('required >= 1', 'player eliminated per round');
             }
             $this->playerEliminatedPerRound = $playerEliminatedPerRound;
         }
@@ -75,6 +81,10 @@ class CompetitionEliminationContest extends AbstractCompetition
         return $this->performanceTypesToSum;
     }
 
+    /**
+     * @return RankingsHolder
+     * @throws CompetitionRankingException
+     */
     protected function initializeRankingsHolder(): RankingsHolder
     {
         return RankingPerformances::generateDefaultRankingsHolder();
@@ -229,7 +239,8 @@ class CompetitionEliminationContest extends AbstractCompetition
      * @param CompetitionEliminationContest $competition
      * @param bool $ranked
      * @return CompetitionEliminationContest
-     * @throws CompetitionException
+     * @throws CompetitionPlayerCountException
+     * @throws CompetitionRankingException
      */
     public static function newCompetitionWithSamePlayers(AbstractCompetition $competition, bool $ranked = false): AbstractCompetition
     {

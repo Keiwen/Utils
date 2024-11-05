@@ -2,7 +2,7 @@
 
 namespace Keiwen\Utils\Competition\Game;
 
-use Keiwen\Utils\Competition\Exception\CompetitionException;
+use Keiwen\Utils\Competition\Exception\CompetitionRuntimeException;
 
 class GameDuel extends AbstractGame
 {
@@ -16,9 +16,14 @@ class GameDuel extends AbstractGame
 
     protected static $forfeitScoreFor = 3;
 
+    /**
+     * @param int|string $keyHome
+     * @param int|string $keyAway
+     * @throws CompetitionRuntimeException
+     */
     public function __construct($keyHome, $keyAway)
     {
-        if ($keyHome === $keyAway) throw new CompetitionException(sprintf('Cannot create duel for similar player (key %d)', $keyHome));
+        if ($keyHome === $keyAway) throw new CompetitionRuntimeException(sprintf('Cannot create duel for similar player (key %d)', $keyHome));
         if ($keyAway === null) $this->bye = true;
         parent::setPlayers(array($keyHome, $keyAway));
     }
